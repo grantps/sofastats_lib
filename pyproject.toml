@@ -1,0 +1,305 @@
+[project]
+name = "sofastats_lib"
+version = "0.10.2"
+description = "SOFA (Statistics Open For All) the Python library"
+authors = [
+    { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
+]
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "jinja2>=3.1.3",
+    "matplotlib>=3.8.0",
+    "numpy>=1.26.4",
+    "pandas>=2",
+    "ruamel-yaml>=0.18.10",
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+classifiers = ["Development Status :: 1 - Planning"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.build-backend]
+exclude = [
+    "docs/*", "example_scripts/*", "store/*", "validation/*", "tests/*",
+    "uv.lock", "0_minify_sofastats.py", "requirements*",
+]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
+
+link-mode = "symlink"
+default-groups = ["test", "dev"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sofastats_lib"]
+
+## ---------------------------------------------------------------------------------------------------------------------
+
+## >>> lint-imports
+## https://import-linter.readthedocs.io/en/stable/contract_types.html#layers
+## cd ~/projects/sofastats_lib && c && lint-imports
+
+[tool.importlinter]
+root_packages = [ "sofastats_lib" ]
+
+[[tool.importlinter.contracts]]
+name = "Layered Design"
+type = "layers"
+layers = [
+    "output",
+    "data_extraction",  ## can define and populate interfaces used by output
+    "stats_calc",  ## low down in import level terms so interfaces higher up can draw on it even though it will often follow data extraction in a pipeline
+    "utils",  ## no dependency utils
+    "conf",  ## actual conf, not interfaces
+]
+containers = ["sofastats_lib"]
+exhaustive = false
+exhaustive_ignores = []
+
+## work way up from bottom to top
+## conf
+
+[[tool.importlinter.contracts]]
+name = "conf.main not called by other conf"
+type = "layers"
+layers = [
+    "main",
+    "var_labels",
+]
+containers = ["sofastats_lib.conf"]
+exhaustive = false
+exhaustive_ignores = []
+
+## utils
+[[tool.importlinter.contracts]]
+name = "utils.misc relies on nothing"
+type = "forbidden"
+source_modules = [
+    "sofastats_lib.utils.misc",
+]
+allow_indirect_imports = false
+forbidden_modules = [  ## everything other than itself
+    "sofastats_lib.utils.dates",
+    "sofastats_lib.utils.maths",
+    "sofastats_lib.utils.stats",
+    "sofastats_lib.data_extraction",
+    "sofastats_lib.output",
+    "sofastats_lib.stats_calc",
+]
+
+[[tool.importlinter.contracts]]
+name = "utils all independent"
+type = "layers"
+layers = [
+    "dates | maths | misc | stats",
+]
+containers = ["sofastats_lib.utils"]
+exhaustive = false
+exhaustive_ignores = []
+ignore_imports = [
+    "sofastats_lib.utils.stats -> sofastats_lib.utils.maths",  ## stats can rely on maths
+]
+
+## stats_calc
+
+[[tool.importlinter.contracts]]
+name = "stats_calc interfaces"
+type = "layers"
+layers = [
+    "interfaces",
+    "boxplot | histogram",
+]
+containers = ["sofastats_lib.stats_calc"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "engine relies on interfaces but not circular"
+type = "layers"
+layers = [
+    "engine",
+    "interfaces",
+]
+containers = ["sofastats_lib.stats_calc"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "stats_calc engine only relies on interfaces"
+type = "forbidden"
+source_modules = [
+    "sofastats_lib.stats_calc.engine",
+]
+allow_indirect_imports = false
+forbidden_modules = [  ## everything other than sofastats_lib.stats_calc.interfaces
+    "sofastats_lib.stats_calc.boxplot",
+    "sofastats_lib.stats_calc.chi_square",
+    "sofastats_lib.stats_calc.histogram",
+    "sofastats_lib.stats_calc.spearmansr",
+    "sofastats_lib.stats_calc.utils",
+]
+
+## data_extraction
+[[tool.importlinter.contracts]]
+name = "data_extraction levels"
+type = "layers"
+layers = [
+    "charts | stats",
+    "utils",
+    "interfaces | db",
+]
+containers = ["sofastats_lib.data_extraction"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "data_extraction charts"
+type = "layers"
+layers = [
+    "interfaces_freq_specs | interfaces_xys | interfaces",
+    "boxplot | histogram | scatterplot",
+]
+containers = ["sofastats_lib.data_extraction.charts"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "data_extraction stats"
+type = "layers"
+layers = [
+    "anova | msgs | ttest_indep",
+]
+containers = ["sofastats_lib.data_extraction.stats"]
+exhaustive = false
+exhaustive_ignores = []
+
+## output
+[[tool.importlinter.contracts]]
+name = "output levels"
+type = "layers"
+layers = [
+    "charts | stats | tables",
+    "utils",
+    "interfaces",  ## main interface is HTMLItemSpec which is needed by all output items: bar charts, ANOVAs, cross tabs etc.
+    "styles",  ## has CSS & JS needed by interfaces for implementing the to_standalone_html method of HTMLItemSpec
+]
+containers = ["sofastats_lib.output"]
+exhaustive = false
+exhaustive_ignores = []
+unmatched_ignore_imports_alerting = 'none'  ## https://github.com/seddonym/import-linter/issues/114
+ignore_imports = [
+    "sofastats_lib.output.interfaces -> sofastats_lib.output.charts.conf",  ## no circularity - just getting a static string needed by charts
+    "sofastats_lib.output.utils -> sofastats_lib.output.charts.conf",  ## as above
+    "sofastats_lib.output.stats.* -> sofastats_lib.output.charts.mpl_pngs",  ## stats output uses Matplotlib and histograms in output - but we don't want to allow anything else
+    "sofastats_lib.output.stats.* -> sofastats_lib.output.charts.histogram",  ## as above
+]
+
+[[tool.importlinter.contracts]]
+name = "output.charts levels"
+type = "layers"
+layers = [
+    "area | bar | boxplot | histogram | line | pie | scatterplot",
+    "common",
+    "utils",
+    "interfaces",
+]
+containers = ["sofastats_lib.output.charts"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "mpl_pngs relies on boxplot & scatterplot and not circular"
+type = "layers"
+layers = [
+    "mpl_pngs",
+    "boxplot | histogram",
+]
+containers = ["sofastats_lib.output.charts"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "output.stats common not circular"
+type = "layers"
+layers = [
+    "anova | ttest_indep",
+    "common",
+]
+containers = ["sofastats_lib.output.stats"]
+exhaustive = false
+exhaustive_ignores = []
+
+[[tool.importlinter.contracts]]
+name = "output.styles levels"
+type = "layers"
+layers = [
+    "default | grey_spirals | prestige_screen | two_degrees",
+    "utils",
+    "interfaces",
+]
+containers = ["sofastats_lib.output.styles"]
+exhaustive = false
+exhaustive_ignores = []
+unmatched_ignore_imports_alerting = 'none'  ## https://github.com/seddonym/import-linter/issues/114
+ignore_imports = [
+    "sofastats_lib.output.styles.misc -> sofastats_lib.output.styles.default",  ## reads a style to get the general pattern for all of them
+]
+
+[[tool.importlinter.contracts]]
+name = "output.tables levels"
+type = "layers"
+layers = [
+    "freq | cross_tab",
+    "interfaces",
+]
+containers = ["sofastats_lib.output.tables"]
+exhaustive = false
+exhaustive_ignores = []
+
+## ---------------------------------------------------------------------------------------------------------------------
+
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+ignore-words-list = []
+
+[tool.ruff]
+line-length = 88
+format.docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "RUF", "SIM", "UP", "PT"]
+ignore = ["PLR2004", "SIM108"]
+
+[tool.pyproject-fmt]
+keep_full_version = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra", "--strict-markers", "--strict-config"]
+filterwarnings = ["error"]
+xfail_strict = true
+log_cli_level = "INFO"
+minversion = "7"
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+    "deptry>=0.23.0",
+    "faker>=37.5.3",
+    "import-linter>=2.3",
+    "pyproject-fmt>=2.6.0",
+    "pytest>=8.4.1",
+    "ruff>=0.12.0",
+]
+test = [
+    "pytest>=8.4.1",
+]
