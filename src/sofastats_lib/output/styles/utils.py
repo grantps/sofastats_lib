@@ -94,7 +94,7 @@ def get_style_spec(style_name: str, *, debug=False) -> StyleSpec:
     """
     try:
         ## try using a built-in style
-        style_module = importlib.import_module(f"sofastats.output.styles.{style_name}")
+        style_module = importlib.import_module(f"sofastats_lib.output.styles.{style_name}")
     except ModuleNotFoundError:
         ## look for custom YAML file
         yaml_fpath = CUSTOM_STYLES_FOLDER / f"{style_name}.yaml"

@@ -1,1 +1,1 @@
-"""Unit test package for sofastats."""
+"""Unit test package for sofastats_lib."""

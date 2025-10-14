@@ -81,6 +81,7 @@ if uv_run_mode:
     INTERNAL_DATABASE_FPATH = current_path / 'sofastats.db'
     CUSTOM_STYLES_FOLDER = current_path
     CUSTOM_DBS_FOLDER = current_path
+    DEFAULT_OUTPUT_FOLDER = current_path
 else:
     local_folder = get_local_folder(PLATFORM)
     local_folder.mkdir(exist_ok=True)
@@ -90,6 +91,9 @@ else:
     CUSTOM_STYLES_FOLDER = local_folder / 'custom_styles'
     CUSTOM_STYLES_FOLDER.mkdir(exist_ok=True)
     CUSTOM_DBS_FOLDER = local_folder / 'custom_databases'
+    CUSTOM_DBS_FOLDER.mkdir(exist_ok=True)
+    DEFAULT_OUTPUT_FOLDER = local_folder / 'output'
+    DEFAULT_OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 class DbeName(StrEnum):  ## database engine
     SQLITE = 'sqlite'
