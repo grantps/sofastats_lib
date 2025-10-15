@@ -75,15 +75,14 @@ def get_local_folder(my_platform: Platform) -> Path:
     return local_path
 
 uv_run_mode = 'UV' in os.environ
+local_folder = get_local_folder(PLATFORM)
 if uv_run_mode:
     ## If running in uv run single script mode everything should just occur in the same folder as that the script being run is located in
     current_path = Path.cwd()
     INTERNAL_DATABASE_FPATH = current_path / 'sofastats.db'
     CUSTOM_STYLES_FOLDER = current_path
     CUSTOM_DBS_FOLDER = current_path
-    DEFAULT_OUTPUT_FOLDER = current_path
 else:
-    local_folder = get_local_folder(PLATFORM)
     local_folder.mkdir(exist_ok=True)
     internal_folder = local_folder / '_internal'
     internal_folder.mkdir(exist_ok=True)
@@ -92,8 +91,9 @@ else:
     CUSTOM_STYLES_FOLDER.mkdir(exist_ok=True)
     CUSTOM_DBS_FOLDER = local_folder / 'custom_databases'
     CUSTOM_DBS_FOLDER.mkdir(exist_ok=True)
-    DEFAULT_OUTPUT_FOLDER = local_folder / 'output'
-    DEFAULT_OUTPUT_FOLDER.mkdir(exist_ok=True)
+## even a uvx sofastats user wants anything they produce to get put somewhere sensible
+DEFAULT_OUTPUT_FOLDER = local_folder / 'output'
+# DEFAULT_OUTPUT_FOLDER.mkdir(exist_ok=True)  ## make on demand only. Reason? So not messing with user's file system when using uv run - just puts back in same folder which is simple
 
 class DbeName(StrEnum):  ## database engine
     SQLITE = 'sqlite'
