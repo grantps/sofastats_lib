@@ -138,6 +138,9 @@ class CommonDesign(ABC):
         self.handle_inputs()
         self.handle_outputs()
 
+    def __repr_html__(self):
+        return self.__str__
+
 
 def add_from_parent(cls):
     """
@@ -283,6 +286,9 @@ class HTMLItemSpec:
     def to_file(self, *, fpath: Path | str, html_title: str):
         with open(fpath, 'w') as f:
             f.write(self.to_standalone_html(html_title))
+
+    def __repr_html__(self):
+        return ''
 
 class HasToHTMLItemSpec(Protocol):
     def to_html_design(self) -> HTMLItemSpec: ...
