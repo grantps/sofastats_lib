@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.10.6"
+version = "0.10.7"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -40,7 +40,7 @@ default-groups = ["test", "dev"]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sofastats_lib"]
+packages = ["src/sofastats"]
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
