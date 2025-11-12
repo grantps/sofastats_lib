@@ -1,5 +1,5 @@
 """
-Top-level package for sofastats_lib.
+Top-level package for sofastats (under distribution package sofastats_lib).
 
 Big picture architecture of code pipeline:
 In short, how we get from config (perhaps from a GUI), and data in a database, to HTML output
@@ -124,7 +124,7 @@ Rich data dc's should have all the methods required to provide the data building
 
 Data-related values should NOT be passed directly to the chart dc but only via the rich data dc.
 
-Pipeline Interface Configuration (sofastats_lib.conf.main):
+Pipeline Interface Configuration (sofastats.conf.main):
 
 * charts
 * main tables

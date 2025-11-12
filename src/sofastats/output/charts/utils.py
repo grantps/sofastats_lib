@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from sofastats import logger
 from sofastats.conf.main import (AVG_CHAR_WIDTH_PIXELS, AVG_LINE_HEIGHT_PIXELS, DOJO_Y_AXIS_TITLE_OFFSET,
-                                 MAX_SAFE_X_LBL_LEN_PIXELS)
+    MAX_SAFE_X_LBL_LEN_PIXELS)
 from sofastats.data_extraction.charts.interfaces import CategorySpec
 from sofastats.output.charts.interfaces import LeftMarginOffsetSpec
 

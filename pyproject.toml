@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.10.7"
+version = "0.10.8"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -49,7 +49,7 @@ packages = ["src/sofastats"]
 ## cd ~/projects/sofastats_lib && c && lint-imports
 
 [tool.importlinter]
-root_packages = [ "sofastats_lib" ]
+root_packages = [ "sofastats" ]
 
 [[tool.importlinter.contracts]]
 name = "Layered Design"
@@ -61,7 +61,7 @@ layers = [
     "utils",  ## no dependency utils
     "conf",  ## actual conf, not interfaces
 ]
-containers = ["sofastats_lib"]
+containers = ["sofastats"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -75,7 +75,7 @@ layers = [
     "main",
     "var_labels",
 ]
-containers = ["sofastats_lib.conf"]
+containers = ["sofastats.conf"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -84,16 +84,16 @@ exhaustive_ignores = []
 name = "utils.misc relies on nothing"
 type = "forbidden"
 source_modules = [
-    "sofastats_lib.utils.misc",
+    "sofastats.utils.misc",
 ]
 allow_indirect_imports = false
 forbidden_modules = [  ## everything other than itself
-    "sofastats_lib.utils.dates",
-    "sofastats_lib.utils.maths",
-    "sofastats_lib.utils.stats",
-    "sofastats_lib.data_extraction",
-    "sofastats_lib.output",
-    "sofastats_lib.stats_calc",
+    "sofastats.utils.dates",
+    "sofastats.utils.maths",
+    "sofastats.utils.stats",
+    "sofastats.data_extraction",
+    "sofastats.output",
+    "sofastats.stats_calc",
 ]
 
 [[tool.importlinter.contracts]]
@@ -102,11 +102,11 @@ type = "layers"
 layers = [
     "dates | maths | misc | stats",
 ]
-containers = ["sofastats_lib.utils"]
+containers = ["sofastats.utils"]
 exhaustive = false
 exhaustive_ignores = []
 ignore_imports = [
-    "sofastats_lib.utils.stats -> sofastats_lib.utils.maths",  ## stats can rely on maths
+    "sofastats.utils.stats -> sofastats.utils.maths",  ## stats can rely on maths
 ]
 
 ## stats_calc
@@ -118,7 +118,7 @@ layers = [
     "interfaces",
     "boxplot | histogram",
 ]
-containers = ["sofastats_lib.stats_calc"]
+containers = ["sofastats.stats_calc"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -129,7 +129,7 @@ layers = [
     "engine",
     "interfaces",
 ]
-containers = ["sofastats_lib.stats_calc"]
+containers = ["sofastats.stats_calc"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -137,15 +137,15 @@ exhaustive_ignores = []
 name = "stats_calc engine only relies on interfaces"
 type = "forbidden"
 source_modules = [
-    "sofastats_lib.stats_calc.engine",
+    "sofastats.stats_calc.engine",
 ]
 allow_indirect_imports = false
-forbidden_modules = [  ## everything other than sofastats_lib.stats_calc.interfaces
-    "sofastats_lib.stats_calc.boxplot",
-    "sofastats_lib.stats_calc.chi_square",
-    "sofastats_lib.stats_calc.histogram",
-    "sofastats_lib.stats_calc.spearmansr",
-    "sofastats_lib.stats_calc.utils",
+forbidden_modules = [  ## everything other than sofastats.stats_calc.interfaces
+    "sofastats.stats_calc.boxplot",
+    "sofastats.stats_calc.chi_square",
+    "sofastats.stats_calc.histogram",
+    "sofastats.stats_calc.spearmansr",
+    "sofastats.stats_calc.utils",
 ]
 
 ## data_extraction
@@ -157,7 +157,7 @@ layers = [
     "utils",
     "interfaces | db",
 ]
-containers = ["sofastats_lib.data_extraction"]
+containers = ["sofastats.data_extraction"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -168,7 +168,7 @@ layers = [
     "interfaces_freq_specs | interfaces_xys | interfaces",
     "boxplot | histogram | scatterplot",
 ]
-containers = ["sofastats_lib.data_extraction.charts"]
+containers = ["sofastats.data_extraction.charts"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -178,7 +178,7 @@ type = "layers"
 layers = [
     "anova | msgs | ttest_indep",
 ]
-containers = ["sofastats_lib.data_extraction.stats"]
+containers = ["sofastats.data_extraction.stats"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -192,15 +192,15 @@ layers = [
     "interfaces",  ## main interface is HTMLItemSpec which is needed by all output items: bar charts, ANOVAs, cross tabs etc.
     "styles",  ## has CSS & JS needed by interfaces for implementing the to_standalone_html method of HTMLItemSpec
 ]
-containers = ["sofastats_lib.output"]
+containers = ["sofastats.output"]
 exhaustive = false
 exhaustive_ignores = []
 unmatched_ignore_imports_alerting = 'none'  ## https://github.com/seddonym/import-linter/issues/114
 ignore_imports = [
-    "sofastats_lib.output.interfaces -> sofastats_lib.output.charts.conf",  ## no circularity - just getting a static string needed by charts
-    "sofastats_lib.output.utils -> sofastats_lib.output.charts.conf",  ## as above
-    "sofastats_lib.output.stats.* -> sofastats_lib.output.charts.mpl_pngs",  ## stats output uses Matplotlib and histograms in output - but we don't want to allow anything else
-    "sofastats_lib.output.stats.* -> sofastats_lib.output.charts.histogram",  ## as above
+    "sofastats.output.interfaces -> sofastats.output.charts.conf",  ## no circularity - just getting a static string needed by charts
+    "sofastats.output.utils -> sofastats.output.charts.conf",  ## as above
+    "sofastats.output.stats.* -> sofastats.output.charts.mpl_pngs",  ## stats output uses Matplotlib and histograms in output - but we don't want to allow anything else
+    "sofastats.output.stats.* -> sofastats.output.charts.histogram",  ## as above
 ]
 
 [[tool.importlinter.contracts]]
@@ -212,7 +212,7 @@ layers = [
     "utils",
     "interfaces",
 ]
-containers = ["sofastats_lib.output.charts"]
+containers = ["sofastats.output.charts"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -223,7 +223,7 @@ layers = [
     "mpl_pngs",
     "boxplot | histogram",
 ]
-containers = ["sofastats_lib.output.charts"]
+containers = ["sofastats.output.charts"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -234,7 +234,7 @@ layers = [
     "anova | ttest_indep",
     "common",
 ]
-containers = ["sofastats_lib.output.stats"]
+containers = ["sofastats.output.stats"]
 exhaustive = false
 exhaustive_ignores = []
 
@@ -246,12 +246,12 @@ layers = [
     "utils",
     "interfaces",
 ]
-containers = ["sofastats_lib.output.styles"]
+containers = ["sofastats.output.styles"]
 exhaustive = false
 exhaustive_ignores = []
 unmatched_ignore_imports_alerting = 'none'  ## https://github.com/seddonym/import-linter/issues/114
 ignore_imports = [
-    "sofastats_lib.output.styles.misc -> sofastats_lib.output.styles.default",  ## reads a style to get the general pattern for all of them
+    "sofastats.output.styles.misc -> sofastats.output.styles.default",  ## reads a style to get the general pattern for all of them
 ]
 
 [[tool.importlinter.contracts]]
@@ -261,7 +261,7 @@ layers = [
     "freq | cross_tab",
     "interfaces",
 ]
-containers = ["sofastats_lib.output.tables"]
+containers = ["sofastats.output.tables"]
 exhaustive = false
 exhaustive_ignores = []
 
