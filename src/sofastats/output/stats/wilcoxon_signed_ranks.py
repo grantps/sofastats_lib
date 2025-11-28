@@ -6,7 +6,7 @@ import pandas as pd
 
 from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.stats.msgs import WILCOXON_VARIANCE_BY_APP_EXPLAIN
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
@@ -214,7 +214,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     return html
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False)
 class WilcoxonSignedRanksDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

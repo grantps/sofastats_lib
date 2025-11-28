@@ -9,7 +9,7 @@ from sofastats.data_extraction.interfaces import ValFilterSpec, ValSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.stats.common import get_embedded_histogram_html
 from sofastats.output.stats.msgs import (
     CI_EXPLAIN, KURTOSIS_EXPLAIN,
@@ -195,7 +195,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     return html
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False)
 class AnovaDesign(CommonDesign):
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

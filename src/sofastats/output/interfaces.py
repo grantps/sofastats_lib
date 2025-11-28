@@ -142,8 +142,9 @@ class CommonDesign(ABC):
         return self.__str__
 
 
-def add_from_parent(cls):
+def add_common_methods_from_parent(cls):
     """
+    Add from parent (CommonDesign)
     Ensures we can run some standard __post_init__ special sauce
     while ensuring parent dataclasses also have their __post_init__ run
     """
