@@ -16,7 +16,7 @@ from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec,
 from sofastats.output.charts.utils import (get_axis_lbl_drop, get_left_margin_offset, get_height,
                                            get_x_axis_lbls_val_and_text, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
@@ -28,7 +28,7 @@ PADDING_PIXELS = 35
 DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM = 10  ## whatever works. Tested on cluster of Age vs Cars
 
 
-@add_common_methods_from_parent
+@add_from_parent
 @dataclass(frozen=False)
 class SimpleBarChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -78,7 +78,7 @@ class SimpleBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
+@add_from_parent
 @dataclass(frozen=False)
 class MultiBarChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -132,7 +132,7 @@ class MultiBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
+@add_from_parent
 @dataclass(frozen=False)
 class ClusteredBarChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -185,7 +185,7 @@ class ClusteredBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
+@add_from_parent
 @dataclass(frozen=False)
 class MultiClusteredBarChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
