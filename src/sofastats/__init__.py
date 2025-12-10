@@ -49,7 +49,7 @@ For example - making a Pie Chart:
   category_fld_lbl = 'Web Browser'                                   |                     |
   chart_vals2lbls = {1: 'Japan', 2: 'Italy',...}                     |                     |
   category_vals2lbls = {'Chrome': 'Google Chrome'}                   |                     |
-  category_sort_order = SortOrder.LABEL                              |                     |
+  category_sort_order = SortOrder.VALUE                              |                     |
               |                                                      |                     |
               v                                                      |                     |
   Intermediate charting spec (including data)                        |                     |

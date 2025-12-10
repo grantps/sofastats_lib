@@ -23,16 +23,18 @@ from itertools import product
 
 import pandas as pd
 
-from sofastats.conf.var_labels import VarLabelSpec, VarLabels, var2pandas_val
+from sofastats.conf.var_labels import (VarLabelSpec, VarLabels,
+    get_pandas_val, get_pandas_var, var2pandas_val)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.interfaces import BLANK, DimSpec, Metric, PctType
 from sofastats.output.tables.utils.html_fixes import (
     fix_top_left_box, merge_cols_of_blanks, merge_rows_of_blanks)
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-                                                get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
+    get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
 from sofastats.output.tables.utils.multi_index_sort import get_sorted_multi_index_list
+from sofastats.utils.misc import get_pandas_friendly_name
 
 pd.set_option('display.max_rows', 200)
 pd.set_option('display.min_rows', 30)
@@ -48,49 +50,52 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     Includes at least the Freq metric but potentially the percentage ones as well.
 
     Start with a column for each row var, then one for each col var, then freq. All in a fixed order we can rely on.
-    Which is why we can build the columns from the input variable names, with _val suffix, in order.
-    We know the last column is the count so we add 'n' as the final column.
-    E.g. country_val, gender_val, agegroup_val, n.
+    Which is why we can build the columns from the input variable names, in order.
+    We know the last column is the count so we add 'n' as the final column. E.g. Country, Gender, Age Group, n.
 
-       country_val gender_val agegroup_val    n
-    0            1          1            1    3
+            Country  Gender Age Group    n
+    0            NZ  Female     20-29    9
+    1            NZ  Female     30-39    7
     ...
-    59           3          2        TOTAL   44
-    60       TOTAL      TOTAL            1   27
+    70          USA   TOTAL     TOTAL  133
+    71        TOTAL   TOTAL     TOTAL  349
+
+    Now to add the variable names themselves e.g.
+
+            Country  Gender Age Group    n country_var gender_var age_group_var
+    0            NZ  Female     20-29    9     Country     Gender     Age Group
+    1            NZ  Female     30-39    7     Country     Gender     Age Group
     ...
+    70          USA   TOTAL     TOTAL  133     Country     Gender     Age Group
+    71        TOTAL   TOTAL     TOTAL  349     Country     Gender     Age Group
 
     Note - the source, un-pivoted df has all TOTAL values calculated and identified in the val columns already.
 
-    OK, so now we have a proper df. Time to add extra columns e.g. alongside country_val's 1s, 2s, etc.
-    we add country_var with all values set to 'Country', and country as 'USA', 'South Korea', etc
-
-       country_val gender_val agegroup_val    n country_var      country gender_var  gender
-    0            1          1            1    3     Country          USA     Gender    Male
-    ...
-    59           3          2        TOTAL   44     Country           NZ     Gender  Female
-    60       TOTAL      TOTAL            1   27     Country        TOTAL     Gender   TOTAL
-    ...
-
-    Then add in any row or column filler columns (some will pivot to rows and others to columns in the final df)
+    OK, so now we have a proper df. Time to add in any row or column filler columns
+    (some will pivot to rows and others to columns in the final df)
     __BLANK__
 
-       country_val gender_val agegroup_val    n country_var      country gender_var  gender agegroup_var agegroup col_filler_var_0 col_filler_0 metric
-    0            1          1            1    3     Country          USA     Gender    Male    Age Group     < 20        __blank__    __blank__   Freq
+            Country  Gender Age Group    n country_var gender_var age_group_var col_filler_var_0 col_filler_0 metric
+    0            NZ  Female     20-29    9     Country     Gender     Age Group        __blank__    __blank__   Freq
+    1            NZ  Female     30-39    7     Country     Gender     Age Group        __blank__    __blank__   Freq
+    ...
+    70          USA   TOTAL     TOTAL  133     Country     Gender     Age Group        __blank__    __blank__   Freq
+    71        TOTAL   TOTAL     TOTAL  349     Country     Gender     Age Group        __blank__    __blank__   Freq
     ...
 
     Then pivot the data (at this stage, simple so we have a required input to make more df_pre_pivots
     for any row or col pcts data):
 
-    agegroup_var                              Age Group
-    agegroup                                       < 20     20-29     30-39     40-64       65+     TOTAL
+    age_group_var                             Age Group
+    Age Group                                     20-29     30-39     40-64       65+      < 20     TOTAL
     col_filler_var_0                          __blank__ __blank__ __blank__ __blank__ __blank__ __blank__
     col_filler_0                              __blank__ __blank__ __blank__ __blank__ __blank__ __blank__
     metric                                         Freq      Freq      Freq      Freq      Freq      Freq
-    country_var country     gender_var gender
-    Country     NZ          Gender     Female         8         6         2        11        17        44
-                                       Male           8         7         5         6        11        37
+    country_var Country     gender_var Gender
+    Country     NZ          Gender     Female         9         7        21        26        16        79
+                                       Male          11        11        15        16        12        65
+                                       TOTAL         20        18        36        42        28       144
     ...
-
     Then we generate additional df_pre_pivots for row pcts and col pcts as appropriate. And we pivot the final df.
 
        country_val gender_val agegroup_val    n country_var      country gender_var  gender agegroup_var agegroup col_filler_var_0 col_filler_0 metric
@@ -122,29 +127,27 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
 
     Finally, round numbers
     """
+    ## Need country_var = Country and country_val = NZ etc. - we start with the vals (which is what the data contains)
+    orig_data_columns = row_vars + col_vars + ['n', ]
+    df_pre_pivot = pd.DataFrame(data, columns=orig_data_columns)
     all_variables = row_vars + col_vars
-    columns = []
-    for var in all_variables:
-        try:
-            col2append = var_labels.var2var_label_spec[var].pandas_val  ## e.g. agegroup_val
-        except KeyError:
-            col2append = var2pandas_val(var)
-        columns.append(col2append)
-    columns.append('n')
-    df_pre_pivot = pd.DataFrame(data, columns=columns)
     index_cols = []
     column_cols = []
     for var in all_variables:
-        try:
-            var2var_label_spec = var_labels.var2var_label_spec[var]
-        except KeyError:
-            var2var_label_spec = VarLabelSpec(name=var)
-        ## var set to lbl e.g. "Age Group" goes into cells
-        df_pre_pivot[var2var_label_spec.pandas_var] = var2var_label_spec.lbl
-        ## val set to val lbl e.g. 1 => '< 20'
-        df_pre_pivot[var2var_label_spec.name] = df_pre_pivot[var2var_label_spec.pandas_val].apply(
-            lambda x: var2var_label_spec.val2lbl.get(x, str(x)))
-        cols2add = [var2var_label_spec.pandas_var, var2var_label_spec.name]
+        """       columns already in df_pre_pivot because taken directly from source data
+                     |       |        |        |
+                     V       V        V        V
+                 Country  Gender  Age Group    n  country_var gender_var age_group_var
+        0            NZ   Female      20-29    9      Country     Gender     Age Group
+        1            NZ   Female      30-39    7      Country     Gender     Age Group
+        ...
+        70          USA    TOTAL      TOTAL  133      Country     Gender     Age Group
+        71        TOTAL    TOTAL      TOTAL  349      Country     Gender     Age Group
+        """
+        ## populate var and val cells e.g. 'Age Group' and '< 20'
+        df_pre_pivot[get_pandas_friendly_name(var, '_var')] = var  ## e.g. country_var = Country
+        df_pre_pivot[var] = df_pre_pivot[var]  ## e.g. Country = USA
+        cols2add = [get_pandas_friendly_name(var, '_var'), var]  ## e.g. country_var, Country
         if var in row_vars:
             index_cols.extend(cols2add)
         elif var in col_vars:
@@ -188,11 +191,11 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     return df
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class CrossTabDesign(CommonDesign):
-    rows: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    columns: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    row_variable_designs: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    column_variable_designs: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     style_name: str = 'default'
 
@@ -214,15 +217,15 @@ class CrossTabDesign(CommonDesign):
     @property
     def totalled_vars(self) -> list[str]:
         tot_vars = []
-        for row_spec in self.rows:
+        for row_spec in self.row_variable_designs:
             tot_vars.extend(row_spec.self_and_descendant_totalled_vars)
-        for col_spec in self.columns:
+        for col_spec in self.column_variable_designs:
             tot_vars.extend(col_spec.self_and_descendant_totalled_vars)
         return tot_vars
 
     def _get_max_dim_depth(self, *, is_col=False) -> int:
         max_depth = 0
-        dim_specs = self.columns if is_col else self.rows
+        dim_specs = self.column_variable_designs if is_col else self.row_variable_designs
         for dim_spec in dim_specs:
             dim_depth = len(dim_spec.self_and_descendant_vars)
             if dim_depth > max_depth:
@@ -239,14 +242,14 @@ class CrossTabDesign(CommonDesign):
 
     def __post_init__(self):
         CommonDesign.__post_init__(self)
-        row_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.rows])
+        row_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.row_variable_designs])
         if row_dupes:
             raise ValueError(f"Duplicate top-level variable(s) detected in row dimension - {sorted(row_dupes)}")
-        col_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.columns])
+        col_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.column_variable_designs])
         if col_dupes:
             raise ValueError(f"Duplicate top-level variable(s) detected in column dimension - {sorted(col_dupes)}")
         ## var can't be in both row and col e.g. car vs country > car
-        for row_spec, col_spec in product(self.rows, self.columns):
+        for row_spec, col_spec in product(self.row_variable_designs, self.column_variable_designs):
             row_spec_vars = set([row_spec.variable] + row_spec.descendant_vars)
             col_spec_vars = set([col_spec.variable] + col_spec.descendant_vars)
             overlapping_vars = row_spec_vars.intersection(col_spec_vars)
@@ -254,17 +257,17 @@ class CrossTabDesign(CommonDesign):
                 raise ValueError("Variables can't appear in both rows and columns. "
                     f"Found the following overlapping variable(s): {', '.join(overlapping_vars)}")
 
-    def get_row_df(self, cur, *, row_idx: int) -> pd.DataFrame:
+    def get_df_from_row_spec(self, cur, *, row_spec_idx: int) -> pd.DataFrame:
         """
         get a combined df for, e.g. the combined top df. Or the middle df. Or the bottom df. Or whatever you have.
         e.g.
-        row_spec_1 = DimSpec(var='country', has_total=True,
-            child=(var='gender', has_total=True))
+        row_variables_design_0 = DimSpec(variable='country', has_total=True,
+            child=(variable='gender', has_total=True))
         vs
-        col_spec_0 = DimSpec(var='agegroup', has_total=True, is_col=True)
-        col_spec_1 = DimSpec(var='browser', has_total=True, is_col=True,
-            child=DimSpec(var='agegroup', has_total=True, is_col=True, pct_metrics=[Metric.ROW_PCT, Metric.COL_PCT]))
-        col_spec_2 = DimSpec(var='std_agegroup', has_total=True, is_col=True)
+        column_variables_design_0 = DimSpec(variable='Age Group', has_total=True, is_col=True)
+        column_variables_design_1 = DimSpec(variable='Web Browser', has_total=True, is_col=True,
+            child=DimSpec(variable='Age Group', has_total=True, is_col=True, pct_metrics=[Metric.ROW_PCT, Metric.COL_PCT]))
+        column_variables_design_2 = DimSpec(variable='Standard Age Group', has_total=True, is_col=True)
 
         ==>
 
@@ -291,15 +294,16 @@ class CrossTabDesign(CommonDesign):
                 pct_metrics=[], debug=debug)
             return df
         """
-        row_spec = self.rows[row_idx]
+        row_spec = self.row_variable_designs[row_spec_idx]
         row_vars = row_spec.self_and_descendant_vars
         n_row_fillers = self.max_row_depth - len(row_vars)
         df_cols = []
-        for col_spec in self.columns:
+        for col_spec in self.column_variable_designs:
             col_vars = col_spec.self_and_descendant_vars
             totalled_variables = row_spec.self_and_descendant_totalled_vars + col_spec.self_and_descendant_totalled_vars
             all_variables = row_vars + col_vars
-            data = get_data_from_spec(cur, src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+            data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
+                src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
                 all_variables=all_variables, totalled_variables=totalled_variables, debug=self.debug)
             df_col = get_all_metrics_df_from_vars(data, self.data_labels, row_vars=row_vars, col_vars=col_vars,
                 n_row_fillers=n_row_fillers, n_col_fillers=self.max_col_depth - len(col_vars),
@@ -309,9 +313,8 @@ class CrossTabDesign(CommonDesign):
         df_cols_remaining = df_cols[1:]
         row_merge_on = []
         for row_var in row_vars:
-            val_labels = self.data_labels.var2var_label_spec[row_var]
-            row_merge_on.append(val_labels.pandas_var)
-            row_merge_on.append(val_labels.name)
+            row_merge_on.append(get_pandas_friendly_name(row_var, '_var'))
+            row_merge_on.append(row_var)
         for i in range(n_row_fillers):
             row_merge_on.append(f'row_filler_var_{i}')
             row_merge_on.append(f'row_filler_{i}')
@@ -321,6 +324,8 @@ class CrossTabDesign(CommonDesign):
 
     def get_tbl_df(self, cur) -> pd.DataFrame:
         """
+        For each row_variable_designs get a completed df and then merge those.
+
         Note - using pd.concat or df.merge(how='outer') has the same result, but I use merge for horizontal joining
         to avoid repeating the row dimension columns e.g. country and gender.
 
@@ -353,7 +358,8 @@ class CrossTabDesign(CommonDesign):
         So if there are two column dimension levels each row column will need to be a two-tuple e.g. ('gender', '').
         If there were three column dimension levels the row column would need to be a three-tuple e.g. ('gender', '', '').
         """
-        dfs = [self.get_row_df(cur, row_idx=row_idx) for row_idx in range(len(self.rows))]
+        dfs = [self.get_df_from_row_spec(cur, row_spec_idx=row_spec_idx)
+            for row_spec_idx in range(len(self.row_variable_designs))]
         ## COMBINE using pandas JOINing (the big magic trick at the middle of this approach to complex table-making)
         ## Unfortunately, delegating to Pandas means we can't fix anything intrinsic to what Pandas does.
         ## And there is a bug (from my point of view) whenever tables are merged with the same variables at the top level.
@@ -369,7 +375,8 @@ class CrossTabDesign(CommonDesign):
         if self.debug: print(f"\nCOMBINED:\n{df}")
         ## Sorting indexes
         raw_df = get_raw_df(cur, src_tbl_name=self.source_table_name, debug=self.debug)
-        order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(self.rows, self.columns)
+        order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(
+            self.row_variable_designs, self.column_variable_designs)
         ## COLS
         unsorted_col_multi_index_list = list(df.columns)
         sorted_col_multi_index_list = get_sorted_multi_index_list(

@@ -7,6 +7,7 @@ import pandas as pd
 from pandas.io.formats.style import Styler
 import numpy as np
 
+from sofastats.conf.main import DbeSpec
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.tables.interfaces import DimSpec
 from sofastats.output.tables.interfaces import PCT_METRICS, TOTAL, Metric, PctType
@@ -34,7 +35,7 @@ def get_raw_df(cur, src_tbl_name: str, *, debug=False) -> pd.DataFrame:
         print(df)
     return df
 
-def get_data_from_spec(cur, src_tbl_name: str, tbl_filt_clause: str,
+def get_data_from_spec(cur, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_clause: str,
         all_variables: Collection[str], totalled_variables: Collection[str], *, debug=False) -> list[list]:
     """
     rows: country (TOTAL) > gender (TOTAL)
@@ -85,12 +86,13 @@ def get_data_from_spec(cur, src_tbl_name: str, tbl_filt_clause: str,
     ## Step 0 - variable lists
     n_totalled = len(totalled_variables)
     ## Step 1 - group by all
-    main_flds = ', '.join(all_variables)
+    all_quoted_variables = [dbe_spec.entity_quoter(var) for var in all_variables]
+    main_fields = ', '.join(all_quoted_variables)
     sql_main = f"""\
-    SELECT {main_flds}, COUNT(*) AS n
+    SELECT {main_fields}, COUNT(*) AS n
     FROM {src_tbl_name}
     {tbl_filt_clause}
-    GROUP BY {main_flds}
+    GROUP BY {main_fields}
     """
     cur.exe(sql_main)
     data.extend(cur.fetchall())
@@ -110,10 +112,12 @@ def get_data_from_spec(cur, src_tbl_name: str, tbl_filt_clause: str,
         group_by_vars = []
         for var in all_variables:
             if var in totalled_combination:
-                select_clauses.append(f'"{TOTAL}" AS {var}')
+                quoted_var = dbe_spec.entity_quoter(var)
+                select_clauses.append(f'"{TOTAL}" AS {quoted_var}')
             else:
-                select_clauses.append(var)
-                group_by_vars.append(var)
+                quoted_var = dbe_spec.entity_quoter(var)
+                select_clauses.append(quoted_var)
+                group_by_vars.append(quoted_var)
         select_str = "SELECT " + ', '.join(select_clauses) + ", COUNT(*) AS n"
         group_by = "GROUP BY " + ', '.join(group_by_vars) if group_by_vars else ''
         sql_totalled = f"""\
@@ -189,7 +193,7 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
     One more complication: have to do the aggregation slightly differently if no variable to group by.
 
     OK - let's do a worked example using the row Series.
-    In Chrome we have a total of 18+8+10+27+30+93 (you nearly forgot the TOTAL row didn't you!).
+    In Chrome we have a total of 18+8+10+27+30+93 (you nearly forgot the TOTAL row didn't you! [future Grant - I did LOL!]).
     So that's 93x2 i.e. 186.
     (100 * 18) / (186 / 2) = 19.35% Correct! :-)
     (100 * 93) / (186 / 2) = 100% of course! Brilliant!

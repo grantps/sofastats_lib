@@ -11,7 +11,7 @@ from sofastats.data_extraction.charts.interfaces import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecNoAxes
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.misc import todict
@@ -201,7 +201,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False)
 class PieChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -226,7 +226,7 @@ class PieChartDesign(CommonDesign):
         intermediate_charting_spec = get_by_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.LABEL,
+            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.VALUE,
             tbl_filt_clause=self.table_filter)
         ## charts details
         category_specs = intermediate_charting_spec.to_sorted_category_specs()
@@ -245,7 +245,7 @@ class PieChartDesign(CommonDesign):
         )
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartPieChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -275,7 +275,7 @@ class MultiChartPieChartDesign(CommonDesign):
             chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
             category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
             chart_vals2lbls=chart_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.LABEL,
+            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.VALUE,
             tbl_filt_clause=self.table_filter)
         ## charts details
         category_specs = intermediate_charting_spec.to_sorted_category_specs()

@@ -37,8 +37,7 @@ class CategoryItemFreqSpec:
     Frequency-related specification for an individual category value e.g. for Japan
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
-    category_val: float | str  ## e.g. 1
-    category_val_lbl: str  ## e.g. Japan
+    category_val: float | str  ## e.g. 1, or Japan
     freq: int
     category_pct: float
 
@@ -72,10 +71,6 @@ class CategoryFreqSpecs:
             def sort_me(freq_spec):
                 return freq_spec.category_val
             reverse = False
-        elif self.category_sort_order == SortOrder.LABEL:
-            def sort_me(freq_spec):
-                return freq_spec.category_val_lbl
-            reverse = False
         elif self.category_sort_order == SortOrder.INCREASING:
             def sort_me(freq_spec):
                 return freq_spec.freq
@@ -88,7 +83,7 @@ class CategoryFreqSpecs:
             raise Exception(f"Unexpected category_sort_order ({self.category_sort_order})")
         all_category_freq_specs = self.category_freq_specs
         category_specs = [
-            CategorySpec(freq_spec.category_val, freq_spec.category_val_lbl)
+            CategorySpec(freq_spec.category_val, freq_spec.category_val)
             for freq_spec in sorted(all_category_freq_specs, key=sort_me, reverse=reverse)
         ]
         return category_specs
@@ -133,12 +128,11 @@ class SeriesCategoryFreqSpec:
     Frequency-related specifications for each category value within this particular value of the series-by variable.
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
-    series_val: float | str  ## e.g. 1
-    series_val_lbl: str  ## e.g. Male
+    series_val: float | str  ## e.g. 1, or Male
     category_freq_specs: Sequence[CategoryItemFreqSpec]  ## one frequency-related spec per country
 
     def __str__(self):
-        bits = [f"Series value (label): {self.series_val} ({self.series_val_lbl})", ]
+        bits = [f"Series value: {self.series_val}", ]
         for freq_spec in self.category_freq_specs:
             bits.append(f"        {freq_spec}")
         return dedent('\n'.join(bits))
@@ -155,10 +149,6 @@ def _to_sorted_category_specs_for_multi_series_chart_case(self) -> Sequence[Cate
         def sort_me(freq_spec):
             return freq_spec.category_val
         reverse = False
-    elif self.category_sort_order == SortOrder.LABEL:
-        def sort_me(freq_spec):
-            return freq_spec.category_val_lbl
-        reverse = False
     else:
         raise Exception(
             f"Unexpected category_sort_order ({self.category_sort_order})"
@@ -166,7 +156,7 @@ def _to_sorted_category_specs_for_multi_series_chart_case(self) -> Sequence[Cate
         )
     all_category_freq_specs = self._get_all_category_freq_specs()
     category_specs = [
-        CategorySpec(freq_spec.category_val, freq_spec.category_val_lbl)
+        CategorySpec(freq_spec.category_val, freq_spec.category_val)
         for freq_spec in sorted(all_category_freq_specs, key=sort_me, reverse=reverse)
     ]
     return category_specs
@@ -223,7 +213,7 @@ class SeriesCategoryFreqSpecs:
                 ## collect data items according to correctly sorted x-axis category items
                 ## a) make dict so we can get from val to data item
                 val = freq_spec.category_val
-                tooltip = (f"{freq_spec.category_val_lbl}, {series_category_freq_spec.series_val_lbl}"
+                tooltip = (f"{freq_spec.category_val}, {series_category_freq_spec.series_val}"
                    f"<br>{freq_spec.freq}"
                    f"<br>({round(freq_spec.category_pct, 2)}%)")
                 data_item = DataItem(
@@ -239,7 +229,7 @@ class SeriesCategoryFreqSpecs:
                 data_item = vals2data_items.get(val)
                 series_data_items.append(data_item)
             data_series_spec = DataSeriesSpec(
-                lbl=series_category_freq_spec.series_val_lbl,
+                lbl=series_category_freq_spec.series_val,
                 data_items=series_data_items,
             )
             data_series_specs.append(data_series_spec)
@@ -412,7 +402,7 @@ class ChartSeriesCategoryFreqSpecs:
                     ## a) make dict so we can get from val to data item
                     val = freq_spec.category_val
                     tooltip = (
-                        f"{freq_spec.category_val_lbl}, {series_category_freq_spec.series_val_lbl}"
+                        f"{freq_spec.category_val}, {series_category_freq_spec.series_val}"
                         f"<br>{freq_spec.freq}"
                         f"<br>({round(freq_spec.category_pct, 2)}%)")
                     data_item = DataItem(
@@ -428,7 +418,7 @@ class ChartSeriesCategoryFreqSpecs:
                     data_item = vals2data_items.get(val)
                     chart_series_data_items.append(data_item)
                 data_series_spec = DataSeriesSpec(
-                    lbl=series_category_freq_spec.series_val_lbl,
+                    lbl=series_category_freq_spec.series_val,
                     data_items=chart_series_data_items,
                 )
                 data_series_specs.append(data_series_spec)
@@ -471,7 +461,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src
     category_freq_specs = []
     for category_val, freq, category_pct in data:
         freq_spec = CategoryItemFreqSpec(
-            category_val=category_val, category_val_lbl=category_vals2lbls.get(category_val, str(category_val)),
+            category_val=category_val,
             freq=int(freq), category_pct=category_pct)
         category_freq_specs.append(freq_spec)
     data_spec = CategoryFreqSpecs(
@@ -532,14 +522,12 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, src_tbl_name: str,
         ].iterrows():
             freq_spec = CategoryItemFreqSpec(
                 category_val=category_val,
-                category_val_lbl=category_vals2lbls.get(category_val, category_val),
                 freq=int(freq),
                 category_pct=raw_category_pct,
             )
             category_item_freq_specs.append(freq_spec)
         series_category_freq_spec = SeriesCategoryFreqSpec(
             series_val=series_val,
-            series_val_lbl=series_vals2lbls.get(series_val, series_val),
             category_freq_specs=category_item_freq_specs,
         )
         series_category_freq_specs.append(series_category_freq_spec)
@@ -602,7 +590,6 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
                 ].iterrows():
             freq_spec = CategoryItemFreqSpec(
                 category_val=category_val,
-                category_val_lbl=category_vals2lbls.get(category_val, str(category_val)),
                 freq=int(freq),
                 category_pct=raw_category_pct,
             )
@@ -682,14 +669,12 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
             ].iterrows():
                 freq_spec = CategoryItemFreqSpec(
                     category_val=category_val,
-                    category_val_lbl=category_vals2lbls.get(category_val, category_val),
                     freq=int(freq),
                     category_pct=raw_category_pct,
                 )
                 freq_specs.append(freq_spec)
             series_category_freq_spec = SeriesCategoryFreqSpec(
                 series_val=series_val,
-                series_val_lbl=series_vals2lbls.get(series_val, series_val),
                 category_freq_specs=freq_specs,
             )
             series_category_freq_specs.append(series_category_freq_spec)

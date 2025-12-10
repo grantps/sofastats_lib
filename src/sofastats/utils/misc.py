@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 import re
+from typing import Literal
 
 import pandas as pd
 
@@ -11,6 +12,28 @@ pd.set_option('display.max_rows', 200)
 pd.set_option('display.min_rows', 30)
 pd.set_option('display.max_columns', 25)
 pd.set_option('display.width', 500)
+
+def get_pandas_friendly_name(orig_name: str, suffix: Literal['_var', '_val'] | None = None) -> str:
+    """
+    E.g. 'Age Group', '_val' ==> age_group_val
+
+    Not cleaning everything but making most common cases pleasant to work with
+    """
+    new_name = (orig_name
+        .lower()
+        .replace(' ', '_')
+        .replace('-', '_')
+        .replace('(', '_')
+        .replace(')', '_')
+        .replace('/', '_')
+        .replace('\\', '_')
+        .replace('|', '_')
+        .replace('__', '_')  ## clean up some repeat __'s
+        .replace('__', '_')
+        .replace('__', '_')
+    )
+    pandas_friendly_name = f"{new_name}{suffix}" if suffix else new_name
+    return pandas_friendly_name
 
 def pluralise_with_s(*, singular_word: str, n_items: int) -> str:
     return singular_word if n_items == 1 else f'{singular_word}s'

@@ -76,6 +76,7 @@ def get_local_folder(my_platform: Platform) -> Path:
 
 uv_run_mode = 'UV' in os.environ
 local_folder = get_local_folder(PLATFORM)
+
 if uv_run_mode:
     ## If running in uv run single script mode everything should just occur in the same folder as that the script being run is located in
     current_path = Path.cwd()
@@ -134,6 +135,5 @@ class DbeSpec:
 
 class SortOrder(StrEnum):
     VALUE = 'by value'
-    LABEL = 'by label'
     INCREASING = 'by increasing frequency'
     DECREASING = 'by decreasing frequency'

@@ -274,9 +274,7 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
                 variable_lbl = orig_index_tuple[idx - 1]
                 variable = var_labels.var_lbl2var.get(variable_lbl, variable_lbl)  ## if unconfigured, left alone - not title-cased or anything
                 value_order_rule = order_rule[idx]
-                if value_order_rule == SortOrder.LABEL:
-                    value_order = (1, val_lbl) if val_lbl == TOTAL else (0, val_lbl)  ## want TOTAL last
-                elif value_order_rule == SortOrder.VALUE:
+                if value_order_rule == SortOrder.VALUE:
                     if val_lbl != TOTAL:
                         val2lbl = var_labels.var2val2lbl.get(variable)
                         if val2lbl:

@@ -1,3 +1,12 @@
+def get_pandas_var(variable_name: str) -> str:
+    return f"{variable_name}_var"
+
+def get_pandas_val(value_name: str) -> str:
+    return f"{value_name}_val"
+
+
+
+
 """
 Labelling is based entirely on YAML:
 

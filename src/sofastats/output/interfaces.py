@@ -20,7 +20,7 @@ from sofastats.conf.var_labels import dict2varlabels
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
-                                           get_styled_placeholder_css_for_main_tbls, get_styled_stats_tbl_css)
+    get_styled_placeholder_css_for_main_tbls, get_styled_stats_tbl_css)
 from sofastats.utils.misc import get_safer_name
 
 from ruamel.yaml import YAML
@@ -142,8 +142,9 @@ class CommonDesign(ABC):
         return self.__str__
 
 
-def add_from_parent(cls):
+def add_common_methods_from_parent(cls):
     """
+    Add methods from parent (CommonDesign).
     Ensures we can run some standard __post_init__ special sauce
     while ensuring parent dataclasses also have their __post_init__ run
     """
@@ -156,7 +157,7 @@ def add_from_parent(cls):
                 raise Exception(f"Oops - you need to supply a value for {field.name} in your {nice_name}")
 
     def make_output(self):
-        self.to_html_design().to_file(self.output_file_path, title=self.output_title)
+        self.to_html_design().to_file(fpath=self.output_file_path, html_title=self.output_title)
         if self.show_in_web_browser:
             open_new_tab(url=f"file://{self.output_file_path}")
 

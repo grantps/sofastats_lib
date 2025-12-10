@@ -11,7 +11,7 @@ from sofastats.output.charts.common import (
 from sofastats.output.charts.interfaces import (
     AreaChartingSpec, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec, LineArea, PlotStyle)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.utils.maths import format_num
@@ -120,14 +120,14 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False)
 class AreaChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
 
-    category_sort_order: SortOrder | str = SortOrder.LABEL
+    category_sort_order: SortOrder | str = SortOrder.VALUE
     is_time_series: bool = False
     show_major_ticks_only: bool = True
     show_markers: bool = True

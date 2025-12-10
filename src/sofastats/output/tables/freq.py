@@ -5,7 +5,7 @@ import pandas as pd
 
 from sofastats.conf.var_labels import VarLabels
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.tables.interfaces import BLANK, PctType, Row
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.utils.html_fixes import fix_top_left_box, merge_cols_of_blanks
@@ -118,7 +118,7 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     return df
 
 
-@add_from_parent
+@add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class FrequencyTableDesign(CommonDesign):
     rows: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -166,7 +166,8 @@ class FrequencyTableDesign(CommonDesign):
         row_spec = self.rows[row_idx]
         totalled_variables = row_spec.self_and_descendant_totalled_vars
         row_vars = row_spec.self_and_descendant_vars
-        data = get_data_from_spec(cur, src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+        data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
+            src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
             all_variables=row_vars, totalled_variables=totalled_variables, debug=self.debug)
         n_row_fillers = self.max_row_depth - len(row_vars)
         df = get_all_metrics_df_from_vars(
