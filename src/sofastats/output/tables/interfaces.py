@@ -88,9 +88,15 @@ class DimSpec:
 
 @dataclass(frozen=False)
 class Row(DimSpec):
-    is_col = False
+
+    def __post_init__(self):
+        self.is_col = False
+        super().__post_init__()
 
 
 @dataclass(frozen=False)
 class Column(DimSpec):
-    is_col = True
+
+    def __post_init__(self):
+        self.is_col = True
+        super().__post_init__()

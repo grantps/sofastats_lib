@@ -23,12 +23,11 @@ from itertools import product
 
 import pandas as pd
 
-from sofastats.conf.var_labels import (VarLabelSpec, VarLabels,
-    get_pandas_val, get_pandas_var, var2pandas_val)
+from sofastats.conf.var_labels import VarLabels
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.utils import get_style_spec
-from sofastats.output.tables.interfaces import BLANK, DimSpec, Metric, PctType
+from sofastats.output.tables.interfaces import BLANK, Column, DimSpec, Metric, PctType, Row
 from sofastats.output.tables.utils.html_fixes import (
     fix_top_left_box, merge_cols_of_blanks, merge_rows_of_blanks)
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
@@ -96,6 +95,7 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
                                        Male          11        11        15        16        12        65
                                        TOTAL         20        18        36        42        28       144
     ...
+    TODO: update onwards
     Then we generate additional df_pre_pivots for row pcts and col pcts as appropriate. And we pivot the final df.
 
        country_val gender_val agegroup_val    n country_var      country gender_var  gender agegroup_var agegroup col_filler_var_0 col_filler_0 metric
@@ -194,8 +194,8 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
 @add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class CrossTabDesign(CommonDesign):
-    row_variable_designs: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    column_variable_designs: list[DimSpec] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    column_variable_designs: list[Column] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     style_name: str = 'default'
 

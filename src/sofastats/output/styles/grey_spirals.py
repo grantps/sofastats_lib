@@ -1,6 +1,6 @@
 from sofastats.conf.images import (GREY_SPIRALS,
-                                   TOOLTIPCONNECTORDOWN_PALEBLUE, TOOLTIPCONNECTORLEFT_PALEBLUE,
-                                   TOOLTIPCONNECTORUP_PALEBLUE, TOOLTIPCONNECTORRIGHT_PALEBLUE)
+    TOOLTIPCONNECTORDOWN_PALEBLUE, TOOLTIPCONNECTORLEFT_PALEBLUE,
+    TOOLTIPCONNECTORUP_PALEBLUE, TOOLTIPCONNECTORRIGHT_PALEBLUE)
 from sofastats.output.styles.interfaces import (
     ChartStyleSpec, ColourWithHighlight, DojoStyleSpec, StyleSpec, TableStyleSpec)
 

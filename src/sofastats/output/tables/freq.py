@@ -121,7 +121,7 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
 @add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class FrequencyTableDesign(CommonDesign):
-    rows: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     style_name: str = 'default'
 
@@ -133,14 +133,14 @@ class FrequencyTableDesign(CommonDesign):
     @property
     def totalled_vars(self) -> list[str]:
         tot_vars = []
-        for row_spec in self.rows:
+        for row_spec in self.row_variable_designs:
             tot_vars.extend(row_spec.self_and_descendant_totalled_vars)
         return tot_vars
 
     @property
     def max_row_depth(self) -> int:
         max_depth = 0
-        for row_spec in self.rows:
+        for row_spec in self.row_variable_designs:
             row_depth = len(row_spec.self_and_descendant_vars)
             if row_depth > max_depth:
                 max_depth = row_depth
@@ -148,7 +148,7 @@ class FrequencyTableDesign(CommonDesign):
 
     def __post_init__(self):
         CommonDesign.__post_init__(self)
-        row_vars = [spec.variable for spec in self.rows]
+        row_vars = [spec.variable for spec in self.row_variable_designs]
         row_dupes = set()
         seen = set()
         for row_var in row_vars:
@@ -163,7 +163,7 @@ class FrequencyTableDesign(CommonDesign):
         """
         See cross_tab docs
         """
-        row_spec = self.rows[row_idx]
+        row_spec = self.row_variable_designs[row_idx]
         totalled_variables = row_spec.self_and_descendant_totalled_vars
         row_vars = row_spec.self_and_descendant_vars
         data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
@@ -180,7 +180,8 @@ class FrequencyTableDesign(CommonDesign):
         """
         See cross_tab docs
         """
-        dfs = [self.get_row_df(cur, row_idx=row_idx, dp=self.decimal_points) for row_idx in range(len(self.rows))]
+        dfs = [self.get_row_df(cur, row_idx=row_idx, dp=self.decimal_points)
+            for row_idx in range(len(self.row_variable_designs))]
         df_t = dfs[0].T
         dfs_remaining = dfs[1:]
         for df_next in dfs_remaining:
@@ -189,7 +190,7 @@ class FrequencyTableDesign(CommonDesign):
         if self.debug: print(f"\nCOMBINED:\n{df}")
         ## Sorting indexes
         raw_df = get_raw_df(cur, src_tbl_name=self.source_table_name)
-        order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(self.rows)
+        order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(self.row_variable_designs)
         ## ROWS
         unsorted_row_multi_index_list = list(df.index)
         sorted_row_multi_index_list = get_sorted_multi_index_list(
