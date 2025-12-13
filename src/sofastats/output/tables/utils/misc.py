@@ -246,7 +246,7 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
             if debug: print(s)
             ## add to new df_pre_pivot
             df_pre_pivot_inc_pct = pd.concat([df_pre_pivot_inc_pct, s.to_frame().T])
-    if debug: print(df_pre_pivot_inc_pct)
+    if debug: print(f"df_pre_pivot_inc_pct ***************************************************\n{df_pre_pivot_inc_pct}")
     return df_pre_pivot_inc_pct
 
 def get_order_rules_for_multi_index_branches(row_specs: list[DimSpec], col_specs: list[DimSpec] | None = None) -> dict:

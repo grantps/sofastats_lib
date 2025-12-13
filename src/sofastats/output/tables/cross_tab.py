@@ -48,7 +48,8 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     """
     Includes at least the Freq metric but potentially the percentage ones as well.
 
-    Start with a column for each row var, then one for each col var, then freq. All in a fixed order we can rely on.
+    Start with creating a dataframe with a column for each row variables design,
+    then one for each column variables design, then freq. All in a fixed order we can rely on.
     Which is why we can build the columns from the input variable names, in order.
     We know the last column is the count so we add 'n' as the final column. E.g. Country, Gender, Age Group, n.
 
@@ -68,7 +69,7 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     70          USA   TOTAL     TOTAL  133     Country     Gender     Age Group
     71        TOTAL   TOTAL     TOTAL  349     Country     Gender     Age Group
 
-    Note - the source, un-pivoted df has all TOTAL values calculated and identified in the val columns already.
+    Note - the source, un-pivoted, df has all TOTAL values calculated and identified in the val columns already.
 
     OK, so now we have a proper df. Time to add in any row or column filler columns
     (some will pivot to rows and others to columns in the final df)
@@ -95,35 +96,47 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
                                        Male          11        11        15        16        12        65
                                        TOTAL         20        18        36        42        28       144
     ...
-    TODO: update onwards
+
     Then we generate additional df_pre_pivots for row pcts and col pcts as appropriate. And we pivot the final df.
 
-       country_val gender_val agegroup_val    n country_var      country gender_var  gender agegroup_var agegroup col_filler_var_0 col_filler_0 metric
-    0            1          1            1    3     Country          USA     Gender    Male    Age Group     < 20        __blank__    __blank__   Freq
+       country_var Country gender_var  Gender web_browser_var Web Browser age_group_var Age Group metric      n
+    0      Country      NZ     Gender  Female     Web Browser      Chrome     Age Group     20-29  Row %  17.65
+    0      Country      NZ     Gender  Female     Web Browser      Chrome     Age Group     30-39  Row %   5.88
     ...
+    0      Country     USA     Gender   TOTAL     Web Browser       TOTAL     Age Group     TOTAL  Row %  100.0
 
-    AND
+    AND (note - metric and row cols in different positions depending on whether Row or Col)
 
-       country_var country gender_var  gender  agegroup_var  agegroup metric      n
-    0      Country      NZ     Gender  Female  Age Group         < 20  Row %  11.76
+       web_browser_var Web Browser age_group_var Age Group metric country_var      Country gender_var  Gender      n
+    0      Web Browser      Chrome     Age Group     20-29  Col %     Country           NZ     Gender  Female   60.0
+    0      Web Browser      Chrome     Age Group     20-29  Col %     Country           NZ     Gender    Male   40.0
     ...
-
-    AND
-
-       country_var country gender_var  gender  agegroup_var  agegroup metric      n
-    0      Country      NZ     Gender  Female  Age Group         < 20  Col %  33.33
-    ...
+    0      Web Browser       TOTAL     Age Group     TOTAL  Col %     Country          USA     Gender   TOTAL  100.0
 
     Then we pivot the new, combined df_pre_pivot and metric splays across intoFreq, Row %, and Col % as appropriate.
+    Here is a case with Freq, Row %, and Col %:
 
-    agegroup_var                              Age Group
-    agegroup                                       < 20     20-29     30-39     40-64       65+     TOTAL      < 20     20-29     30-39     40-64       65+     TOTAL
-    col_filler_var_0                          __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__
-    col_filler_0                              __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__ __blank__
-    metric                                         Freq      Freq      Freq      Freq      Freq      Freq     Row %     Row %     Row %     Row %     Row %     Row %   <== yet to have the columns reordered so we have Freq Row % Freq Row % etc
-    country_var country     gender_var gender
-    Country     NZ          Gender     Female         8         6         2        11        17        44     18.18...  13.63...   4.54...  25.00...  38.63... 100.00...
-    ...
+    TODO: sort out, err ... sorting
+    Note - yet to have the columns reordered so we have Freq Row % Freq Row % etc
+
+    web_browser_var                           Web Browser                                                                                                                                                                             ...
+    Web Browser                                    Chrome                         Firefox                           TOTAL                          Chrome   Firefox     TOTAL    Chrome                               Firefox         ...     TOTAL                         Chrome   Firefox     TOTAL    Chrome                               Firefox                                 TOTAL                                Chrome   Firefox     TOTAL
+    age_group_var                               Age Group                       Age Group                       Age Group                       Age Group Age Group Age Group Age Group                             Age Group         ... Age Group                      Age Group Age Group Age Group Age Group                             Age Group                             Age Group                             Age Group Age Group Age Group
+    Age Group                                       20-29 30-39 40-64  65+ < 20     20-29 30-39 40-64  65+ < 20     20-29 30-39 40-64  65+ < 20     TOTAL     TOTAL     TOTAL     20-29  30-39  40-64    65+   < 20     20-29  30-39  ...     30-39  40-64    65+   < 20     TOTAL     TOTAL     TOTAL     20-29  30-39  40-64    65+   < 20     20-29  30-39  40-64    65+   < 20     20-29  30-39  40-64    65+   < 20     TOTAL     TOTAL     TOTAL
+    metric                                           Freq  Freq  Freq Freq Freq      Freq  Freq  Freq Freq Freq      Freq  Freq  Freq Freq Freq      Freq      Freq      Freq     Row %  Row %  Row %  Row %  Row %     Row %  Row %  ...     Row %  Row %  Row %  Row %     Row %     Row %     Row %     Col %  Col %  Col %  Col %  Col %     Col %  Col %  Col %  Col %  Col %     Col %  Col %  Col %  Col %  Col %     Col %     Col %     Col %
+    country_var Country     gender_var Gender                                                                                                                                                                                         ...
+    Country     NZ          Gender     Female           3     1     3    8    2         3     1     8    9    6         6     2    11   17    8        17        27        44     17.65   5.88  17.65  47.06  11.76     11.11    3.7  ...      4.55   25.0  38.64  18.18     100.0     100.0     100.0      60.0   50.0   75.0  66.67  33.33      37.5   20.0  61.54  56.25   60.0     46.15  28.57  64.71  60.71   50.0     58.62     51.92     54.32
+                                       Male             2     1     1    4    4         5     4     5    7    4         7     5     6   11    8        12        25        37     16.67   8.33   8.33  33.33  33.33      20.0   16.0  ...     13.51  16.22  29.73  21.62     100.0     100.0     100.0      40.0   50.0   25.0  33.33  66.67      62.5   80.0  38.46  43.75   40.0     53.85  71.43  35.29  39.29   50.0     41.38     48.08     45.68
+                                       TOTAL            5     2     4   12    6         8     5    13   16   10        13     7    17   28   16        29        52        81     17.24    6.9  13.79  41.38  20.69     15.38   9.62  ...      8.64  20.99  34.57  19.75     100.0     100.0     100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0     100.0     100.0
+                South Korea Gender     Female           3     2     2    0    2         3     2     2    3    2         6     4     4    3    4         9        12        21     33.33  22.22  22.22    0.0  22.22      25.0  16.67  ...     19.05  19.05  14.29  19.05     100.0     100.0     100.0      60.0   40.0   50.0    0.0   40.0      75.0  66.67  33.33   37.5  66.67     66.67   50.0   40.0  27.27   50.0     40.91      50.0     45.65
+                                       Male             2     3     2    3    3         1     1     4    5    1         3     4     6    8    4        13        12        25     15.38  23.08  15.38  23.08  23.08      8.33   8.33  ...      16.0   24.0   32.0   16.0     100.0     100.0     100.0      40.0   60.0   50.0  100.0   60.0      25.0  33.33  66.67   62.5  33.33     33.33   50.0   60.0  72.73   50.0     59.09      50.0     54.35
+                                       TOTAL            5     5     4    3    5         4     3     6    8    3         9     8    10   11    8        22        24        46     22.73  22.73  18.18  13.64  22.73     16.67   12.5  ...     17.39  21.74  23.91  17.39     100.0     100.0     100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0     100.0     100.0
+                TOTAL       Gender     Female           7     5     8   16    4        10     4    19   18    8        17     9    27   34   12        40        59        99      17.5   12.5   20.0   40.0   10.0     16.95   6.78  ...      9.09  27.27  34.34  12.12     100.0     100.0     100.0     43.75  38.46  42.11  48.48  33.33     47.62   40.0  63.33  51.43  53.33     45.95  39.13   55.1   50.0  44.44     43.01     53.15     48.53
+                                       Male             9     8    11   17    8        11     6    11   17    7        20    14    22   34   15        53        52       105     16.98  15.09  20.75  32.08  15.09     21.15  11.54  ...     13.33  20.95  32.38  14.29     100.0     100.0     100.0     56.25  61.54  57.89  51.52  66.67     52.38   60.0  36.67  48.57  46.67     54.05  60.87   44.9   50.0  55.56     56.99     46.85     51.47
+                                       TOTAL           16    13    19   33   12        21    10    30   35   15        37    23    49   68   27        93       111       204      17.2  13.98  20.43  35.48   12.9     18.92   9.01  ...     11.27  24.02  33.33  13.24     100.0     100.0     100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0     100.0     100.0
+                USA         Gender     Female           1     2     3    8    0         4     1     9    6    0         5     3    12   14    0        14        20        34      7.14  14.29  21.43  57.14    0.0      20.0    5.0  ...      8.82  35.29  41.18    0.0     100.0     100.0     100.0     16.67  33.33  27.27  44.44    0.0     44.44   50.0  81.82  54.55    0.0     33.33   37.5  54.55  48.28    0.0     33.33     57.14     44.16
+                                       Male             5     4     8   10    1         5     1     2    5    2        10     5    10   15    3        28        15        43     17.86  14.29  28.57  35.71   3.57     33.33   6.67  ...     11.63  23.26  34.88   6.98     100.0     100.0     100.0     83.33  66.67  72.73  55.56  100.0     55.56   50.0  18.18  45.45  100.0     66.67   62.5  45.45  51.72  100.0     66.67     42.86     55.84
+                                       TOTAL            6     6    11   18    1         9     2    11   11    2        15     8    22   29    3        42        35        77     14.29  14.29  26.19  42.86   2.38     25.71   5.71  ...     10.39  28.57  37.66    3.9     100.0     100.0     100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0  100.0  100.0  100.0  100.0     100.0     100.0     100.0
 
     Finally, round numbers
     """
@@ -146,8 +159,7 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
         """
         ## populate var and val cells e.g. 'Age Group' and '< 20'
         df_pre_pivot[get_pandas_friendly_name(var, '_var')] = var  ## e.g. country_var = Country
-        df_pre_pivot[var] = df_pre_pivot[var]  ## e.g. Country = USA
-        cols2add = [get_pandas_friendly_name(var, '_var'), var]  ## e.g. country_var, Country
+        cols2add = [get_pandas_friendly_name(var, '_var'), var]  ## e.g. [country_var, Country, ]
         if var in row_vars:
             index_cols.extend(cols2add)
         elif var in col_vars:
@@ -261,38 +273,13 @@ class CrossTabDesign(CommonDesign):
         """
         get a combined df for, e.g. the combined top df. Or the middle df. Or the bottom df. Or whatever you have.
         e.g.
-        row_variables_design_0 = DimSpec(variable='country', has_total=True,
+        row_variables_design_1 = Row(variable='country', has_total=True,
             child=(variable='gender', has_total=True))
         vs
-        column_variables_design_0 = DimSpec(variable='Age Group', has_total=True, is_col=True)
-        column_variables_design_1 = DimSpec(variable='Web Browser', has_total=True, is_col=True,
-            child=DimSpec(variable='Age Group', has_total=True, is_col=True, pct_metrics=[Metric.ROW_PCT, Metric.COL_PCT]))
-        column_variables_design_2 = DimSpec(variable='Standard Age Group', has_total=True, is_col=True)
-
-        ==>
-
-        row_vars = ['country', 'gender']
-        filter = '''\
-            WHERE agegroup <> 4
-            AND browser NOT IN ('Internet Explorer', 'Opera', 'Safari')
-            '''
-        according to col_spec:
-            col_vars = ['agegroup']
-            totalled_variables = ['country', 'gender', 'agegroup']
-
-            col_vars = ['browser', 'agegroup']
-            totalled_variables = ['country', 'gender', 'browser', 'agegroup']
-
-            col_vars = ['std_agegroup']
-            totalled_variables = ['country', 'gender', 'std_agegroup']
-
-            all_variables = row_vars + col_vars
-            data = get_data_from_spec(
-                all_variables=all_variables, totalled_variables=totalled_variables, filter=filter, debug=debug)
-            df = get_metrics_df_from_vars(data, row_vars=row_vars, col_vars=col_vars,
-                n_row_fillers=N_ROWS_IN_TOTAL_TBL - len(row_vars), n_col_fillers=N_COLS_IN_TOTAL_TBL - len(col_vars),
-                pct_metrics=[], debug=debug)
-            return df
+        column_variables_design_1 = Column(variable='Age Group', has_total=True)
+        column_variables_design_2 = Column(variable='Web Browser', has_total=True,
+            child=Column(variable='Age Group', has_total=True, pct_metrics=[Metric.ROW_PCT, Metric.COL_PCT]))
+        column_variables_design_3 = Column(variable='Standard Age Group', has_total=True)
         """
         row_spec = self.row_variable_designs[row_spec_idx]
         row_vars = row_spec.self_and_descendant_vars

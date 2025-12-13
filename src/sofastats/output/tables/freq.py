@@ -10,8 +10,9 @@ from sofastats.output.tables.interfaces import BLANK, PctType, Row
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.utils.html_fixes import fix_top_left_box, merge_cols_of_blanks
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-                                                get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
+    get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
 from sofastats.output.tables.utils.multi_index_sort import get_metric2order, get_sorted_multi_index_list
+from sofastats.utils.misc import get_pandas_friendly_name
 
 def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[str],
         n_row_fillers: int = 0, inc_col_pct=False, dp: int = 2, debug=False) -> pd.DataFrame:
@@ -23,75 +24,59 @@ def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[
     We know the last column is the count so we add 'n' as the final column.
     E.g. country_val, gender_val, n.
 
-       country_val gender_val    n
-    0            1          1   43
-    1            1          2   34
-    2            2          1   25
-    3            2          2   21
-    4            3          1   37
-    5            3          2   44
-    6        TOTAL          1  105
-    7        TOTAL          2   99
-    8            1      TOTAL   77
-    9            2      TOTAL   46
-    10           3      TOTAL   81
-    11       TOTAL      TOTAL  204
+            Country  Gender    n
+    0            NZ  Female   44
+    1            NZ    Male   37
     ...
-
+    11        TOTAL   TOTAL  204
+    ...
     Note - the source, un-pivoted df has all TOTAL values calculated and identified in the val columns already.
 
-    OK, so now we have a proper df. Time to add extra columns e.g. alongside country_val's 1s, 2s, etc.
-    we add country_var with all values set to 'Country', and country as 'USA', 'South Korea', etc
+    OK, so now we have a proper df. Time to add extra columns e.g. alongside Country we add country_var with all values
+    set to 'Country', and country as 'USA', 'South Korea', etc
 
-       country_val gender_val    n country_var      country gender_var  gender metric
-    0            1          1   43     Country          USA     Gender    Male   Freq
-    1            1          2   34     Country          USA     Gender  Female   Freq
-    2            2          1   25     Country  South Korea     Gender    Male   Freq
-    3            2          2   21     Country  South Korea     Gender  Female   Freq
-    4            3          1   37     Country           NZ     Gender    Male   Freq
-    5            3          2   44     Country           NZ     Gender  Female   Freq
-    6        TOTAL          1  105     Country        TOTAL     Gender    Male   Freq
-    7        TOTAL          2   99     Country        TOTAL     Gender  Female   Freq
-    8            1      TOTAL   77     Country          USA     Gender   TOTAL   Freq
-    9            2      TOTAL   46     Country  South Korea     Gender   TOTAL   Freq
-    10           3      TOTAL   81     Country           NZ     Gender   TOTAL   Freq
-    11       TOTAL      TOTAL  204     Country        TOTAL     Gender   TOTAL   Freq
+      metric country_var      Country gender_var  Gender       n
+    0  Col %     Country           NZ     Gender  Female  54.321
+    0  Col %     Country           NZ     Gender    Male  45.679
+    ...
+    0  Col %     Country          USA     Gender   TOTAL   100.0
 
     Then add in any row or column filler columns (some will pivot to rows and others to columns in the final df)
     with __BLANK__ e.g. (if another config from that followed through in this example):
-
-       country_val gender_val agegroup_val    n country_var      country gender_var  gender agegroup_var agegroup col_filler_var_0 col_filler_0 metric
-    0            1          1            1    3     Country          USA     Gender    Male    Age Group     < 20        __blank__    __blank__   Freq
     ...
+
+    Then pivot
+
+    metric                                      Freq   Col %
+    country_var Country     gender_var Gender
+    Country     NZ          Gender     Female     44  54.321
+                                       Male       37  45.679
+                                       TOTAL      81   100.0
+                South Korea Gender     Female     21  45.652
+                                       Male       25  54.348
+                                       TOTAL      46   100.0
+                TOTAL       Gender     Female     99  48.529
+                                       Male      105  51.471
+                                       TOTAL     204   100.0
+                USA         Gender     Female     34  44.156
+                                       Male       43  55.844
+                                       TOTAL      77   100.0
 
     Finally, round numbers
     """
-    all_variables = row_vars
-    columns = []
-    for var in all_variables:
-        columns.append(var_labels.var2var_label_spec[var].pandas_val)  ## e.g. agegroup_val
-    columns.append('n')
+    columns = row_vars + ['n', ]
     df_pre_pivot = pd.DataFrame(data, columns=columns)
     index_cols = []
     column_cols = []
-    for var in all_variables:
-        var2var_label_spec = var_labels.var2var_label_spec[var]
-        ## var set to lbl e.g. "Age Group" goes into cells
-        df_pre_pivot[var2var_label_spec.pandas_var] = var2var_label_spec.lbl
-        ## val set to val lbl e.g. 1 => '< 20'
-        df_pre_pivot[var2var_label_spec.name] = df_pre_pivot[var2var_label_spec.pandas_val].apply(
-            lambda x: var2var_label_spec.val2lbl.get(x, str(x)))
-        cols2add = [var2var_label_spec.pandas_var, var2var_label_spec.name]
-        if var in row_vars:
-            index_cols.extend(cols2add)
-        else:
-            raise Exception(f"{var=} not found in either {row_vars=}")
+    for var in row_vars:
+        df_pre_pivot[get_pandas_friendly_name(var, '_var')] = var  ## e.g. country_var = Country
+        cols2add = [get_pandas_friendly_name(var, '_var'), var]  ## e.g. [country_var, Country]
+        index_cols.extend(cols2add)
     ## only add what is needed to fill gaps
     for i in range(n_row_fillers):
         df_pre_pivot[f'row_filler_var_{i}'] = BLANK
         df_pre_pivot[f'row_filler_{i}'] = BLANK
         index_cols.extend([f'row_filler_var_{i}', f'row_filler_{i}'])
-    column_cols.append('metric')
     df_pre_pivot['metric'] = 'Freq'
     df_pre_pivot['n'] = df_pre_pivot['n'].astype(pd.Int64Dtype())
     if debug: print(df_pre_pivot)
