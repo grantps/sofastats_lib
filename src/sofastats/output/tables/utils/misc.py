@@ -9,7 +9,6 @@ import numpy as np
 
 from sofastats.conf.main import DbeSpec
 from sofastats.output.styles.interfaces import StyleSpec
-from sofastats.output.tables.interfaces import DimSpec
 from sofastats.output.tables.interfaces import PCT_METRICS, TOTAL, Metric, PctType
 
 def correct_str_dps(val: str, *, dp: int) -> str:
@@ -248,29 +247,6 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
             df_pre_pivot_inc_pct = pd.concat([df_pre_pivot_inc_pct, s.to_frame().T])
     if debug: print(f"df_pre_pivot_inc_pct ***************************************************\n{df_pre_pivot_inc_pct}")
     return df_pre_pivot_inc_pct
-
-def get_order_rules_for_multi_index_branches(row_specs: list[DimSpec], col_specs: list[DimSpec] | None = None) -> dict:
-    """
-    Should come from a GUI via an interface ad thence into the code using this.
-
-    Note - to test Sort.INCREASING and Sort.DECREASING I'll need to manually check what expected results should be (groan)
-
-    Note - because, below the top-level, only chains are allowed (not trees)
-    the index for any variables after the first (top-level) are always 0.
-    """
-    orders = {}
-    dims_type_specs = [row_specs, ]
-    if col_specs:
-        dims_type_specs.append(col_specs)
-    for dim_type_specs in dims_type_specs:
-        for top_level_idx, dim_type_spec in enumerate(dim_type_specs):
-            dim_vars = tuple(dim_type_spec.self_and_descendant_vars)
-            sort_details = []
-            for chain_idx, dim_spec in enumerate(dim_type_spec.self_and_descendants):
-                idx2use = top_level_idx if chain_idx == 0 else 0
-                sort_details.extend([idx2use, dim_spec.sort_order])
-            orders[dim_vars] = tuple(sort_details)
-    return orders
 
 def get_tbl_df(
         row_idx_tuples: Sequence[Sequence[str]],

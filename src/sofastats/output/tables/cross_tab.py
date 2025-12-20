@@ -31,8 +31,9 @@ from sofastats.output.tables.interfaces import BLANK, Column, DimSpec, Metric, P
 from sofastats.output.tables.utils.html_fixes import (
     fix_top_left_box, merge_cols_of_blanks, merge_rows_of_blanks)
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-    get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
-from sofastats.output.tables.utils.multi_index_sort import get_sorted_multi_index_list
+    get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
+from sofastats.output.tables.utils.multi_index_sort import (
+    get_order_rules_for_multi_index_branches, get_sorted_multi_index_list)
 from sofastats.utils.misc import get_pandas_friendly_name
 
 pd.set_option('display.max_rows', 200)
@@ -362,18 +363,18 @@ class CrossTabDesign(CommonDesign):
         if self.debug: print(f"\nCOMBINED:\n{df}")
         ## Sorting indexes
         raw_df = get_raw_df(cur, src_tbl_name=self.source_table_name, debug=self.debug)
-        order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(
-            self.row_variable_designs, self.column_variable_designs)
+        order_rules_for_row_multi_index_branches = get_order_rules_for_multi_index_branches(self.row_variable_designs)
+        order_rules_for_col_multi_index_branches = get_order_rules_for_multi_index_branches(self.column_variable_designs)
         ## COLS
         unsorted_col_multi_index_list = list(df.columns)
         sorted_col_multi_index_list = get_sorted_multi_index_list(
-            unsorted_col_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_multi_index_branches,
+            unsorted_col_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_col_multi_index_branches,
             var_labels=self.data_labels, raw_df=raw_df, has_metrics=True, debug=self.debug)
         sorted_col_multi_index = pd.MultiIndex.from_tuples(sorted_col_multi_index_list)  ## https://pandas.pydata.org/docs/user_guide/advanced.html
         ## ROWS
         unsorted_row_multi_index_list = list(df.index)
         sorted_row_multi_index_list = get_sorted_multi_index_list(
-            unsorted_row_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_multi_index_branches,
+            unsorted_row_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_row_multi_index_branches,
             var_labels=self.data_labels, raw_df=raw_df, has_metrics=False, debug=self.debug)
         sorted_row_multi_index = pd.MultiIndex.from_tuples(sorted_row_multi_index_list)  ## https://pandas.pydata.org/docs/user_guide/advanced.html
         df = df.reindex(index=sorted_row_multi_index, columns=sorted_col_multi_index)

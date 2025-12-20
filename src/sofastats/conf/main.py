@@ -134,6 +134,7 @@ class DbeSpec:
         return f"{self.str_value_quote}{str_value}{self.str_value_quote}"
 
 class SortOrder(StrEnum):
-    VALUE = 'by value'
-    INCREASING = 'by increasing frequency'
+    CUSTOM = 'by custom order'
     DECREASING = 'by decreasing frequency'
+    INCREASING = 'by increasing frequency'
+    VALUE = 'by value'

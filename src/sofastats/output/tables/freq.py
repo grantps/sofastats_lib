@@ -10,8 +10,9 @@ from sofastats.output.tables.interfaces import BLANK, PctType, Row
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.utils.html_fixes import fix_top_left_box, merge_cols_of_blanks
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-    get_df_pre_pivot_with_pcts, get_order_rules_for_multi_index_branches, get_raw_df, set_table_styles)
-from sofastats.output.tables.utils.multi_index_sort import get_metric2order, get_sorted_multi_index_list
+    get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
+from sofastats.output.tables.utils.multi_index_sort import (
+    get_metric2order, get_order_rules_for_multi_index_branches, get_sorted_multi_index_list)
 from sofastats.utils.misc import get_pandas_friendly_name
 
 def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[str],
