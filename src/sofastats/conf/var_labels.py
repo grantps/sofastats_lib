@@ -1,11 +1,12 @@
+from typing import Any
+
 def get_pandas_var(variable_name: str) -> str:
     return f"{variable_name}_var"
 
 def get_pandas_val(value_name: str) -> str:
     return f"{value_name}_val"
 
-
-
+type SortOrderSpecs = dict[str, list[Any]]
 
 """
 Labelling is based entirely on YAML:
@@ -54,7 +55,6 @@ If this is not what is desired, then explicit value labels will have to be set i
 from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import groupby
-from pathlib import Path
 
 from ruamel.yaml import YAML
 
@@ -177,3 +177,5 @@ def dict2varlabels(data_label_mappings: dict, *, debug=False) -> VarLabels:
         print(data_label_mappings)
         print(var_labels)
     return var_labels
+
+

@@ -16,7 +16,7 @@ import pandas as pd
 
 from sofastats import SQLITE_DB, logger
 from sofastats.conf.main import INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName
-from sofastats.conf.var_labels import dict2varlabels
+from sofastats.conf.var_labels import dict2varlabels, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
@@ -51,6 +51,10 @@ class CommonDesign(ABC):
     output_file_path: Path | str | None = None
     output_title: str | None = None
     show_in_web_browser: bool = True
+    sort_orders: SortOrderSpecs | None = None
+    sort_orders_yaml_file_path: Path | str | None = None
+
+    ## TODO - remove
     data_label_mappings: dict | None = None
     data_labels_yaml_file_path: Path | str | None = None
 
@@ -120,19 +124,21 @@ class CommonDesign(ABC):
             self.output_file_path = Path.cwd() / f"{nice_name}_{now}.html"
         if not self.output_title:
             self.output_title = f"{nice_name} Output"
-        ## data labels
-        if self.data_label_mappings:
-            if self.data_labels_yaml_file_path:
-                raise Exception("Oops - it looks like you supplied settings for both data_labels_yaml "
-                    "and data_labels_yaml_file_path. Please set one or both of them to None.")
+        ## sort orders
+        if self.sort_orders:
+            if self.sort_orders_yaml_file_path:
+                raise Exception("Oops - it looks like you supplied settings for both sort_orders "
+                    "and sort_orders_yaml_file_path. Please set one or both of them to None.")
             else:
-                self.data_labels = dict2varlabels(self.data_label_mappings)
-        elif self.data_labels_yaml_file_path:
+                pass
+        elif self.sort_orders_yaml_file_path:
             yaml = YAML(typ='safe')  ## default, if not specified, is 'rt' (round-trip)
-            data_label_mappings = yaml.load(Path(self.data_labels_yaml_file_path))  ## might be a str or Path so make sure
-            self.data_labels = dict2varlabels(data_label_mappings)
+            self.sort_orders = yaml.load(Path(self.sort_orders_yaml_file_path))  ## might be a str or Path so make sure
         else:
-            self.data_labels = dict2varlabels({})
+            self.sort_orders = {}
+
+        ## TODO: remove
+        self.data_labels = dict2varlabels({})
 
     def __post_init__(self):
         self.handle_inputs()

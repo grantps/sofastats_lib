@@ -1,11 +1,13 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import product
+from typing import Any
 
 from sofastats import logger
 from sofastats.conf.main import (
     MAX_CHI_SQUARE_VALS_IN_DIM, MAX_CHI_SQUARE_CELLS, MAX_VALUE_LENGTH_IN_SQL_CLAUSE, MIN_CHI_SQUARE_VALS_IN_DIM,
     DbeName, DbeSpec)
+from sofastats.conf.var_labels import SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 
 @dataclass(frozen=True)
@@ -22,7 +24,8 @@ class ChiSquareData:
     degrees_of_freedom: int
 
 def get_fractions_of_total_for_variable(*, cur: ExtendedCursor, dbe_spec: DbeSpec,
-        src_tbl_name: str, tbl_filt_clause: str, variable_name: str, other_variable_name: str) -> list[float]:
+        src_tbl_name: str, tbl_filt_clause: str, variable_name: str, other_variable_name: str,
+        ordered_values: Sequence[Any] | None = None) -> list[float]:
     """
     Looking at the frequencies for each value in the variable, what fractional share does that value have of the total?
     For example, if the numbers are 5, 8, and 7 for young, middle, and old
@@ -30,29 +33,47 @@ def get_fractions_of_total_for_variable(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     When calculating the frequencies for the variable,
     leave out any rows in the source data where either the variable or the other variable are missing.
     We are only counting frequencies for each intersection of values (non-NULL).
+
+    Order by value order supplied, not by value itself.
+    E.g. if the user wants '<20' to come before '20-29' etc then honour that. Simple to get the SQL to do this.
     """
     ## prepare items
     quoted_src_tbl_name = dbe_spec.entity_quoter(src_tbl_name)
     quoted_variable_name = dbe_spec.entity_quoter(variable_name)
     quoted_other_variable_name = dbe_spec.entity_quoter(other_variable_name)
+    ## handle value order for main variable
+    if ordered_values:
+        sorter_clause_bits = [f"CASE {quoted_variable_name}", ]
+        for n, value in enumerate(ordered_values, 1):
+            clause_ready_value = dbe_spec.str_value_quoter(value) if isinstance(value, str) else value
+            sorter_clause_bits.append(f"WHEN {clause_ready_value} THEN {n}")
+        sorter_clause_bits.append("END")
+        sorter_clause = '\n'.join(sorter_clause_bits)
+    else:
+        sorter_clause = '1'  ## i.e. all given same sort order
     ## get data
     and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     sql_get_fractions = f"""\
-    SELECT {quoted_variable_name}, COUNT(*) AS n
+    SELECT {quoted_variable_name},
+      {sorter_clause} AS sorter,
+      COUNT(*) AS n
     FROM {quoted_src_tbl_name} 
     WHERE {quoted_variable_name} IS NOT NULL AND {quoted_other_variable_name} IS NOT NULL
     {and_tbl_filt_clause}
-    GROUP BY {quoted_variable_name}
-    ORDER BY {quoted_variable_name}
+    GROUP BY {quoted_variable_name}, sorter
+    ORDER BY sorter, {quoted_variable_name}
     """
     logger.debug(sql_get_fractions)
     cur.exe(sql_get_fractions)
     lst_counts = []
     total = 0
-    for data_tuple in cur.fetchall():
-        val = data_tuple[1]
-        lst_counts.append(val)
-        total += val
+    data = cur.fetchall()
+    for value, _sorter, freq in data:
+        lst_counts.append(freq)
+        total += freq
+        if ordered_values and value not in ordered_values:
+            raise Exception(f"The custom sort order you supplied for values in variable '{variable_name}' "
+                f"didn't include value '{value}' so please fix that and try again.")
     lst_fracs = [( x / float(total)) for x in lst_counts]
     return lst_fracs
 
@@ -75,7 +96,7 @@ def get_cleaned_values(*, original_vals: list[str | float], dbe_spec: DbeSpec) -
     return original_vals
 
 def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_clause: str,
-        variable_a_name: str, variable_b_name: str) -> ChiSquareData:
+        variable_a_name: str, variable_b_name: str, sort_orders: SortOrderSpecs) -> ChiSquareData:
     """
     The Chi Square statistical calculation relies on having access to the raw counts per intersection between
     variable A and B. These are the observed values. E.g.
@@ -97,6 +118,9 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     Also required are some other attributes of the result, e.g. minimum cell count, that are needed to
     handle and interpret the result of the statistical calculation.
 
+    Control the order of values for both A and B.
+    Note - also need to control it inside the SQL in get_fractions_of_total_for_variable()
+
     See output.stats.chi_square.chi_square_from_df (similar logic with pandas base)
     """
     ## prepare items
@@ -117,6 +141,17 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     row_data = cur.fetchall()
     row_vals = [x[0] for x in row_data]
     variable_a_values = get_cleaned_values(original_vals=row_vals, dbe_spec=dbe_spec)
+    try:
+        values_in_order = sort_orders[variable_a_name]
+    except KeyError:
+        pass
+    else:
+        value2order = {val: order for order, val in enumerate(values_in_order)}
+        try:
+            variable_a_values.sort(key=lambda val: value2order[val])
+        except KeyError:
+            raise Exception(f"The custom sort order you supplied for values in variable '{variable_a_name}' "
+                "didn't include all the values in your analysis so please fix that and try again.")
     n_variable_a_vals = len(variable_a_values)
     if n_variable_a_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_a_vals} vs "
@@ -137,6 +172,17 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     col_data = cur.fetchall()
     col_vals = [x[0] for x in col_data]
     variable_b_values = get_cleaned_values(original_vals=col_vals, dbe_spec=dbe_spec)
+    try:
+        values_in_order = sort_orders[variable_b_name]
+    except KeyError:
+        pass
+    else:
+        value2order = {val: order for order, val in enumerate(values_in_order)}
+        try:
+            variable_b_values.sort(key=lambda val: value2order[val])
+        except KeyError:
+            raise Exception(f"The custom sort order you supplied for values in variable '{variable_b_name}' "
+                "didn't include all the values in your analysis so please fix that and try again.")
     n_variable_b_vals = len(variable_b_values)
     if n_variable_b_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_b_vals} vs "
@@ -149,6 +195,7 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     if n_cells > MAX_CHI_SQUARE_CELLS:
         raise Exception(f"Too many cells in Chi Square cross tab ({n_cells:,} "
             f"vs maximum allowed of {MAX_CHI_SQUARE_CELLS:,})")
+    ## observed ********************************************************************************************************
     ## Build SQL to get all observed values (for each A, through B's)
     ## This order is useful when running row by row into an HTML table
     ## Get frequency per A and B intersection
@@ -170,19 +217,21 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     sql_get_observed_freqs = '\n'.join(sql_get_observed_freqs_bits)
     logger.debug(f"{sql_get_observed_freqs=}")
     cur.exe(sql_get_observed_freqs)
-    observed_values_a_then_b_ordered = cur.fetchone()
+    observed_values_a_then_b_ordered = cur.fetchone()  ## ordered according to the order of A values and B values as supplied
     if not observed_values_a_then_b_ordered:
         raise Exception("No observed values")
     observed_values_a_then_b_ordered = list(observed_values_a_then_b_ordered)
     logger.debug(f"{observed_values_a_then_b_ordered=}")
     total_observed_values = float(sum(observed_values_a_then_b_ordered))
-    ## expected values
+    ## expected values *************************************************************************************************
     fractions_of_total_for_variable_a = get_fractions_of_total_for_variable(
         cur=cur, dbe_spec=dbe_spec, src_tbl_name=src_tbl_name, tbl_filt_clause=tbl_filt_clause,
-        variable_name=variable_a_name, other_variable_name=variable_b_name)
+        variable_name=variable_a_name, other_variable_name=variable_b_name,
+        ordered_values=sort_orders.get(variable_a_name))
     fractions_of_total_for_variable_b = get_fractions_of_total_for_variable(
         cur=cur, dbe_spec=dbe_spec, src_tbl_name=src_tbl_name, tbl_filt_clause=tbl_filt_clause,
-        variable_name=variable_b_name, other_variable_name=variable_a_name)
+        variable_name=variable_b_name, other_variable_name=variable_a_name,
+        ordered_values=sort_orders.get(variable_b_name))
     degrees_of_freedom = (n_variable_a_vals - 1) * (n_variable_b_vals - 1)
     expected_values_a_then_b_ordered = []
     for fraction_of_val_in_variable_a, fraction_of_val_in_variable_b in product(

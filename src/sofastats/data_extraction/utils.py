@@ -1,6 +1,6 @@
 from sofastats.conf.main import DbeName, DbeSpec
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.interfaces import ValFilterSpec, ValSpec
+from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.stats_calc.interfaces import PairedSamples, Sample
 
 def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
@@ -95,9 +95,9 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
     and_tbl_filt_clause = f"AND {tbl_filt_clause}" if tbl_filt_clause else ''
     if grouping_filt:
         if grouping_filt.val_is_numeric:
-            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = {grouping_filt.val_spec.val}"
+            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = {grouping_filt.value}"
         else:
-            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = '{grouping_filt.val_spec.val}'"
+            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = '{grouping_filt.value}'"
         and_grouping_filt_clause = f"AND {grouping_filt_clause}"
     else:
         and_grouping_filt_clause = ''
@@ -121,6 +121,6 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
     if len(sample_vals) < 2:
         raise Exception(f"Too few {measure_fld_name} values in sample for analysis "
             f"when getting sample for {and_grouping_filt_clause}")
-    lbl = grouping_filt.val_spec.lbl if grouping_filt else ''
+    lbl = grouping_filt.value if grouping_filt else ''
     sample = Sample(lbl=lbl, vals=sample_vals)
     return sample

@@ -2,21 +2,13 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-@dataclass(frozen=True, kw_only=True)
-class ValSpec:
-    """
-    Data as taken from data source in data extraction context. Not about output of any sort at this stage.
-    """
-    val: Any
-    lbl: str
-
 @dataclass(frozen=True)
 class ValFilterSpec:
     """
     E.g. for filtering a dataset to get a sample.
     """
     variable_name: str
-    val_spec: ValSpec
+    value: Any
     val_is_numeric: bool
 
 class ValType(StrEnum):

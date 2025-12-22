@@ -5,7 +5,7 @@ from typing import Any
 import jinja2
 import pandas as pd
 
-from sofastats.data_extraction.interfaces import ValFilterSpec, ValSpec
+from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
 from sofastats.output.interfaces import (
@@ -42,8 +42,8 @@ def anova_from_df(df: pd.DataFrame, *,
 
 @dataclass(frozen=True)
 class Result(AnovaResult):
-    group_lbl: str
-    measure_fld_lbl: str
+    grouping_field_name: str
+    measure_field_name: str
     histograms2show: Sequence[str]
 
 def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
@@ -139,8 +139,8 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     if len(group_val_lbls) < 2:
         raise Exception(f"Expected multiple groups in ANOVA. Details:\n{result}")
     labels_str = '"' + '", "'.join(group_val_lbls) + '"'
-    title = (f"Results of ANOVA test of average {result.measure_fld_lbl} "
-        f'for "{result.group_lbl}" groups: {labels_str}')
+    title = (f"Results of ANOVA test of average {result.measure_field_name} "
+        f'for "{result.grouping_field_name}" groups: {labels_str}')
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
@@ -206,64 +206,82 @@ class AnovaDesign(CommonDesign):
     decimal_points: int = 3
 
     def to_result(self) -> AnovaResult:
-        ## labels
-        grouping_fld_lbl = self.data_labels.var2var_lbl.get(self.grouping_field_name, self.grouping_field_name)
-        measure_fld_lbl = self.data_labels.var2var_lbl.get(self.measure_field_name, self.measure_field_name)
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        grouping_fld_vals_spec = list({
-            ValSpec(val=group_val, lbl=val2lbl.get(group_val, str(group_val))) for group_val in self.group_values})
-        grouping_fld_vals_spec.sort(key=lambda vs: vs.lbl)
+        ## values (sorted)
+        grouping_field_values = sorted(self.group_values)
+        if self.sort_orders:
+            try:
+                values_in_order = self.sort_orders[self.grouping_field_name]
+            except KeyError:
+                pass
+            else:
+                value2order = {val: order for order, val in enumerate(values_in_order)}
+                try:
+                    grouping_field_values = sorted(self.group_values, key=lambda val: value2order[val])
+                except KeyError:
+                    raise Exception(
+                        f"The custom sort order you supplied for values in variable '{self.grouping_field_name}' "
+                        "didn't include all the values in your analysis so please fix that and try again.")
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function
         samples = []
-        for grouping_fld_val_spec in grouping_fld_vals_spec:
-            grouping_filt = ValFilterSpec(variable_name=self.grouping_field_name, val_spec=grouping_fld_val_spec,
+        for grouping_field_value in grouping_field_values:
+            grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filt, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
-        stats_result = anova_stats_calc(grouping_fld_lbl, measure_fld_lbl, samples, high=self.high_precision_required)
+        stats_result = anova_stats_calc(
+            self.grouping_field_name, self.measure_field_name, samples, high=self.high_precision_required)
         return stats_result
 
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        grouping_fld_lbl = self.data_labels.var2var_lbl.get(self.grouping_field_name, self.grouping_field_name)
-        measure_fld_lbl = self.data_labels.var2var_lbl.get(self.measure_field_name, self.measure_field_name)
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        grouping_fld_vals_spec = list({
-            ValSpec(val=group_val, lbl=val2lbl.get(group_val, str(group_val))) for group_val in self.group_values})
-        grouping_fld_vals_spec.sort(key=lambda vs: vs.lbl)
+        ## values (sorted)
+        grouping_field_values = sorted(self.group_values)
+        if self.sort_orders:
+            try:
+                values_in_order = self.sort_orders[self.grouping_field_name]
+            except KeyError:
+                pass
+            else:
+                value2order = {val: order for order, val in enumerate(values_in_order)}
+                try:
+                    grouping_field_values = sorted(self.group_values, key=lambda val: value2order[val])
+                except KeyError:
+                    raise Exception(
+                        f"The custom sort order you supplied for values in variable '{self.grouping_field_name}' "
+                        "didn't include all the values in your analysis so please fix that and try again.")
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function
         samples = []
-        for grouping_fld_val_spec in grouping_fld_vals_spec:
-            grouping_filt = ValFilterSpec(variable_name=self.grouping_field_name, val_spec=grouping_fld_val_spec,
+        for grouping_field_value in grouping_field_values:
+            grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filt, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
         ## calculations
-        stats_result = anova_stats_calc(grouping_fld_lbl, measure_fld_lbl, samples, high=self.high_precision_required)
+        stats_result = anova_stats_calc(
+            self.grouping_field_name, self.measure_field_name, samples, high=self.high_precision_required)
         ## output
         histograms2show = []
         for group_spec in stats_result.group_specs:
             try:
                 histogram_html = get_embedded_histogram_html(
-                    measure_fld_lbl, style_spec.chart, group_spec.vals, group_spec.lbl)
+                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.lbl)
             except Exception as e:
                 html_or_msg = f"<b>{group_spec.lbl}</b> - unable to display histogram. Reason: {e}"
             else:
                 html_or_msg = histogram_html
             histograms2show.append(html_or_msg)
         result = Result(**todict(stats_result),
-            group_lbl=grouping_fld_lbl,
-            measure_fld_lbl=measure_fld_lbl,
+            grouping_field_name=self.grouping_field_name,
+            measure_field_name=self.measure_field_name,
             histograms2show=histograms2show,
         )
         html = get_html(result, style_spec, dp=self.decimal_points)

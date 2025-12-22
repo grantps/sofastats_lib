@@ -172,7 +172,7 @@ from itertools import count
 import pandas as pd
 
 from sofastats.conf.main import SortOrder
-from sofastats.conf.var_labels import VarLabels
+from sofastats.conf.var_labels import SortOrderSpecs
 from sofastats.output.tables.interfaces import BLANK, TOTAL, Column, Metric, Row
 
 pd.set_option('display.max_rows', 200)
@@ -284,7 +284,7 @@ def get_order_rules_for_multi_index_branches(rows_or_columns: list[Row] | list[C
     return orders
 
 def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_index_branches: dict,
-        var_labels: VarLabels, raw_df: pd.DataFrame, has_metrics: bool, debug=False) -> tuple:
+        sort_orders: SortOrderSpecs, raw_df: pd.DataFrame, has_metrics: bool, debug=False) -> tuple:
     """
     Use this method for the key arg for sorting e.g. sorted(unsorted_multi_index_list, key=multi_index_sort_fn)
 
@@ -302,7 +302,7 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
     branch_of_variables_key = _get_branch_of_variables_key(index_with_lbls=orig_index_tuple)
     order_rule = order_rules_for_multi_index_branches[branch_of_variables_key]  ## e.g. (1, Sort.LBL, 0, Sort.INCREASING)
     list_for_sorting = []
-    variable_value_lbl_pairs = []  ## so we know what filters apply depending on how far across the index we have come e.g. if we have passed Gender Female then we need to filter to that
+    variable_value_pairs = []  ## so we know what filters apply depending on how far across the index we have come e.g. if we have passed Gender Female then we need to filter to that
     if debug:
         print(f"{orig_index_tuple=}; {max_idx=}; {order_rule=}")
     for idx in count():
@@ -337,26 +337,32 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
                     else:  ## want TOTAL last
                         value_order = (1, 'anything - the 1 is enough to ensure sort order')
                 elif value_order_rule == SortOrder.CUSTOM:
+                    ## use supplied sort order
+                    try:
+                        values_in_order = sort_orders[variable]
+                    except KeyError:
+                        raise Exception(f"You wanted the values in variable '{variable}' to have a custom sort order "
+                            "but I couldn't find a sort order from what you supplied. "
+                            "Please fix the sort order details or use another approach to sorting.")
                     if value != TOTAL:
-                        ## use sort order  TODO: drop VarLabels, use ValueSortOrders
-
-                        if value == '< 20':
-                            value_order = (0, value)
-                        else:
-                            value_order = (1, value)
-
-
-
-
+                        value2order = {val: order for order, val in enumerate(values_in_order)}
+                        try:
+                            idx_for_ordered_position = value2order[value]
+                        except KeyError:
+                            raise Exception(f"The custom sort order you supplied for values in variable '{variable}' "
+                                f"didn't include value '{value}' so please fix that and try again.")
+                        value_order = (idx_for_ordered_position, value)
                     else:  ## want TOTAL last
-                        value_order = (2, 'anything - the 1 is enough to ensure sort order')
+                        idx_for_ordered_position_of_total = len(values_in_order) - 1
+                        value_order = (idx_for_ordered_position_of_total,
+                            'anything - the idx_for_ordered_position_of_total is enough to ensure sort order')
                 elif value_order_rule in (SortOrder.INCREASING, SortOrder.DECREASING):
                     increasing = (value_order_rule == SortOrder.INCREASING)
-                    filts = tuple(variable_value_lbl_pairs)
+                    filts = tuple(variable_value_pairs)
                     value_order = _by_freq(variable, value, df=raw_df, filts=filts, increasing=increasing)  ## can't use df as arg for cached function  ## want TOTAL last
                 else:
                     raise ValueError(f"Unexpected value order spec ({value_order_rule})")
-                variable_value_lbl_pairs.append((variable, value))
+                variable_value_pairs.append((variable, value))
             list_for_sorting.append(value_order)
         elif has_metrics and is_metric_idx:
             metric = orig_index_tuple[idx]
@@ -368,7 +374,7 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
     return tuple_for_sorting
 
 def get_sorted_multi_index_list(unsorted_multi_index_list: list[tuple], *, order_rules_for_multi_index_branches: dict,
-        var_labels: VarLabels, raw_df: pd.DataFrame, has_metrics: bool, debug=False) -> list[tuple]:
+        sort_orders: SortOrderSpecs, raw_df: pd.DataFrame, has_metrics: bool, debug=False) -> list[tuple]:
     """
     See module doc string for fuller explanation.
 
@@ -402,7 +408,7 @@ def get_sorted_multi_index_list(unsorted_multi_index_list: list[tuple], *, order
     ## get sort function
     multi_index_sort_fn = partial(get_tuple_for_sorting,
         order_rules_for_multi_index_branches=order_rules_for_multi_index_branches,
-        var_labels=var_labels, raw_df=raw_df, has_metrics=has_metrics, debug=debug)
+        sort_orders=sort_orders, raw_df=raw_df, has_metrics=has_metrics, debug=debug)
     ## apply sort function
     sorted_multi_index_list = sorted(unsorted_multi_index_list, key=multi_index_sort_fn)
     if debug:

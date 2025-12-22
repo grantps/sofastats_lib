@@ -369,13 +369,13 @@ class CrossTabDesign(CommonDesign):
         unsorted_col_multi_index_list = list(df.columns)
         sorted_col_multi_index_list = get_sorted_multi_index_list(
             unsorted_col_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_col_multi_index_branches,
-            var_labels=self.data_labels, raw_df=raw_df, has_metrics=True, debug=self.debug)
+            sort_orders=self.sort_orders, raw_df=raw_df, has_metrics=True, debug=self.debug)
         sorted_col_multi_index = pd.MultiIndex.from_tuples(sorted_col_multi_index_list)  ## https://pandas.pydata.org/docs/user_guide/advanced.html
         ## ROWS
         unsorted_row_multi_index_list = list(df.index)
         sorted_row_multi_index_list = get_sorted_multi_index_list(
             unsorted_row_multi_index_list, order_rules_for_multi_index_branches=order_rules_for_row_multi_index_branches,
-            var_labels=self.data_labels, raw_df=raw_df, has_metrics=False, debug=self.debug)
+            sort_orders=self.sort_orders, raw_df=raw_df, has_metrics=False, debug=self.debug)
         sorted_row_multi_index = pd.MultiIndex.from_tuples(sorted_row_multi_index_list)  ## https://pandas.pydata.org/docs/user_guide/advanced.html
         df = df.reindex(index=sorted_row_multi_index, columns=sorted_col_multi_index)
         if self.debug: print(f"\nORDERED:\n{df}")
