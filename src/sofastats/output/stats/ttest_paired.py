@@ -139,7 +139,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class TTestPairedDetails(CommonDesign):
+class TTestPairedDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
@@ -147,13 +147,9 @@ class TTestPairedDetails(CommonDesign):
     decimal_points: int = 3
 
     def to_result(self) -> TTestPairedResult:
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
         return stats_result
@@ -166,8 +162,7 @@ class TTestPairedDetails(CommonDesign):
         variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
         measure_fld_lbl = f'Differences between "{variable_a_label}" and "{variable_b_label}"'

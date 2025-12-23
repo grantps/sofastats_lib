@@ -225,13 +225,9 @@ class WilcoxonSignedRanksDesign(CommonDesign):
     show_workings: bool = False
 
     def to_result(self) -> WilcoxonSignedRanksResult:
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = wilcoxon_signed_ranks_stats_calc(
             sample_a=paired_data.sample_a, sample_b=paired_data.sample_b, high_volume_ok=False)
@@ -245,8 +241,7 @@ class WilcoxonSignedRanksDesign(CommonDesign):
         variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = wilcoxon_signed_ranks_stats_calc(
             sample_a=paired_data.sample_a, sample_b=paired_data.sample_b, high_volume_ok=False)
