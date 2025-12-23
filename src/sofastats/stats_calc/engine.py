@@ -581,7 +581,6 @@ def mann_whitney_u(*, sample_a: Sample, sample_b: Sample, high_volume_ok=False) 
 
 def mann_whitney_u_indiv_comparisons(*,
         sample_a: Sample, sample_b: Sample,
-        label_a='Sample 1', label_b='Sample 2',
         high_volume_ok=False) -> MannWhitneyUIndivComparisonsResult:
     """
     The example in "Simple Statistics - A course book for the social sciences" Frances Clegg pp.164-166
@@ -601,13 +600,13 @@ def mann_whitney_u_indiv_comparisons(*,
     if len_b < len_a:  ## make a first unless b shorter
         sample_1 = sample_b.vals
         sample_2 = sample_a.vals
-        label_1 = label_b
-        label_2 = label_a
+        label_1 = sample_b.lbl
+        label_2 = sample_a.lbl
     else:
         sample_1 = sample_a.vals
         sample_2 = sample_b.vals
-        label_1 = label_a
-        label_2 = label_b
+        label_1 = sample_a.lbl
+        label_2 = sample_b.lbl
     len_1 = len(sample_1)
     len_2 = len(sample_2)
     ## vals, counter, ranking

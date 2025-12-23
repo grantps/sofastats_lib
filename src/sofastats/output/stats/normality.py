@@ -69,16 +69,12 @@ class NormalityDesign(CommonDesign):
     decimal_points: int = 3
 
     def to_result(self) -> NormalTestResult:
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        paired = self.variable_b_name is not None
         ## data
+        paired = self.variable_b_name is not None
         if paired:
-            variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
             sample = get_paired_diffs_sample(
                 cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-                variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+                variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
                 tbl_filt_clause=self.table_filter)
         else:
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
@@ -93,20 +89,16 @@ class NormalityDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        paired = self.variable_b_name is not None
         ## data
+        paired = self.variable_b_name is not None
         if paired:
-            variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
-            data_label = f'Difference Between "{variable_a_label}" and "{variable_b_label}"'
+            data_label = f'Difference Between "{self.variable_a_name}" and "{self.variable_b_name}"'
             sample = get_paired_diffs_sample(
                 cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-                variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+                variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
                 tbl_filt_clause=self.table_filter)
         else:
-            data_label = variable_a_label
+            data_label = self.variable_a_name
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
                 measure_fld_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
         title = f"Normality Tests for {data_label}"

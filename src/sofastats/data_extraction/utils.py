@@ -4,7 +4,7 @@ from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.stats_calc.interfaces import PairedSamples, Sample
 
 def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        variable_a_name: str, variable_a_label: str, variable_b_name: str, variable_b_label: str,
+        variable_a_name: str, variable_b_name: str,
         tbl_filt_clause: str | None = None, unique=False) -> PairedSamples:
     """
     For each field, returns a list of all non-missing values where there is also a non-missing value in the other field.
@@ -36,13 +36,12 @@ def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str
     variable_a_vals = [float(x[0]) for x in a_b_val_tuples]
     variable_b_vals = [float(x[1]) for x in a_b_val_tuples]
     return PairedSamples(
-        sample_a=Sample(lbl=f'Sample A - {variable_a_label}', vals=variable_a_vals),
-        sample_b=Sample(lbl=f'Sample B - {variable_b_label}', vals=variable_b_vals),
+        sample_a=Sample(lbl=f'Sample A - {variable_a_name}', vals=variable_a_vals),
+        sample_b=Sample(lbl=f'Sample B - {variable_b_name}', vals=variable_b_vals),
     )
 
 def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        variable_a_name: str, variable_a_label: str, variable_b_name: str, variable_b_label: str,
-        tbl_filt_clause: str | None = None) -> Sample:
+        variable_a_name: str, variable_b_name: str, tbl_filt_clause: str | None = None) -> Sample:
     """
     For every pair of A and B get the difference - those are the values in this sample.
     """
@@ -64,7 +63,7 @@ def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_n
     ## coerce into floats because SQLite sometimes returns strings even if REAL TODO: reuse coerce logic and desc
     if dbe_spec.dbe_name == DbeName.SQLITE:
         sample_vals = [float(val) for val in sample_vals]
-    sample_desc = f'difference between "{variable_a_label}" and "{variable_b_label}"'
+    sample_desc = f'difference between "{variable_a_name}" and "{variable_b_name}"'
     if len(sample_vals) < 2:
         raise Exception(f"Too few values for {sample_desc} in sample for analysis.")
     sample = Sample(lbl=sample_desc.title(), vals=sample_vals)

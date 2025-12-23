@@ -4,7 +4,7 @@ from typing import Any, Sequence
 import jinja2
 import pandas as pd
 
-from sofastats.data_extraction.interfaces import ValFilterSpec, ValSpec
+from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
 from sofastats.output.interfaces import (
@@ -38,8 +38,8 @@ def independent_samples_t_test_from_df(df: pd.DataFrame) -> TTestIndepResult:
 
 @dataclass(frozen=True)
 class Result(TTestIndepResult):
-    group_lbl: str
-    measure_fld_lbl: str
+    grouping_field_name: str
+    measure_field_name: str
     histograms2show: Sequence[str]
 
 def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
@@ -105,8 +105,8 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     """
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
-    title = (f"Results of independent samples t-test of average {result.measure_fld_lbl} "
-        f'''for "{result.group_lbl}" groups "{result.group_a_spec.lbl}" and "{result.group_b_spec.lbl}"''')
+    title = (f'Results of independent samples t-test of average "{result.measure_field_name}" '
+        f'''for "{result.grouping_field_name}" groups "{result.group_a_spec.lbl}" and "{result.group_b_spec.lbl}"''')
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
@@ -129,7 +129,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
             sample_max=str(orig_group_spec.sample_max),
             kurtosis=kurt,
             skew=skew_val,
-            p=orig_group_spec.p,
+            p=str(result.p),
         )
         formatted_group_specs.append(formatted_group_spec)
     lbl_a = result.group_a_spec.lbl
@@ -173,19 +173,15 @@ class TTestIndepDesign(CommonDesign):
     decimal_points: int = 3
 
     def to_result(self) -> TTestIndepResult:
-        ## labels
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        group_a_val_spec = ValSpec(val=self.group_a_value, lbl=val2lbl.get(self.group_a_value, str(self.group_a_value)))
-        group_b_val_spec = ValSpec(val=self.group_b_value, lbl=val2lbl.get(self.group_b_value, str(self.group_b_value)))
         ## data
         ## build samples ready for ttest_indep function
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
-            val_spec=group_a_val_spec, val_is_numeric=is_numeric(group_a_val_spec.val))
+            value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             grouping_filt=grouping_filt_a, measure_fld_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
-            val_spec=group_b_val_spec, val_is_numeric=is_numeric(group_b_val_spec.val))
+            value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             grouping_filt=grouping_filt_b, measure_fld_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
@@ -196,21 +192,15 @@ class TTestIndepDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        grouping_fld_lbl = self.data_labels.var2var_lbl.get(self.grouping_field_name, self.grouping_field_name)
-        measure_fld_lbl = self.data_labels.var2var_lbl.get(self.measure_field_name, self.measure_field_name)
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        group_a_val_spec = ValSpec(val=self.group_a_value, lbl=val2lbl.get(self.group_a_value, str(self.group_a_value)))
-        group_b_val_spec = ValSpec(val=self.group_b_value, lbl=val2lbl.get(self.group_b_value, str(self.group_b_value)))
         ## data
         ## build samples ready for ttest_indep function
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
-            val_spec=group_a_val_spec, val_is_numeric=is_numeric(group_a_val_spec.val))
+            value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             grouping_filt=grouping_filt_a, measure_fld_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
-            val_spec=group_b_val_spec, val_is_numeric=is_numeric(group_b_val_spec.val))
+            value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             grouping_filt=grouping_filt_b, measure_fld_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
@@ -222,7 +212,7 @@ class TTestIndepDesign(CommonDesign):
         for group_spec in [stats_result.group_a_spec, stats_result.group_b_spec]:
             try:
                 histogram_html = get_embedded_histogram_html(
-                    measure_fld_lbl, style_spec.chart, group_spec.vals, group_spec.lbl)
+                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.lbl)
             except Exception as e:
                 html_or_msg = f"<b>{group_spec.lbl}</b> - unable to display histogram. Reason: {e}"
             else:
@@ -230,8 +220,8 @@ class TTestIndepDesign(CommonDesign):
             histograms2show.append(html_or_msg)
 
         result = Result(**todict(stats_result),
-            group_lbl=grouping_fld_lbl,
-            measure_fld_lbl=measure_fld_lbl,
+            grouping_field_name=self.grouping_field_name,
+            measure_field_name=self.measure_field_name,
             histograms2show=histograms2show,
         )
         html = get_html(result, style_spec, dp=self.decimal_points)

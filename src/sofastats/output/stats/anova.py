@@ -23,7 +23,7 @@ from sofastats.stats_calc.engine import anova as anova_stats_calc
 from sofastats.stats_calc.interfaces import AnovaResult, NumericParametricSampleSpecFormatted
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
-from sofastats.utils.misc import todict
+from sofastats.utils.misc import apply_custom_sorting_to_values, todict
 from sofastats.utils.stats import get_p_str
 
 def anova_from_df(df: pd.DataFrame, *,
@@ -139,7 +139,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     if len(group_val_lbls) < 2:
         raise Exception(f"Expected multiple groups in ANOVA. Details:\n{result}")
     labels_str = '"' + '", "'.join(group_val_lbls) + '"'
-    title = (f"Results of ANOVA test of average {result.measure_field_name} "
+    title = (f'Results of ANOVA test of average "{result.measure_field_name}" '
         f'for "{result.grouping_field_name}" groups: {labels_str}')
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
@@ -207,20 +207,8 @@ class AnovaDesign(CommonDesign):
 
     def to_result(self) -> AnovaResult:
         ## values (sorted)
-        grouping_field_values = sorted(self.group_values)
-        if self.sort_orders:
-            try:
-                values_in_order = self.sort_orders[self.grouping_field_name]
-            except KeyError:
-                pass
-            else:
-                value2order = {val: order for order, val in enumerate(values_in_order)}
-                try:
-                    grouping_field_values = sorted(self.group_values, key=lambda val: value2order[val])
-                except KeyError:
-                    raise Exception(
-                        f"The custom sort order you supplied for values in variable '{self.grouping_field_name}' "
-                        "didn't include all the values in your analysis so please fix that and try again.")
+        grouping_field_values = apply_custom_sorting_to_values(
+            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function
@@ -240,20 +228,8 @@ class AnovaDesign(CommonDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## values (sorted)
-        grouping_field_values = sorted(self.group_values)
-        if self.sort_orders:
-            try:
-                values_in_order = self.sort_orders[self.grouping_field_name]
-            except KeyError:
-                pass
-            else:
-                value2order = {val: order for order, val in enumerate(values_in_order)}
-                try:
-                    grouping_field_values = sorted(self.group_values, key=lambda val: value2order[val])
-                except KeyError:
-                    raise Exception(
-                        f"The custom sort order you supplied for values in variable '{self.grouping_field_name}' "
-                        "didn't include all the values in your analysis so please fix that and try again.")
+        grouping_field_values = apply_custom_sorting_to_values(
+            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function

@@ -5,7 +5,7 @@ from typing import Any
 import jinja2
 import pandas as pd
 
-from sofastats.data_extraction.interfaces import ValFilterSpec, ValSpec
+from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
@@ -18,7 +18,7 @@ from sofastats.stats_calc.engine import kruskalwallish as kruskal_wallis_h_stats
 from sofastats.stats_calc.interfaces import KruskalWallisHResult, NumericNonParametricSampleSpecFormatted
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
-from sofastats.utils.misc import todict
+from sofastats.utils.misc import apply_custom_sorting_to_values, todict
 from sofastats.utils.stats import get_p_str
 
 def kruskal_wallis_h_from_df(df: pd.DataFrame) -> KruskalWallisHResult:
@@ -34,8 +34,8 @@ def kruskal_wallis_h_from_df(df: pd.DataFrame) -> KruskalWallisHResult:
 
 @dataclass(frozen=True)
 class Result(KruskalWallisHResult):
-    group_lbl: str
-    measure_fld_lbl: str
+    grouping_field_name: str
+    measure_field_name: str
 
 def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     tpl = """\
@@ -86,8 +86,8 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         raise Exception(f"Expected multiple groups in Kruskal-Wallis analysis. Details:\n{result}")
     group_a_lbl = group_val_lbls[0]
     group_b_lbl = group_val_lbls[-1]
-    title = (f"Results of Kruskal-Wallis H test of average {result.measure_fld_lbl} "
-        f'for "{result.group_lbl}" groups from "{group_a_lbl}" to "{group_b_lbl}"')
+    title = (f'Results of Kruskal-Wallis H test of average "{result.measure_field_name}" '
+        f'for "{result.grouping_field_name}" groups from "{group_a_lbl}" to "{group_b_lbl}"')
     p_explain = get_p_explain(group_a_lbl, group_b_lbl)
     p_full_explanation = f"{p_explain}</br></br>{ONE_TAILED_EXPLANATION}"
     formatted_group_specs = []
@@ -134,52 +134,42 @@ class KruskalWallisHDesign(CommonDesign):
     show_workings: bool = False
 
     def to_result(self) -> KruskalWallisHResult:
-        ## labels
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        grouping_fld_val_specs = list({
-            ValSpec(val=group_val, lbl=val2lbl.get(group_val, str(group_val))) for group_val in self.group_values})
-        grouping_fld_val_specs.sort(key=lambda vs: vs.lbl)
+        ## values (sorted)
+        grouping_field_values = apply_custom_sorting_to_values(
+            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         samples = []
-        labels = []
-        for grouping_fld_val_spec in grouping_fld_val_specs:
-            grouping_filt = ValFilterSpec(variable_name=self.grouping_field_name, val_spec=grouping_fld_val_spec,
+        for grouping_field_value in grouping_field_values:
+            grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filt, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
-            labels.append(grouping_fld_val_spec.lbl)
-        stats_result = kruskal_wallis_h_stats_calc(samples, labels)
+        stats_result = kruskal_wallis_h_stats_calc(samples)
         return stats_result
 
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        group_lbl = self.data_labels.var2var_lbl.get(self.grouping_field_name, self.grouping_field_name)
-        measure_fld_lbl = self.data_labels.var2var_lbl.get(self.measure_field_name, self.measure_field_name)
-        val2lbl = self.data_labels.var2val2lbl.get(self.grouping_field_name, {})
-        grouping_fld_val_specs = list({
-            ValSpec(val=group_val, lbl=val2lbl.get(group_val, str(group_val))) for group_val in self.group_values})
-        grouping_fld_val_specs.sort(key=lambda vs: vs.lbl)
+        ## values (sorted)
+        grouping_field_values = apply_custom_sorting_to_values(
+            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         samples = []
-        labels = []
-        for grouping_fld_val_spec in grouping_fld_val_specs:
-            grouping_filt = ValFilterSpec(variable_name=self.grouping_field_name, val_spec=grouping_fld_val_spec,
+        for grouping_field_value in grouping_field_values:
+            grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filt, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
-            labels.append(grouping_fld_val_spec.lbl)
-        stats_result = kruskal_wallis_h_stats_calc(samples, labels)
+        stats_result = kruskal_wallis_h_stats_calc(samples)
         result = Result(**todict(stats_result),
-            group_lbl=group_lbl,
-            measure_fld_lbl=measure_fld_lbl,
+            grouping_field_name=self.grouping_field_name,
+            measure_field_name=self.measure_field_name,
         )
         html = get_html(result, style_spec, dp=self.decimal_points)
         return HTMLItemSpec(

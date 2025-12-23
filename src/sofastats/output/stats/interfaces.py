@@ -10,8 +10,8 @@ class Coord:
 
 @dataclass(frozen=True, kw_only=True)
 class CorrelationResult:
-    variable_a_label: str
-    variable_b_label: str
+    variable_a_name: str
+    variable_b_name: str
     coords: Sequence[Coord]
     stats_result: CorrelationCalcResult
     regression_result: RegressionResult

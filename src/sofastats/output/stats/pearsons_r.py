@@ -62,9 +62,9 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     {% endfor %}
     """
     title = ('''Results of Pearson's Test of Linear Correlation for '''
-        f'''"{result.variable_a_label}" vs "{result.variable_b_label}"''')
+        f'''"{result.variable_a_name}" vs "{result.variable_b_name}"''')
     p_str = get_p_str(result.stats_result.p)
-    p_explain = get_p_explain(result.variable_a_label, result.variable_b_label)
+    p_explain = get_p_explain(result.variable_a_name, result.variable_b_name)
     p_full_explanation = f"{p_explain}</br></br>{ONE_TAILED_EXPLANATION}"
     pearsons_r_rounded = round(result.stats_result.r, dp)
     degrees_of_freedom_msg = f"Degrees of Freedom (df): {result.stats_result.degrees_of_freedom}"
@@ -98,13 +98,9 @@ class PearsonsRDesign(CommonDesign):
     decimal_points: int = 3
 
     def to_result(self) -> CorrelationCalcResult:
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = pearsonsr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals)
         return stats_result
@@ -112,21 +108,17 @@ class PearsonsRDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            variable_a_name=self.variable_a_name, variable_a_label=variable_a_label,
-            variable_b_name=self.variable_b_name, variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         coords = [Coord(x=x, y=y) for x, y in zip(paired_data.sample_a.vals, paired_data.sample_b.vals, strict=True)]
         pearsonsr_calc_result = pearsonsr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals)
         regression_result = get_regression_result(xs=paired_data.sample_a.vals,ys=paired_data.sample_b.vals)
 
         correlation_result = CorrelationResult(
-            variable_a_label=variable_a_label,
-            variable_b_label=variable_b_label,
+            variable_a_name=self.variable_a_name,
+            variable_b_name=self.variable_b_name,
             coords=coords,
             stats_result=pearsonsr_calc_result,
             regression_result=regression_result,
@@ -148,8 +140,8 @@ class PearsonsRDesign(CommonDesign):
             height_inches=4.0,
             inner_background_colour=style_spec.chart.plot_bg_colour,
             text_colour=style_spec.chart.axis_font_colour,
-            x_axis_label=correlation_result.variable_a_label,
-            y_axis_label=correlation_result.variable_b_label,
+            x_axis_label=correlation_result.variable_a_name,
+            y_axis_label=correlation_result.variable_b_name,
             show_dot_lines=True,
             x_min=x_min,
             x_max=x_max,
