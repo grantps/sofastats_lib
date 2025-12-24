@@ -281,7 +281,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class SingleSeriesScatterChartDetails(CommonDesign):
+class SingleSeriesScatterChartDesign(CommonDesign):
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
@@ -327,7 +327,7 @@ class SingleSeriesScatterChartDetails(CommonDesign):
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiSeriesScatterChartDetails(CommonDesign):
+class MultiSeriesScatterChartDesign(CommonDesign):
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -378,7 +378,7 @@ class MultiSeriesScatterChartDetails(CommonDesign):
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiChartScatterChartDetails(CommonDesign):
+class MultiChartScatterChartDesign(CommonDesign):
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -428,7 +428,7 @@ class MultiChartScatterChartDetails(CommonDesign):
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiChartSeriesScatterChartDetails(CommonDesign):
+class MultiChartSeriesScatterChartDesign(CommonDesign):
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

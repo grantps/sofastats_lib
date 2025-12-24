@@ -8,13 +8,13 @@ import jinja2
 from sofastats.conf.main import (
     AVG_CHAR_WIDTH_PIXELS, MIN_CHART_WIDTH_PIXELS, TEXT_WIDTH_WHEN_ROTATED, SortOrder)
 from sofastats.data_extraction.charts.interfaces_freq_spec import (get_by_category_charting_spec,
-                                                                   get_by_chart_category_charting_spec, get_by_chart_series_category_charting_spec,
-                                                                   get_by_series_category_charting_spec)
+    get_by_chart_category_charting_spec, get_by_chart_series_category_charting_spec,
+    get_by_series_category_charting_spec)
 from sofastats.data_extraction.charts.interfaces import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec
 from sofastats.output.charts.utils import (get_axis_lbl_drop, get_left_margin_offset, get_height,
-                                           get_x_axis_lbls_val_and_text, get_x_axis_font_size, get_y_axis_title_offset)
+    get_x_axis_lbls_val_and_text, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
@@ -46,15 +46,11 @@ class SimpleBarChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            category_vals2lbls=category_vals2lbls,
-            tbl_filt_clause=self.table_filter, category_sort_order=SortOrder.VALUE)
+            category_fld_name=self.category_field_name, tbl_filt_clause=self.table_filter, sort_orders=self.sort_orders,
+            category_sort_order=self.category_sort_order)
         ## chart details
         category_specs = intermediate_charting_spec.to_sorted_category_specs()
         indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec()
@@ -66,7 +62,7 @@ class SimpleBarChartDesign(CommonDesign):
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_lbl,
+            x_axis_title=intermediate_charting_spec.category_fld_name,
             y_axis_title=self.y_axis_title,
         )
         ## output
@@ -85,6 +81,7 @@ class MultiBarChartDesign(CommonDesign):
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
 
+    chart_sort_order: SortOrder = SortOrder.VALUE
     category_sort_order: SortOrder = SortOrder.VALUE
     legend_label: str | None = None
     rotate_x_labels: bool = False
@@ -96,18 +93,13 @@ class MultiBarChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.VALUE,
+            chart_fld_name=self.chart_field_name,
+            category_fld_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.chart_sort_order, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
         category_specs = intermediate_charting_spec.to_sorted_category_specs()
@@ -120,7 +112,7 @@ class MultiBarChartDesign(CommonDesign):
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_lbl,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=self.y_axis_title,
         )
         ## output
@@ -149,18 +141,11 @@ class ClusteredBarChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        series_fld_lbl = self.data_labels.var2var_lbl.get(self.series_field_name, self.series_field_name)
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        series_vals2lbls = self.data_labels.var2val2lbl.get(self.series_field_name, {})
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            series_fld_name=self.series_field_name, series_fld_lbl=series_fld_lbl,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            series_vals2lbls=series_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=self.category_sort_order,
+            series_fld_name=self.series_field_name, category_fld_name=self.category_field_name,
+            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## chart details
         category_specs = intermediate_charting_spec.to_sorted_category_specs()
@@ -168,12 +153,12 @@ class ClusteredBarChartDesign(CommonDesign):
         charting_spec = BarChartingSpec(
             category_specs=category_specs,
             indiv_chart_specs=[indiv_chart_spec, ],
-            legend_lbl=intermediate_charting_spec.series_fld_lbl,
+            legend_lbl=intermediate_charting_spec.series_field_name,
             rotate_x_lbls=self.rotate_x_labels,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_lbl,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=self.y_axis_title,
         )
         ## output
@@ -204,13 +189,6 @@ class MultiClusteredBarChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        series_fld_lbl = self.data_labels.var2var_lbl.get(self.series_field_name, self.series_field_name)
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        series_vals2lbls = self.data_labels.var2val2lbl.get(self.series_field_name, {})
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_chart_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
