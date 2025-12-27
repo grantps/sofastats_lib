@@ -123,11 +123,13 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class AreaChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
 
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder | str = SortOrder.VALUE
+    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    chart_sort_order: SortOrder | str = SortOrder.VALUE
+
     is_time_series: bool = False
     show_major_ticks_only: bool = True
     show_markers: bool = True
@@ -139,33 +141,26 @@ class AreaChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=self.category_sort_order,
+            chart_field_name=self.chart_field_name,
+            category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.category_sort_order, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## chart details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = AreaChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=chart_fld_lbl,
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
+            legend_lbl=self.chart_field_name,
             rotate_x_lbls=self.rotate_x_labels,
             show_n_records=self.show_n_records,
             is_time_series=self.is_time_series,
             show_major_ticks_only=self.show_major_ticks_only,
             show_markers=self.show_markers,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_lbl,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=self.y_axis_title,
         )
         ## output

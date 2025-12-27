@@ -204,11 +204,11 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class PieChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
     style_name: str = 'default'
 
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+
     legend_label: str | None = None,
     rotate_x_labels: bool = False,
     show_borders: bool = False,
@@ -219,21 +219,16 @@ class PieChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.VALUE,
+            category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_spec()
         charting_spec = PieChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=[indiv_chart_specs, ],
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             show_n_records=self.show_n_records,
         )
         ## output
@@ -248,12 +243,13 @@ class PieChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartPieChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
     style_name: str = 'default'
 
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    chart_sort_order: SortOrder = SortOrder.VALUE
+
     legend_label: str | None = None,
     rotate_x_labels: bool = False,
     show_borders: bool = False,
@@ -264,25 +260,18 @@ class MultiChartPieChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        category_fld_lbl = self.data_labels.var2var_lbl.get(self.category_field_name, self.category_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        category_vals2lbls = self.data_labels.var2val2lbl.get(self.category_field_name, {})
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=SortOrder.VALUE,
+            chart_field_name=self.chart_field_name,
+            category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.chart_sort_order, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = PieChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=indiv_chart_specs,
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             show_n_records=self.show_n_records,
         )
         ## output

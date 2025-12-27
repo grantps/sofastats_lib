@@ -126,10 +126,10 @@ class MultiBarChartDesign(CommonDesign):
 class ClusteredBarChartDesign(CommonDesign):
     style_name: str = 'default'
 
-    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    series_sort_order: SortOrder = SortOrder.VALUE
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    series_sort_order: SortOrder = SortOrder.VALUE
 
     rotate_x_labels: bool = False
     show_borders: bool = False
