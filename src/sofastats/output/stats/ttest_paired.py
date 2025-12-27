@@ -165,12 +165,12 @@ class TTestPairedDesign(CommonDesign):
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
-        measure_fld_lbl = f'Differences between "{variable_a_label}" and "{variable_b_label}"'
+        measure_field_lbl = f'Differences between "{variable_a_label}" and "{variable_b_label}"'
         try:
             histogram_html = get_embedded_histogram_html(
-                'Differences', style_spec.chart, stats_result.diffs, measure_fld_lbl, width_scalar=1.5)
+                'Differences', style_spec.chart, stats_result.diffs, measure_field_lbl, width_scalar=1.5)
         except Exception as e:
-            html_or_msg = f"<b>{measure_fld_lbl}</b> - unable to display histogram. Reason: {e}"
+            html_or_msg = f"<b>{measure_field_lbl}</b> - unable to display histogram. Reason: {e}"
         else:
             html_or_msg = histogram_html
 

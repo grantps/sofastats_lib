@@ -36,7 +36,7 @@ def anova_from_df(df: pd.DataFrame, *,
         df: first col must have one value for each group, and the second col must have floats
     """
     samples = get_samples_from_df(df)
-    stats_result = anova_stats_calc(group_lbl=grouping_field_label, measure_fld_lbl=measure_field_label,
+    stats_result = anova_stats_calc(group_lbl=grouping_field_label, measure_field_lbl=measure_field_label,
         samples=samples, high=high_precision_required)
     return stats_result
 
@@ -217,7 +217,7 @@ class AnovaDesign(CommonDesign):
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
         stats_result = anova_stats_calc(
@@ -238,7 +238,7 @@ class AnovaDesign(CommonDesign):
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
         ## calculations

@@ -113,7 +113,7 @@ def get_optimal_min_max(*, axis_min, axis_max) -> tuple[float, float]:
     logger.debug(f"Final axis_min: {axis_min}; Final axis_max {axis_max}")
     return axis_min, axis_max
 
-def get_embedded_histogram_html(measure_fld_lbl: str, style_spec: ChartStyleSpec,
+def get_embedded_histogram_html(measure_field_lbl: str, style_spec: ChartStyleSpec,
         vals: Sequence[float], var_lbl: str | None = None, *,
         width_scalar: float = 1.0, label_chart_from_var_if_needed=True) -> str:
     """
@@ -121,7 +121,7 @@ def get_embedded_histogram_html(measure_fld_lbl: str, style_spec: ChartStyleSpec
     """
     first_colour_mapping = style_spec.colour_mappings[0]
     chart_conf = HistogramConf(
-        var_lbl=measure_fld_lbl,
+        var_lbl=measure_field_lbl,
         chart_lbl=var_lbl,
         inner_bg_colour=style_spec.plot_bg_colour,
         bar_colour=first_colour_mapping.main,

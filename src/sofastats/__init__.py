@@ -43,12 +43,8 @@ For example - making a Pie Chart:
   ------------                                            -----------------------------------------------------
   tbl_name = 'demo_tbl'                                   show_n_records = True     style = 'default'
   tbl_filt_clause = None                                             |              StyleSpec dc
-  chart_fld_name = 'country'                                         |              (defined in conf.style)
-  chart_fld_lbl = 'Country'                                          |                    from
-  category_fld_name = 'browser'                                      |      output.styles.misc.get_style_spec()
-  category_fld_lbl = 'Web Browser'                                   |                     |
-  chart_vals2lbls = {1: 'Japan', 2: 'Italy',...}                     |                     |
-  category_vals2lbls = {'Chrome': 'Google Chrome'}                   |                     |
+  chart_field_name = 'country'                                       |              (defined in conf.style) from
+  category_fld_name = 'Web Browser'                                  |      output.styles.misc.get_style_spec()
   category_sort_order = SortOrder.VALUE                              |                     |
               |                                                      |                     |
               v                                                      |                     |

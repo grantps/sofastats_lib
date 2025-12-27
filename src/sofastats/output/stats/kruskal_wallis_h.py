@@ -144,7 +144,7 @@ class KruskalWallisHDesign(CommonDesign):
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
         stats_result = kruskal_wallis_h_stats_calc(samples)
@@ -163,7 +163,7 @@ class KruskalWallisHDesign(CommonDesign):
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_fld_name=self.measure_field_name,
+                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
                 tbl_filt_clause=self.table_filter)
             samples.append(sample)
         stats_result = kruskal_wallis_h_stats_calc(samples)

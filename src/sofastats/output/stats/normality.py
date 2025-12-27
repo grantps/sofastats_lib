@@ -78,7 +78,7 @@ class NormalityDesign(CommonDesign):
                 tbl_filt_clause=self.table_filter)
         else:
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                measure_fld_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
+                measure_field_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
         n_vals = len(sample.vals)
         if n_vals < MIN_VALS_FOR_NORMALITY_TEST:
             raise Exception(f"We need at least {MIN_VALS_FOR_NORMALITY_TEST:,} values to test normality.")
@@ -100,7 +100,7 @@ class NormalityDesign(CommonDesign):
         else:
             data_label = self.variable_a_name
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                measure_fld_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
+                measure_field_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
         title = f"Normality Tests for {data_label}"
         ## message
         n_vals = len(sample.vals)
@@ -149,7 +149,7 @@ class NormalityDesign(CommonDesign):
                             f'it may still be "normal" enough for use. View graph to decide.</p>'
                             f"<p>{skew_msg}</p></p>{kurtosis_msg}</p>")
         ## histogram
-        histogram = get_embedded_histogram_html(measure_fld_lbl=data_label, style_spec=style_spec.chart,
+        histogram = get_embedded_histogram_html(measure_field_lbl=data_label, style_spec=style_spec.chart,
             vals=sample.vals, width_scalar=1.5, label_chart_from_var_if_needed=False)
 
         result = Result(

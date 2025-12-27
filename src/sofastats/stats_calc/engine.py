@@ -255,7 +255,7 @@ def get_numeric_sample_spec_ext(sample: Sample, *, high=False) -> NumericSampleS
         kurtosis=kurtosis_val, skew=skew_val, normality_test_p=normality_test_p, vals=sample_vals)
     return numeric_sample_spec_extended
 
-def anova(group_lbl: str, measure_fld_lbl: str, samples: Sequence[Sample], *, high=True) -> AnovaResult:
+def anova(group_lbl: str, measure_field_lbl: str, samples: Sequence[Sample], *, high=True) -> AnovaResult:
     """
     From NIST algorithm used for their ANOVA tests.
 
@@ -288,7 +288,7 @@ def anova(group_lbl: str, measure_fld_lbl: str, samples: Sequence[Sample], *, hi
     dfwn = sum(sample_ns) - n_samples
     mean_squ_wn = sswn / dfwn
     if mean_squ_wn == 0:
-        raise ValueError(f"Inadequate variability in samples of {measure_fld_lbl} "
+        raise ValueError(f"Inadequate variability in samples of {measure_field_lbl} "
             f"for groups defined by {group_lbl} - mean_squ_wn is 0")
     ssbn = get_ssbn(samples4ss_calc, sample_means4ss_calc, n_samples, sample_ns, high=high)
     dfbn = n_samples - 1

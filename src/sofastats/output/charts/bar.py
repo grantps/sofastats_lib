@@ -31,11 +31,11 @@ DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM = 10  ## whatever works. Tested on cluster of
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class SimpleBarChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
     style_name: str = 'default'
 
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+
     legend_label: str | None = None
     rotate_x_labels: bool = False
     show_borders: bool = False
@@ -49,20 +49,18 @@ class SimpleBarChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            category_fld_name=self.category_field_name, tbl_filt_clause=self.table_filter, sort_orders=self.sort_orders,
-            category_sort_order=self.category_sort_order)
+            category_field_name=self.category_field_name, sort_orders=self.sort_orders,
+            category_sort_order=self.category_sort_order, tbl_filt_clause=self.table_filter)
         ## chart details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec()
         charting_spec = BarChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=[indiv_chart_spec, ],
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             legend_lbl=self.legend_label,
             rotate_x_lbls=self.rotate_x_labels,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_name,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=self.y_axis_title,
         )
         ## output
@@ -77,12 +75,13 @@ class SimpleBarChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiBarChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
 
-    chart_sort_order: SortOrder = SortOrder.VALUE
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    chart_sort_order: SortOrder = SortOrder.VALUE
+
     legend_label: str | None = None
     rotate_x_labels: bool = False
     show_borders: bool = False
@@ -96,17 +95,15 @@ class MultiBarChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name,
-            category_fld_name=self.category_field_name,
+            chart_field_name=self.chart_field_name,
+            category_field_name=self.category_field_name,
             sort_orders=self.sort_orders,
             chart_sort_order=self.chart_sort_order, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = BarChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=indiv_chart_specs,
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             legend_lbl=self.legend_label,
             rotate_x_lbls=self.rotate_x_labels,
             show_borders=self.show_borders,
@@ -127,11 +124,13 @@ class MultiBarChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class ClusteredBarChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
 
+    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    series_sort_order: SortOrder = SortOrder.VALUE
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+
     rotate_x_labels: bool = False
     show_borders: bool = False
     show_n_records: bool = True
@@ -144,15 +143,14 @@ class ClusteredBarChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            series_fld_name=self.series_field_name, category_fld_name=self.category_field_name,
-            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
+            series_field_name=self.series_field_name, category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            series_sort_order=self.series_sort_order, category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## chart details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec()
         charting_spec = BarChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=[indiv_chart_spec, ],
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             legend_lbl=intermediate_charting_spec.series_field_name,
             rotate_x_lbls=self.rotate_x_labels,
             show_borders=self.show_borders,
@@ -173,13 +171,16 @@ class ClusteredBarChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiClusteredBarChartDesign(CommonDesign):
-    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
     style_name: str = 'default'
 
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
+    series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    series_sort_order: SortOrder = SortOrder.VALUE
+    chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    chart_sort_order: SortOrder = SortOrder.VALUE
+
+
     rotate_x_labels: bool = False,
     show_borders: bool = False,
     show_n_records: bool = True,
@@ -192,24 +193,24 @@ class MultiClusteredBarChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_chart_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            series_fld_name=self.series_field_name, series_fld_lbl=series_fld_lbl,
-            category_fld_name=self.category_field_name, category_fld_lbl=category_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls, series_vals2lbls=series_vals2lbls,
-            category_vals2lbls=category_vals2lbls, category_sort_order=self.category_sort_order,
+            chart_field_name=self.chart_field_name,
+            series_field_name=self.series_field_name,
+            category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.chart_sort_order,
+            series_sort_order=self.series_sort_order,
+            category_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## chart details
-        category_specs = intermediate_charting_spec.to_sorted_category_specs()
-        indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = BarChartingSpec(
-            category_specs=category_specs,
-            indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=intermediate_charting_spec.series_fld_lbl,
+            category_specs=intermediate_charting_spec.sorted_category_specs,
+            indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
+            legend_lbl=intermediate_charting_spec.series_field_name,
             rotate_x_lbls=self.rotate_x_labels,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.category_fld_lbl,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=self.y_axis_title,
         )
         ## output

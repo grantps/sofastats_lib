@@ -245,12 +245,12 @@ class MannWhitneyUDesign(CommonDesign):
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            grouping_filt=grouping_filt_a, measure_fld_name=self.measure_field_name,
+            grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            grouping_filt=grouping_filt_b, measure_fld_name=self.measure_field_name,
+            grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         stats_result = mann_whitney_u_stats_calc(sample_a=sample_a, sample_b=sample_b, high_volume_ok=False)
         return stats_result
@@ -263,12 +263,12 @@ class MannWhitneyUDesign(CommonDesign):
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            grouping_filt=grouping_filt_a, measure_fld_name=self.measure_field_name,
+            grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            grouping_filt=grouping_filt_b, measure_fld_name=self.measure_field_name,
+            grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
             tbl_filt_clause=self.table_filter)
         ## get result
         stats_result = mann_whitney_u_stats_calc(sample_a=sample_a, sample_b=sample_b, high_volume_ok=False)

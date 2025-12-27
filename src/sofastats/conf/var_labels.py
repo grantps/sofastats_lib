@@ -177,5 +177,3 @@ def dict2varlabels(data_label_mappings: dict, *, debug=False) -> VarLabels:
         print(data_label_mappings)
         print(var_labels)
     return var_labels
-
-
