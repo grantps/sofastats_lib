@@ -231,11 +231,11 @@ def get_x_axis_font_size(val_labels: Collection[str]) -> int:
         font_size = 11
     return font_size
 
-def get_lbls_in_lines(orig_txt: str, max_width: int, *, dojo=False, rotate=False) -> tuple[str, int, int]:
+def get_labels_in_lines(orig_txt: str, max_width: int, *, dojo=False, rotate=False) -> tuple[str, int, int]:
     """
     Returns quoted text. Will not be further quoted.
     Will be "%s" % wrapped txt not "\"%s\"" % wrapped_txt
-    actual_lbl_width -- may be broken into lines if not rotated.
+    actual_label_width -- may be broken into lines if not rotated.
     If rotated, we need sum of each line (no line breaks possible at present).
     """
     lines = []
@@ -258,28 +258,28 @@ def get_lbls_in_lines(orig_txt: str, max_width: int, *, dojo=False, rotate=False
     n_lines = len(lines)
     if dojo:
         if n_lines == 1:
-            raw_lbl = lines[0].strip()
-            wrapped_txt = '"' + raw_lbl + '"'
-            actual_lbl_width = len(raw_lbl)
+            raw_label = lines[0].strip()
+            wrapped_txt = '"' + raw_label + '"'
+            actual_label_width = len(raw_label)
         else:
             if rotate:  ## displays <br> for some reason so can't use it
                 ## no current way identified for line breaks when rotated
                 ## see - http://grokbase.com/t/dojo/dojo-interest/09cat4bkvg/dojox-charting-line-break-in-axis-labels-ie
                 wrapped_txt = '"' + '" + " " + "'.join(x.strip() for x in lines) + '"'
-                actual_lbl_width = sum(len(x)+1 for x in lines) - 1
+                actual_label_width = sum(len(x)+1 for x in lines) - 1
             else:
                 wrapped_txt = '"' + '" + labelLineBreak + "'.join(lines) + '"'
-                actual_lbl_width = max_width  ## they are centred in max_width
+                actual_label_width = max_width  ## they are centred in max_width
     else:
         if n_lines == 1:
-            raw_lbl = lines[0].strip()
-            wrapped_txt = raw_lbl
-            actual_lbl_width = len(raw_lbl)
+            raw_label = lines[0].strip()
+            wrapped_txt = raw_label
+            actual_label_width = len(raw_label)
         else:
             wrapped_txt = '\n'.join(lines)
-            actual_lbl_width = max_width  ## they are centred in max_width
+            actual_label_width = max_width  ## they are centred in max_width
     logger.debug(wrapped_txt)
-    return wrapped_txt, actual_lbl_width, n_lines
+    return wrapped_txt, actual_label_width, n_lines
 
 def config_clustered_barchart(plot, style_spec: StyleSpec, *,
         variable_a_label: str, variable_a_val_labels: Sequence[str], variable_b_val_labels: Sequence[str], y_label,
@@ -307,7 +307,7 @@ def config_clustered_barchart(plot, style_spec: StyleSpec, *,
         cluster.color = bar_colours[i]
         cluster.edgeColor = 'white'
         max_width = 17 if labels_n < 5 else 10
-        cluster.label, _actual_lbl_width, _n_lines = get_lbls_in_lines(orig_txt=val_label_b, max_width=max_width)
+        cluster.label, _actual_label_width, _n_lines = get_labels_in_lines(orig_txt=val_label_b, max_width=max_width)
         clustered_bars.add(cluster)
     clustered_bars.spacing = 0.5
     clustered_bars.xTickLabels = variable_a_val_labels

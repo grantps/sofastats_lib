@@ -36,7 +36,7 @@ def anova_from_df(df: pd.DataFrame, *,
         df: first col must have one value for each group, and the second col must have floats
     """
     samples = get_samples_from_df(df)
-    stats_result = anova_stats_calc(group_lbl=grouping_field_label, measure_field_lbl=measure_field_label,
+    stats_result = anova_stats_calc(group_label=grouping_field_label, measure_field_label=measure_field_label,
         samples=samples, high=high_precision_required)
     return stats_result
 
@@ -135,16 +135,16 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     """
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
-    group_val_lbls = [group_spec.lbl for group_spec in result.group_specs]
-    if len(group_val_lbls) < 2:
+    group_val_labels = [group_spec.label for group_spec in result.group_specs]
+    if len(group_val_labels) < 2:
         raise Exception(f"Expected multiple groups in ANOVA. Details:\n{result}")
-    labels_str = '"' + '", "'.join(group_val_lbls) + '"'
+    labels_str = '"' + '", "'.join(group_val_labels) + '"'
     title = (f'Results of ANOVA test of average "{result.measure_field_name}" '
         f'for "{result.grouping_field_name}" groups: {labels_str}')
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
-    mpl_pngs.set_gen_mpl_settings(axes_lbl_size=10, xtick_lbl_size=8, ytick_lbl_size=8)
+    mpl_pngs.set_gen_mpl_settings(axes_label_size=10, xtick_label_size=8, ytick_label_size=8)
     for orig_group_spec in result.group_specs:
         n = format_num(orig_group_spec.n)
         ci95_left = num_tpl.format(round(orig_group_spec.ci95[0], dp))
@@ -155,7 +155,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         kurt = num_tpl.format(round(orig_group_spec.kurtosis, dp))
         skew_val = num_tpl.format(round(orig_group_spec.skew, dp))
         formatted_group_spec = NumericParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             mean=sample_mean,
             ci95=ci95,
@@ -249,9 +249,9 @@ class AnovaDesign(CommonDesign):
         for group_spec in stats_result.group_specs:
             try:
                 histogram_html = get_embedded_histogram_html(
-                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.lbl)
+                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.label)
             except Exception as e:
-                html_or_msg = f"<b>{group_spec.lbl}</b> - unable to display histogram. Reason: {e}"
+                html_or_msg = f"<b>{group_spec.label}</b> - unable to display histogram. Reason: {e}"
             else:
                 html_or_msg = histogram_html
             histograms2show.append(html_or_msg)

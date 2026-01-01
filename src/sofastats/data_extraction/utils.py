@@ -1,7 +1,22 @@
-from sofastats.conf.main import DbeName, DbeSpec
+from typing import Any
+
+from sofastats.conf.main import DbeName, DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.stats_calc.interfaces import PairedSamples, Sample
+from sofastats.utils.misc import apply_custom_sorting_to_values
+
+def to_sorted_values(*, orig_vals: list[Any], field_name: str,
+        sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
+    if sort_order == SortOrder.VALUE:
+        sorted_series_vals = sorted(orig_vals)
+    elif sort_order == SortOrder.CUSTOM:
+        sorted_series_vals = apply_custom_sorting_to_values(
+            variable_name=field_name, values=orig_vals, sort_orders=sort_orders)
+    else:
+        raise Exception(f"Unexpected sort_order ({sort_order})"
+            "\nINCREASING and DECREASING not allowed when multiple series of charts.")
+    return sorted_series_vals
 
 def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
         variable_a_name: str, variable_b_name: str,
@@ -36,8 +51,8 @@ def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str
     variable_a_vals = [float(x[0]) for x in a_b_val_tuples]
     variable_b_vals = [float(x[1]) for x in a_b_val_tuples]
     return PairedSamples(
-        sample_a=Sample(lbl=f'Sample A - {variable_a_name}', vals=variable_a_vals),
-        sample_b=Sample(lbl=f'Sample B - {variable_b_name}', vals=variable_b_vals),
+        sample_a=Sample(label=f'Sample A - {variable_a_name}', vals=variable_a_vals),
+        sample_b=Sample(label=f'Sample B - {variable_b_name}', vals=variable_b_vals),
     )
 
 def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
@@ -66,7 +81,7 @@ def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_n
     sample_desc = f'difference between "{variable_a_name}" and "{variable_b_name}"'
     if len(sample_vals) < 2:
         raise Exception(f"Too few values for {sample_desc} in sample for analysis.")
-    sample = Sample(lbl=sample_desc.title(), vals=sample_vals)
+    sample = Sample(label=sample_desc.title(), vals=sample_vals)
     return sample
 
 def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
@@ -120,6 +135,6 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
     if len(sample_vals) < 2:
         raise Exception(f"Too few {measure_field_name} values in sample for analysis "
             f"when getting sample for {and_grouping_filt_clause}")
-    lbl = grouping_filt.value if grouping_filt else ''
-    sample = Sample(lbl=lbl, vals=sample_vals)
+    label = grouping_filt.value if grouping_filt else ''
+    sample = Sample(label=label, vals=sample_vals)
     return sample

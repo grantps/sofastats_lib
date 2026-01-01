@@ -106,7 +106,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = (f'Results of independent samples t-test of average "{result.measure_field_name}" '
-        f'''for "{result.grouping_field_name}" groups "{result.group_a_spec.lbl}" and "{result.group_b_spec.lbl}"''')
+        f'''for "{result.grouping_field_name}" groups "{result.group_a_spec.label}" and "{result.group_b_spec.label}"''')
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
@@ -120,7 +120,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         kurt = num_tpl.format(round(orig_group_spec.kurtosis, dp))
         skew_val = num_tpl.format(round(orig_group_spec.skew, dp))
         formatted_group_spec = NumericParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             mean=sample_mean,
             ci95=ci95,
@@ -132,11 +132,11 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
             p=str(result.p),
         )
         formatted_group_specs.append(formatted_group_spec)
-    lbl_a = result.group_a_spec.lbl
-    lbl_b = result.group_b_spec.lbl
+    label_a = result.group_a_spec.label
+    label_b = result.group_b_spec.label
     two_tailed_explanation = (
         "This is a two-tailed result i.e. based on the likelihood of a difference "
-        f'where the direction ("{lbl_a}" higher than "{lbl_b}" or "{lbl_b}" higher than "{lbl_a}") '
+        f'where the direction ("{label_a}" higher than "{label_b}" or "{label_b}" higher than "{label_a}") '
         "doesn't matter.")
     p_full_explanation = f"{P_EXPLAIN_TWO_GROUPS}<br><br>{two_tailed_explanation}"
 
@@ -207,14 +207,14 @@ class TTestIndepDesign(CommonDesign):
         ## get result
         stats_result = ttest_indep_stats_calc(sample_a, sample_b)
 
-        mpl_pngs.set_gen_mpl_settings(axes_lbl_size=10, xtick_lbl_size=8, ytick_lbl_size=8)
+        mpl_pngs.set_gen_mpl_settings(axes_label_size=10, xtick_label_size=8, ytick_label_size=8)
         histograms2show = []
         for group_spec in [stats_result.group_a_spec, stats_result.group_b_spec]:
             try:
                 histogram_html = get_embedded_histogram_html(
-                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.lbl)
+                    self.measure_field_name, style_spec.chart, group_spec.vals, group_spec.label)
             except Exception as e:
-                html_or_msg = f"<b>{group_spec.lbl}</b> - unable to display histogram. Reason: {e}"
+                html_or_msg = f"<b>{group_spec.label}</b> - unable to display histogram. Reason: {e}"
             else:
                 html_or_msg = histogram_html
             histograms2show.append(html_or_msg)

@@ -11,15 +11,15 @@ from typing import Any
 @dataclass(frozen=True)
 class DataItem:
     """
-    lbl: HTML label e.g. "Ubuntu<br>Linux" - ready for display in chart
+    label: HTML label e.g. "Ubuntu<br>Linux" - ready for display in chart
     """
     amount: float
-    lbl: str
+    label: str
     tooltip: str
 
 @dataclass
 class DataSeriesSpec:
-    lbl: str | None
+    label: str | None
     data_items: Sequence[DataItem]
 
     def __post_init__(self):
@@ -27,16 +27,16 @@ class DataSeriesSpec:
         Used in JS which often grabs bits separately.
         """
         self.amounts = []
-        self.lbls = []
+        self.labels = []
         self.tooltips = []
         for data_item in self.data_items:
             if data_item is not None:
                 self.amounts.append(data_item.amount)
-                self.lbls.append(data_item.lbl)
+                self.labels.append(data_item.label)
                 self.tooltips.append(data_item.tooltip)
             else:
                 self.amounts.append(0)
-                self.lbls.append('')
+                self.labels.append('')
                 self.tooltips.append('')
 
 ## everything with categories i.e. all charts with frequencies + box plots
@@ -44,13 +44,13 @@ class DataSeriesSpec:
 @dataclass(frozen=True)
 class CategorySpec:
     """
-    lbl: HTML label e.g. "Ubuntu<br>Linux" - ready for display in chart
+    label: HTML label e.g. "Ubuntu<br>Linux" - ready for display in chart
     """
     val: Any
-    lbl: str
+    label: str
 
 @dataclass
 class IndivChartSpec:
-    lbl: str | None
+    label: str | None
     data_series_specs: Sequence[DataSeriesSpec]
     n_records: int

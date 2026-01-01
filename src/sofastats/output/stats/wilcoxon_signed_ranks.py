@@ -29,8 +29,8 @@ def wilcoxon_signed_ranks_r_from_df(df: pd.DataFrame) -> WilcoxonSignedRanksResu
         df: first and second col must have floats
     """
     df.columns = ['a', 'b']
-    sample_a = Sample(lbl='A', vals=list(df['a']))
-    sample_b = Sample(lbl='B', vals=list(df['b']))
+    sample_a = Sample(label='A', vals=list(df['a']))
+    sample_b = Sample(label='B', vals=list(df['b']))
     stats_result = wilcoxon_signed_ranks_stats_calc(sample_a=sample_a, sample_b=sample_b)
     return stats_result
 
@@ -172,7 +172,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     """
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
-    title = f'Results of Wilcoxon Signed Ranks Test of "{result.group_a_spec.lbl}" vs "{result.group_b_spec.lbl}"'
+    title = f'Results of Wilcoxon Signed Ranks Test of "{result.group_a_spec.label}" vs "{result.group_b_spec.label}"'
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
@@ -180,19 +180,19 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         n = format_num(orig_group_spec.n)
         sample_median = num_tpl.format(round(orig_group_spec.median, dp))
         formatted_group_spec = NumericNonParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             median=sample_median,
             sample_min=str(orig_group_spec.sample_min),
             sample_max=str(orig_group_spec.sample_max),
         )
         formatted_group_specs.append(formatted_group_spec)
-    lbl_a = result.group_a_spec.lbl
-    lbl_b = result.group_b_spec.lbl
-    p_explain = get_p_explain(lbl_a, lbl_b)
+    label_a = result.group_a_spec.label
+    label_b = result.group_b_spec.label
+    p_explain = get_p_explain(label_a, label_b)
     two_tailed_explanation = (
         "This is a two-tailed result i.e. based on the likelihood of a difference "
-        f'where the direction ("{lbl_a}" higher than "{lbl_b}" or "{lbl_b}" higher than "{lbl_a}") '
+        f'where the direction ("{label_a}" higher than "{label_b}" or "{label_b}" higher than "{label_a}") '
         "doesn't matter.")
     p_full_explanation = f"{p_explain}</br></br>{two_tailed_explanation}"
 
@@ -236,9 +236,6 @@ class WilcoxonSignedRanksDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
@@ -249,7 +246,7 @@ class WilcoxonSignedRanksDesign(CommonDesign):
         if self.show_workings:
             result_workings = wilcoxon_signed_ranks_for_workings(
                 sample_a=paired_data.sample_a, sample_b=paired_data.sample_b,
-                label_a=variable_a_label, label_b=variable_b_label)
+                label_a=self.variable_a_name, label_b=self.variable_b_name)
             worked_example = get_worked_example(result_workings, style_spec.style_name_hyphens)
         else:
             worked_example = ''

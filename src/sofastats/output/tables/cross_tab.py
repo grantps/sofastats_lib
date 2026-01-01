@@ -23,7 +23,6 @@ from itertools import product
 
 import pandas as pd
 
-from sofastats.conf.var_labels import VarLabels
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.styles.utils import get_style_spec
@@ -43,7 +42,7 @@ pd.set_option('display.width', 1_000)
 
 from collections.abc import Collection
 
-def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[str], col_vars: list[str],
+def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[str],
         n_row_fillers: int = 0, n_col_fillers: int = 0, pct_metrics: Collection[Metric], dp: int = 2,
         debug=False) -> pd.DataFrame:
     """
@@ -293,7 +292,7 @@ class CrossTabDesign(CommonDesign):
             data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
                 src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
                 all_variables=all_variables, totalled_variables=totalled_variables, debug=self.debug)
-            df_col = get_all_metrics_df_from_vars(data, self.data_labels, row_vars=row_vars, col_vars=col_vars,
+            df_col = get_all_metrics_df_from_vars(data, row_vars=row_vars, col_vars=col_vars,
                 n_row_fillers=n_row_fillers, n_col_fillers=self.max_col_depth - len(col_vars),
                 pct_metrics=col_spec.self_or_descendant_pct_metrics, dp=self.decimal_points, debug=self.debug)
             df_cols.append(df_col)

@@ -16,21 +16,20 @@ These dataclasses should have everything included that directly relates to the d
 They shouldn't contain any settings which are purely about style or display.
 
 For example:
-IN: chart_lbl
-OUT: rotate_x_lbls, show_n_records, legend_lbl (as such - might actually be one of the data labels)
+IN: chart_label
+OUT: rotate_x_labels, show_n_records, series_legend_label (as such - might actually be one of the data labels)
 """
+from collections.abc import Sequence
+from dataclasses import dataclass
+from textwrap import dedent
 from typing import Any
 
 import pandas as pd
 
-from collections.abc import Sequence
-from dataclasses import dataclass
-from textwrap import dedent
-from sofastats.conf.main import DbeSpec, SortOrder
-from sofastats.conf.var_labels import SortOrderSpecs
+from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.charts.interfaces import CategorySpec, DataItem, DataSeriesSpec, IndivChartSpec
-from sofastats.utils.misc import apply_custom_sorting_to_values
+from sofastats.data_extraction.charts.interfaces import DataItem, DataSeriesSpec, IndivChartSpec
+from sofastats.data_extraction.utils import to_sorted_values
 
 ## by category only (one chart, one series)
 
@@ -66,8 +65,8 @@ class CategoryFreqSpecs:
         return dedent('\n'.join(bits))
 
     @property
-    def sorted_category_specs(self):
-        return to_sorted_category_specs(category_freq_specs=self.category_freq_specs,
+    def sorted_categories(self):
+        return to_sorted_categories(category_freq_specs=self.category_freq_specs,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders, category_sort_order=self.category_sort_order, can_sort_by_freq=True)
 
@@ -80,45 +79,30 @@ class CategoryFreqSpecs:
             val = category_freq_spec.category_val
             data_item = DataItem(
                 amount=category_freq_spec.freq,
-                lbl=str(category_freq_spec.freq),
+                label=str(category_freq_spec.freq),
                 tooltip=f"{category_freq_spec.freq}<br>({round(category_freq_spec.category_pct, 2)}%)")
             vals2data_items[val] = data_item
         ## b) create sorted collection of data items according to x-axis sorting.
         ## Note - never gaps for by-category only charts
         series_data_items = []
-        for category_spec in self.sorted_category_specs:
-            val = category_spec.val
-            data_item = vals2data_items.get(val)
+        for category in self.sorted_categories:
+            data_item = vals2data_items.get(category)
             series_data_items.append(data_item)
         ## assemble
         data_series_spec = DataSeriesSpec(
-            lbl=None,
+            label=None,
             data_items=series_data_items,
         )
         indiv_chart_spec = IndivChartSpec(
-            lbl=None,
+            label=None,
             data_series_specs=[data_series_spec, ],
             n_records=n_records,
         )
         return indiv_chart_spec
 
-def to_sorted_specs(*, orig_vals: list[Any], field_name: str,
-        sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
-
-    if sort_order == SortOrder.VALUE:
-        sorted_series_vals = sorted(orig_vals)
-    elif sort_order == SortOrder.CUSTOM:
-        sorted_series_vals = apply_custom_sorting_to_values(
-            variable_name=field_name, values=orig_vals, sort_orders=sort_orders)
-    else:
-        raise Exception(
-            f"Unexpected sort_order ({sort_order})"
-            "\nINCREASING and DECREASING not allowed when multiple series of charts.")
-    return sorted_series_vals
-
-def to_sorted_category_specs(*, category_freq_specs: Sequence[CategoryItemFreqSpec],
+def to_sorted_categories(*, category_freq_specs: Sequence[CategoryItemFreqSpec],
         category_field_name: str, sort_orders: SortOrderSpecs, category_sort_order: SortOrder,
-        can_sort_by_freq=True) -> Sequence[CategorySpec]:
+        can_sort_by_freq=True) -> Sequence[Any]:
     """
     Get category specs in correct order ready for use.
     The category specs are constant across all charts and series (if multi-chart and / or multi-series)
@@ -170,11 +154,8 @@ def to_sorted_category_specs(*, category_freq_specs: Sequence[CategoryItemFreqSp
             )
     else:
         raise Exception(f"Unexpected category_sort_order ({category_sort_order})")
-    category_specs = [
-        CategorySpec(freq_spec.category_val, freq_spec.category_val)
-        for freq_spec in sorted(category_freq_specs, key=sort_me, reverse=reverse)
-    ]
-    return category_specs
+    categories = [freq_spec.category_val for freq_spec in sorted(category_freq_specs, key=sort_me, reverse=reverse)]
+    return categories
 
 
 ## by category and by series
@@ -236,10 +217,10 @@ class SeriesCategoryFreqSpecs:
         return list(all_category_freq_specs)
 
     @property
-    def sorted_category_specs(self):
-        return to_sorted_category_specs(category_freq_specs=self.category_freq_specs,
+    def sorted_categories(self):
+        return to_sorted_categories(category_freq_specs=self.category_freq_specs,
             category_field_name=self.category_field_name,
-            sort_orders=self.sort_orders ,category_sort_order=self.category_sort_order,
+            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
             can_sort_by_freq=False)
 
     def to_indiv_chart_spec(self) -> IndivChartSpec:
@@ -259,23 +240,22 @@ class SeriesCategoryFreqSpecs:
                    f"<br>({round(freq_spec.category_pct, 2)}%)")
                 data_item = DataItem(
                     amount=freq_spec.freq,
-                    lbl=str(freq_spec.freq),
+                    label=str(freq_spec.freq),
                     tooltip=tooltip)
                 vals2data_items[val] = data_item
             ## b) create sorted collection of data items according to x-axis sorting.
             ## Note - gaps should become None (which .get() automatically handles for us :-))
             series_data_items = []
-            for category_spec in self.sorted_category_specs:
-                val = category_spec.val
-                data_item = vals2data_items.get(val)
+            for category in self.sorted_categories:
+                data_item = vals2data_items.get(category)
                 series_data_items.append(data_item)
             data_series_spec = DataSeriesSpec(
-                lbl=series_category_freq_spec.series_val,
+                label=series_category_freq_spec.series_val,
                 data_items=series_data_items,
             )
             data_series_specs.append(data_series_spec)
         indiv_chart_spec = IndivChartSpec(
-            lbl=None,
+            label=None,
             data_series_specs=data_series_specs,
             n_records=n_records,
         )
@@ -333,8 +313,8 @@ class ChartCategoryFreqSpecs:
         return list(all_category_freq_specs)
 
     @property
-    def sorted_category_specs(self):
-        return to_sorted_category_specs(category_freq_specs=self.category_freq_specs,
+    def sorted_categories(self):
+        return to_sorted_categories(category_freq_specs=self.category_freq_specs,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
             can_sort_by_freq=False)
@@ -354,22 +334,21 @@ class ChartCategoryFreqSpecs:
                 tooltip = f"{freq_spec.freq}<br>({round(freq_spec.category_pct, 2)}%)"
                 data_item = DataItem(
                     amount=freq_spec.freq,
-                    lbl=str(freq_spec.freq),
+                    label=str(freq_spec.freq),
                     tooltip=tooltip)
                 vals2data_items[val] = data_item
             ## b) create sorted collection of data items according to x-axis sorting.
             ## Note - gaps should become None (which .get() automatically handles for us :-))
             chart_data_items = []
-            for category_spec in self.sorted_category_specs:
-                val = category_spec.val
-                data_item = vals2data_items.get(val)
+            for category in self.sorted_categories:
+                data_item = vals2data_items.get(category)
                 chart_data_items.append(data_item)
             data_series_spec = DataSeriesSpec(
-                lbl=None,
+                label=None,
                 data_items=chart_data_items,
             )
             indiv_chart_spec = IndivChartSpec(
-                lbl=f"{self.chart_field_name}: {chart_category_freq_spec.chart_val}",
+                label=f"{self.chart_field_name}: {chart_category_freq_spec.chart_val}",
                 data_series_specs=[data_series_spec, ],
                 n_records=n_records,
             )
@@ -401,9 +380,9 @@ class ChartSeriesCategoryFreqSpecs:
     e.g. Japan in a category variable e.g. country
     Also store labels for chart, series, and category as a convenience so all the building blocks are in one place.
     """
-    chart_field_name: str  ## e.g. Web Browser
-    series_field_name: str  ## e.g. Gender
     category_field_name: str  ## e.g. Country
+    series_field_name: str  ## e.g. Gender
+    chart_field_name: str  ## e.g. Web Browser
     chart_series_category_freq_specs: Sequence[ChartSeriesCategoryFreqSpec]
     sort_orders: SortOrderSpecs
     category_sort_order: SortOrder
@@ -431,8 +410,8 @@ class ChartSeriesCategoryFreqSpecs:
         return list(all_category_freq_specs)
 
     @property
-    def sorted_category_specs(self):
-        return to_sorted_category_specs(category_freq_specs=self.category_freq_specs,
+    def sorted_categories(self):
+        return to_sorted_categories(category_freq_specs=self.category_freq_specs,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
             can_sort_by_freq=False)
@@ -457,23 +436,22 @@ class ChartSeriesCategoryFreqSpecs:
                         f"<br>({round(freq_spec.category_pct, 2)}%)")
                     data_item = DataItem(
                         amount=freq_spec.freq,
-                        lbl=str(freq_spec.freq),
+                        label=str(freq_spec.freq),
                         tooltip=tooltip)
                     vals2data_items[val] = data_item
                 ## b) create sorted collection of data items according to x-axis sorting.
                 ## Note - gaps should become None (which .get() automatically handles for us :-))
                 chart_series_data_items = []
-                for category_spec in self.sorted_category_specs:
-                    val = category_spec.val
-                    data_item = vals2data_items.get(val)
+                for category in self.sorted_categories:
+                    data_item = vals2data_items.get(category)
                     chart_series_data_items.append(data_item)
                 data_series_spec = DataSeriesSpec(
-                    lbl=series_category_freq_spec.series_val,
+                    label=series_category_freq_spec.series_val,
                     data_items=chart_series_data_items,
                 )
                 data_series_specs.append(data_series_spec)
             indiv_chart_spec = IndivChartSpec(
-                lbl=f"{self.chart_field_name}: {chart_series_category_freq_spec.chart_val}",
+                label=f"{self.chart_field_name}: {chart_series_category_freq_spec.chart_val}",
                 data_series_specs=data_series_specs,
                 n_records=n_records,
             )
@@ -524,7 +502,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src
     return data_spec
 
 def get_by_series_category_charting_spec(cur: ExtendedCursor, src_tbl_name: str, dbe_spec: DbeSpec,
-        series_field_name: str, category_field_name: str,
+        category_field_name: str, series_field_name: str,
         sort_orders: SortOrderSpecs,
         series_sort_order: SortOrder = SortOrder.VALUE, category_sort_order: SortOrder = SortOrder.VALUE,
         tbl_filt_clause: str | None = None) -> SeriesCategoryFreqSpecs:
@@ -568,7 +546,7 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, src_tbl_name: str,
     df = pd.DataFrame(data, columns=cols)
     series_category_freq_specs = []
     orig_series_vals = df['series_val'].unique()
-    sorted_series_vals = to_sorted_specs(orig_vals=orig_series_vals,
+    sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
         field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         category_item_freq_specs = []
@@ -597,9 +575,9 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, src_tbl_name: str,
     return data_spec
 
 def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        chart_field_name: str, category_field_name: str,
+        category_field_name: str, chart_field_name: str,
         sort_orders: SortOrderSpecs,
-        chart_sort_order: SortOrder = SortOrder.VALUE, category_sort_order: SortOrder = SortOrder.VALUE,
+        category_sort_order: SortOrder = SortOrder.VALUE, chart_sort_order: SortOrder = SortOrder.VALUE,
         tbl_filt_clause: str | None = None) -> ChartCategoryFreqSpecs:
     """
     Intermediate charting spec - close to the data
@@ -639,7 +617,7 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     df = pd.DataFrame(data, columns=cols)
     chart_category_freq_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_specs(orig_vals=orig_chart_vals,
+    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
         field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         freq_specs = []
@@ -668,19 +646,21 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     return charting_spec
 
 def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        chart_field_name: str, series_field_name: str, category_field_name: str,
-        chart_sort_order: SortOrder = SortOrder.VALUE, series_sort_order: SortOrder = SortOrder.VALUE,
-        category_sort_order: SortOrder = SortOrder.VALUE, sort_orders: SortOrderSpecs,
+        category_field_name: str, series_field_name: str, chart_field_name: str,
+        sort_orders: SortOrderSpecs,
+        category_sort_order: SortOrder = SortOrder.VALUE,
+        series_sort_order: SortOrder = SortOrder.VALUE,
+        chart_sort_order: SortOrder = SortOrder.VALUE,
         tbl_filt_clause: str | None = None) -> ChartSeriesCategoryFreqSpecs:
     """
     Intermediate charting spec - close to the data
     """
     ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
-    chart_field_name_quoted = dbe_spec.entity_quoter(chart_field_name)
-    series_field_name_quoted = dbe_spec.entity_quoter(series_field_name)
     category_field_name_quoted = dbe_spec.entity_quoter(category_field_name)
+    series_field_name_quoted = dbe_spec.entity_quoter(series_field_name)
+    chart_field_name_quoted = dbe_spec.entity_quoter(chart_field_name)
     src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     ## assemble SQL
     sql = f"""\
     SELECT
@@ -715,13 +695,13 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
     df = pd.DataFrame(data, columns=cols)
     chart_series_category_freq_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_specs(orig_vals=orig_chart_vals,
+    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
         field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         series_category_freq_specs = []
         orig_series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = to_sorted_specs(orig_vals=orig_series_vals,
-        field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+        sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
+            field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
         for series_val in sorted_series_vals:
             freq_specs = []
             for _i, (category_val, freq, raw_category_pct) in df.loc[

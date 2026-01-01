@@ -6,8 +6,7 @@ from typing import Any
 from sofastats import logger
 from sofastats.conf.main import (
     MAX_CHI_SQUARE_VALS_IN_DIM, MAX_CHI_SQUARE_CELLS, MAX_VALUE_LENGTH_IN_SQL_CLAUSE, MIN_CHI_SQUARE_VALS_IN_DIM,
-    DbeName, DbeSpec)
-from sofastats.conf.var_labels import SortOrderSpecs
+    DbeName, DbeSpec, SortOrderSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.utils.misc import apply_custom_sorting_to_values
 

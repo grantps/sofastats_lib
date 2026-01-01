@@ -3,7 +3,6 @@ from functools import partial
 
 import pandas as pd
 
-from sofastats.conf.var_labels import VarLabels
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.tables.interfaces import BLANK, PctType, Row
@@ -15,7 +14,7 @@ from sofastats.output.tables.utils.multi_index_sort import (
     get_metric2order, get_order_rules_for_multi_index_branches, get_sorted_multi_index_list)
 from sofastats.utils.misc import get_pandas_friendly_name
 
-def get_all_metrics_df_from_vars(data, var_labels: VarLabels, *, row_vars: list[str],
+def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
         n_row_fillers: int = 0, inc_col_pct=False, dp: int = 2, debug=False) -> pd.DataFrame:
     """
     Includes at least the Freq metric but potentially the percentage ones as well.
@@ -156,8 +155,7 @@ class FrequencyTableDesign(CommonDesign):
             src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
             all_variables=row_vars, totalled_variables=totalled_variables, debug=self.debug)
         n_row_fillers = self.max_row_depth - len(row_vars)
-        df = get_all_metrics_df_from_vars(
-            data, self.data_labels, row_vars=row_vars, n_row_fillers=n_row_fillers,
+        df = get_all_metrics_df_from_vars(data, row_vars=row_vars, n_row_fillers=n_row_fillers,
             inc_col_pct=self.include_column_percent,
             dp=dp, debug=self.debug)
         return df
@@ -185,7 +183,7 @@ class FrequencyTableDesign(CommonDesign):
         sorted_row_multi_index = pd.MultiIndex.from_tuples(
             sorted_row_multi_index_list)  ## https://pandas.pydata.org/docs/user_guide/advanced.html
         sorted_col_multi_index_list = sorted(
-            df.columns, key=lambda metric_lbl_and_metric: get_metric2order(metric_lbl_and_metric[1]))
+            df.columns, key=lambda metric_label_and_metric: get_metric2order(metric_label_and_metric[1]))
         sorted_col_multi_index = pd.MultiIndex.from_tuples(sorted_col_multi_index_list)
         df = df.reindex(index=sorted_row_multi_index, columns=sorted_col_multi_index)
         if self.debug: print(f"\nORDERED:\n{df}")

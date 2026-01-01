@@ -14,7 +14,7 @@ def get_samples_from_df(df: pd.DataFrame, *, n_expected_groups: int | None = Non
     samples = []
     for group_val in group_vals:
         vals = list(df.loc[df['group'] == group_val, 'val'])
-        sample = Sample(lbl=str(group_val), vals=vals)
+        sample = Sample(label=str(group_val), vals=vals)
         samples.append(sample)
     return samples
 

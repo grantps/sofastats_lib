@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 from sofastats import logger
 from sofastats.stats_calc.engine import get_normal_ys, get_regression_result
 from sofastats.output.charts.histogram import HistogramConf
-from sofastats.output.charts.scatterplot import ScatterplotConf, ScatterplotSeries
+from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
 from sofastats.stats_calc.histogram import get_bin_details_from_vals
 
-def set_gen_mpl_settings(axes_lbl_size=14, xtick_lbl_size=10, ytick_lbl_size=10):
-    mpl_settings['axes.labelsize'] = axes_lbl_size
-    mpl_settings['xtick.labelsize'] = xtick_lbl_size
-    mpl_settings['ytick.labelsize'] = ytick_lbl_size
+def set_gen_mpl_settings(axes_label_size=14, xtick_label_size=10, ytick_label_size=10):
+    mpl_settings['axes.labelsize'] = axes_label_size
+    mpl_settings['xtick.labelsize'] = xtick_label_size
+    mpl_settings['ytick.labelsize'] = ytick_label_size
 
 def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figure:
     """
@@ -33,18 +33,18 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     rect = ax.patch
     rect.set_facecolor(chart_conf.inner_bg_colour)
     bin_spec, bin_freqs = get_bin_details_from_vals(vals)
-    ax.set_xlabel(chart_conf.var_lbl)
+    ax.set_xlabel(chart_conf.var_label)
     ax.set_ylabel('P')
 
-    if chart_conf.chart_lbl:
-        chart_lbl = chart_conf.chart_lbl
+    if chart_conf.chart_label:
+        chart_label = chart_conf.chart_label
     else:
         if chart_conf.label_chart_from_var_if_needed:
-            chart_lbl = f"Histogram for {chart_conf.var_lbl}"
+            chart_label = f"Histogram for {chart_conf.var_label}"
         else:
-            chart_lbl = None
-    if chart_lbl:
-        ax.set_title(chart_lbl)
+            chart_label = None
+    if chart_label:
+        ax.set_title(chart_label)
     ## see entry for hist in http://matplotlib.sourceforge.net/api/axes_api.html
     ## density=True means the integral of the histogram is 1 (the area = 1)
     ## the wider the bins the smaller the P values
@@ -87,10 +87,10 @@ def get_scatterplot_fig(vars_series: Sequence[ScatterplotSeries], chart_conf: Sc
         if var_series.show_regression_details:
             ## Label can't be identical as the points series so add a space.
             ## Will look like correct and matching label without clashing.
-            line_lbl = f"{var_series.label} " if var_series.label else ''
+            line_label = f"{var_series.label} " if var_series.label else ''
             regression_result = get_regression_result(xs, ys)
             ax.plot([min(xs), max(ys)], [regression_result.y0, regression_result.y1], '-',
-                color=var_series.dot_colour, linewidth=5, label=line_lbl)
+                color=var_series.dot_colour, linewidth=5, label=line_label)
         ax.annotate(text=f"N={len(xs):,}", xy=(0.02, 0.96), xytext=(0.025, 0.925),
             textcoords='axes fraction', fontsize=7, color=chart_conf.text_colour)
     ax.set_facecolor(chart_conf.inner_background_colour)

@@ -25,8 +25,8 @@ def paired_t_test_from_df(df: pd.DataFrame) -> TTestPairedResult:
         df: first and second col must have floats
     """
     df.columns = ['a', 'b']
-    sample_a = Sample(lbl='A', vals=list(df['a']))
-    sample_b = Sample(lbl='B', vals=list(df['b']))
+    sample_a = Sample(label='A', vals=list(df['a']))
+    sample_b = Sample(label='B', vals=list(df['b']))
     stats_result = ttest_paired_stats_calc(sample_a=sample_a, sample_b=sample_b)
     return stats_result
 
@@ -88,7 +88,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     """
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
-    title = f'Results of Paired Samples t-test of "{result.group_a_spec.lbl}" vs "{result.group_b_spec.lbl}"'
+    title = f'Results of Paired Samples t-test of "{result.group_a_spec.label}" vs "{result.group_b_spec.label}"'
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     ## format group details needed by second table
     formatted_group_specs = []
@@ -100,7 +100,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         std_dev = num_tpl.format(round(orig_group_spec.std_dev, dp))
         sample_mean = num_tpl.format(round(orig_group_spec.mean, dp))
         formatted_group_spec = NumericParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             mean=sample_mean,
             ci95=ci95,
@@ -109,12 +109,12 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
             sample_max=str(orig_group_spec.sample_max),
         )
         formatted_group_specs.append(formatted_group_spec)
-    lbl_a = result.group_a_spec.lbl
-    lbl_b = result.group_b_spec.lbl
-    p_explain = get_p_explain(lbl_a, lbl_b)
+    label_a = result.group_a_spec.label
+    label_b = result.group_b_spec.label
+    p_explain = get_p_explain(label_a, label_b)
     two_tailed_explanation = (
         "This is a two-tailed result i.e. based on the likelihood of a difference "
-        f'where the direction ("{lbl_a}" higher than "{lbl_b}" or "{lbl_b}" higher than "{lbl_a}") '
+        f'where the direction ("{label_a}" higher than "{label_b}" or "{label_b}" higher than "{label_a}") '
         "doesn't matter.")
     p_full_explanation = f"{p_explain}</br></br>{two_tailed_explanation}"
 
@@ -157,20 +157,17 @@ class TTestPairedDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## labels
-        variable_a_label = self.data_labels.var2var_lbl.get(self.variable_a_name, self.variable_a_name)
-        variable_b_label = self.data_labels.var2var_lbl.get(self.variable_b_name, self.variable_b_name)
         ## data
         paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             tbl_filt_clause=self.table_filter)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
-        measure_field_lbl = f'Differences between "{variable_a_label}" and "{variable_b_label}"'
+        measure_field_label = f'Differences between "{self.variable_a_name}" and "{self.variable_b_name}"'
         try:
-            histogram_html = get_embedded_histogram_html(
-                'Differences', style_spec.chart, stats_result.diffs, measure_field_lbl, width_scalar=1.5)
+            histogram_html = get_embedded_histogram_html('Differences', style_spec.chart,
+                stats_result.diffs, measure_field_label, width_scalar=1.5)
         except Exception as e:
-            html_or_msg = f"<b>{measure_field_lbl}</b> - unable to display histogram. Reason: {e}"
+            html_or_msg = f"<b>{measure_field_label}</b> - unable to display histogram. Reason: {e}"
         else:
             html_or_msg = histogram_html
 

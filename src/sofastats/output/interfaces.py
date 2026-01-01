@@ -15,8 +15,7 @@ import jinja2
 import pandas as pd
 
 from sofastats import SQLITE_DB, logger
-from sofastats.conf.main import INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName
-from sofastats.conf.var_labels import dict2varlabels, SortOrderSpecs
+from sofastats.conf.main import INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
@@ -53,10 +52,6 @@ class CommonDesign(ABC):
     show_in_web_browser: bool = True
     sort_orders: SortOrderSpecs | None = None
     sort_orders_yaml_file_path: Path | str | None = None
-
-    ## TODO - remove
-    data_label_mappings: dict | None = None
-    data_labels_yaml_file_path: Path | str | None = None
 
     def handle_inputs(self):
         """
@@ -136,9 +131,6 @@ class CommonDesign(ABC):
             self.sort_orders = yaml.load(Path(self.sort_orders_yaml_file_path))  ## might be a str or Path so make sure
         else:
             self.sort_orders = {}
-
-        ## TODO: remove
-        self.data_labels = dict2varlabels({})
 
     def __post_init__(self):
         self.handle_inputs()

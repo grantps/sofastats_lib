@@ -17,9 +17,10 @@ from functools import singledispatch
 
 from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED
 from sofastats.output.charts.interfaces import AreaChartingSpec, LeftMarginOffsetSpec, LineArea, LineChartingSpec
-from sofastats.output.charts.utils import (get_axis_lbl_drop, get_height, get_left_margin_offset, get_x_axis_font_size,
-                                           get_x_axis_lbls_val_and_text, get_y_axis_title_offset)
+from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_left_margin_offset, get_x_axis_font_size,
+    get_dojo_format_x_axis_numbers_and_labels, get_y_axis_title_offset)
 from sofastats.output.styles.interfaces import StyleSpec
+from sofastats.utils.misc import get_width_after_left_margin
 
 ## https://towardsdatascience.com/simplify-your-functions-with-functools-partial-and-singledispatch-b7071f7543bb
 @singledispatch
@@ -42,7 +43,7 @@ def get_html(charting_spec, style_spec: StyleSpec) -> str:
     return html
 
 def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, style_spec: StyleSpec,
-        legend_lbl: str, left_margin_offset_spec: LeftMarginOffsetSpec) -> LineArea.CommonMiscSpec:
+        series_legend_label: str, left_margin_offset_spec: LeftMarginOffsetSpec) -> LineArea.CommonMiscSpec:
     ## calculation
     if isinstance(charting_spec, LineChartingSpec):
         chart_js_fn_name = 'makeLineChart'
@@ -50,51 +51,55 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
         chart_js_fn_name = 'makeAreaChart'
     else:
         raise TypeError(f"Expected either Line or Area charting spec but got {type(charting_spec)}")
-    x_axis_lbls_val_and_text = get_x_axis_lbls_val_and_text(charting_spec.category_specs)
+    dojo_format_x_axis_numbers_and_labels = get_dojo_format_x_axis_numbers_and_labels(charting_spec.categories)
     x_axis_font_size = get_x_axis_font_size(
         n_x_items=charting_spec.n_x_items, is_multi_chart=charting_spec.is_multi_chart)
     if charting_spec.is_time_series:
-        x_axis_specs = charting_spec.category_specs
-        x_axis_lbls = '[]'
+        x_axis_categories = charting_spec.categories
+        dojo_format_x_axis_numbers_and_labels = '[]'
     else:
-        x_axis_specs = None
-        x_axis_lbls = '[' + ',\n            '.join(x_axis_lbls_val_and_text) + ']'
+        x_axis_categories = None
     y_axis_max = charting_spec.max_y_val * 1.1
-    axis_lbl_drop = get_axis_lbl_drop(is_multi_chart=charting_spec.is_multi_chart,
-        rotated_x_lbls=charting_spec.rotate_x_lbls,
-        max_x_axis_lbl_lines=charting_spec.max_x_axis_lbl_lines)
-    axis_lbl_rotate = -90 if charting_spec.rotate_x_lbls else 0
-    max_x_lbl_width = (TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_lbls else charting_spec.max_x_axis_lbl_len)
-    horiz_x_lbls = not charting_spec.rotate_x_lbls
-    show_major_ticks_only = (False if charting_spec.is_time_series and horiz_x_lbls
+    axis_label_drop = get_axis_label_drop(is_multi_chart=charting_spec.is_multi_chart,
+        rotated_x_labels=charting_spec.rotate_x_labels,
+        max_x_axis_label_lines=charting_spec.max_x_axis_label_lines)
+    axis_label_rotate = -90 if charting_spec.rotate_x_labels else 0
+    max_x_label_width = (
+        TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
+    horiz_x_labels = not charting_spec.rotate_x_labels
+    show_major_ticks_only = (False if charting_spec.is_time_series and horiz_x_labels
         else charting_spec.show_major_ticks_only)  ## override
-    width_after_left_margin = LineArea.get_width_after_left_margin(
-        is_multi_chart=charting_spec.is_multi_chart, multi_chart_width_factor=0.9,
-        n_x_items=charting_spec.n_x_items, n_series=charting_spec.n_series,
-        max_x_lbl_width=max_x_lbl_width, is_time_series=charting_spec.is_time_series,
-        show_major_ticks_only=show_major_ticks_only, x_axis_title=charting_spec.x_axis_title)
+    width_after_left_margin = get_width_after_left_margin(
+        n_x_items=charting_spec.n_x_items, n_items_horizontally_per_x_item=charting_spec.n_series, min_pixels_per_sub_item=10,
+        x_item_padding_pixels=2, sub_item_padding_pixels=5,
+        x_axis_title=charting_spec.x_axis_title,
+        widest_x_label_n_characters=max_x_label_width, avg_pixels_per_character=8,
+        min_chart_width_one_item=200, min_chart_width_multi_item=400,
+        is_multi_chart=charting_spec.is_multi_chart, multi_chart_size_scalar=0.9,
+        is_time_series=charting_spec.is_time_series, show_major_ticks_only=show_major_ticks_only,
+    )
     x_axis_title_len = len(charting_spec.x_axis_title)
     y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_lbls=charting_spec.rotate_x_lbls)
+        x_axis_title_len=x_axis_title_len, rotated_x_labels=charting_spec.rotate_x_labels)
     left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
         offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_lbls=charting_spec.rotate_x_lbls)
+        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
     width = left_margin_offset + width_after_left_margin
-    height = get_height(axis_lbl_drop=axis_lbl_drop,
-        rotated_x_lbls=charting_spec.rotate_x_lbls, max_x_axis_lbl_len=charting_spec.max_x_axis_lbl_len)
+    height = get_height(axis_label_drop=axis_label_drop,
+        rotated_x_labels=charting_spec.rotate_x_labels, max_x_axis_label_len=charting_spec.max_x_axis_label_len)
     return LineArea.CommonMiscSpec(
         chart_js_fn_name=chart_js_fn_name,
-        axis_lbl_drop=axis_lbl_drop,
-        axis_lbl_rotate=axis_lbl_rotate,
+        axis_label_drop=axis_label_drop,
+        axis_label_rotate=axis_label_rotate,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
-        legend_lbl=legend_lbl,
+        series_legend_label=series_legend_label,
         width=width,
         x_axis_font_size=x_axis_font_size,
-        x_axis_lbls=x_axis_lbls,
-        x_axis_specs=x_axis_specs,
+        x_axis_numbers_and_labels=dojo_format_x_axis_numbers_and_labels,
+        x_axis_categories=x_axis_categories,
         x_axis_title=charting_spec.x_axis_title,
         y_axis_title=charting_spec.y_axis_title,
         y_axis_max=y_axis_max,

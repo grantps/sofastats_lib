@@ -149,7 +149,7 @@ class NormalityDesign(CommonDesign):
                             f'it may still be "normal" enough for use. View graph to decide.</p>'
                             f"<p>{skew_msg}</p></p>{kurtosis_msg}</p>")
         ## histogram
-        histogram = get_embedded_histogram_html(measure_field_lbl=data_label, style_spec=style_spec.chart,
+        histogram = get_embedded_histogram_html(measure_field_label=data_label, style_spec=style_spec.chart,
             vals=sample.vals, width_scalar=1.5, label_chart_from_var_if_needed=False)
 
         result = Result(

@@ -172,8 +172,8 @@ def anova_orig(lst_samples, lst_labels, *, high=False):
     for i in range(a):
         sample = lst_samples[i]
         label = lst_labels[i]
-        sample_spec = NumericSampleSpec(lbl=label, n=n, mean=mean(sample), median=median(sample), std_dev=stdev(sample),
-            sample_min=min(sample), sample_max=max(sample))
+        sample_spec = NumericSampleSpec(label=label, n=n, mean=mean(sample), median=median(sample),
+            std_dev=stdev(sample), sample_min=min(sample), sample_max=max(sample))
         sample_specs.append(sample_spec)
     for i in range(len(lst_samples)):
         alldata = alldata + lst_samples[i]
@@ -250,12 +250,12 @@ def get_numeric_sample_spec_ext(sample: Sample, *, high=False) -> NumericSampleS
         else "Unable to calculate skew")
     normality_test_p = normal_test_result.p if normal_test_result.p is not None else "Unable to calculate overall p for normality test"
     numeric_sample_spec_extended = NumericSampleSpecExt(
-        lbl=sample.lbl, n=len(sample_vals), mean=my_mean, median=my_median, std_dev=std_dev,
+        label=sample.label, n=len(sample_vals), mean=my_mean, median=my_median, std_dev=std_dev,
         sample_min=min(sample_vals), sample_max=max(sample_vals), ci95=ci95,
         kurtosis=kurtosis_val, skew=skew_val, normality_test_p=normality_test_p, vals=sample_vals)
     return numeric_sample_spec_extended
 
-def anova(group_lbl: str, measure_field_lbl: str, samples: Sequence[Sample], *, high=True) -> AnovaResult:
+def anova(group_label: str, measure_field_label: str, samples: Sequence[Sample], *, high=True) -> AnovaResult:
     """
     From NIST algorithm used for their ANOVA tests.
 
@@ -288,8 +288,8 @@ def anova(group_lbl: str, measure_field_lbl: str, samples: Sequence[Sample], *, 
     dfwn = sum(sample_ns) - n_samples
     mean_squ_wn = sswn / dfwn
     if mean_squ_wn == 0:
-        raise ValueError(f"Inadequate variability in samples of {measure_field_lbl} "
-            f"for groups defined by {group_lbl} - mean_squ_wn is 0")
+        raise ValueError(f"Inadequate variability in samples of {measure_field_label} "
+            f"for groups defined by {group_label} - mean_squ_wn is 0")
     ssbn = get_ssbn(samples4ss_calc, sample_means4ss_calc, n_samples, sample_ns, high=high)
     dfbn = n_samples - 1
     mean_squ_bn = ssbn / dfbn
@@ -525,9 +525,9 @@ def ttest_rel(*, sample_a: Sample, sample_b: Sample) -> TTestPairedResult:
     sd_b = math.sqrt(var_b)
     ci95_a = get_ci95(sample_a.vals, mean_a, sd_a)
     ci95_b = get_ci95(sample_b.vals, mean_b, sd_b)
-    sample_a_spec = NumericSampleSpec(lbl=sample_a.lbl, n=n, mean=mean_a, median=median_a, std_dev=sd_a,
+    sample_a_spec = NumericSampleSpec(label=sample_a.label, n=n, mean=mean_a, median=median_a, std_dev=sd_a,
         sample_min=min_a, sample_max=max_a, ci95=ci95_a)
-    sample_b_spec = NumericSampleSpec(lbl=sample_b.lbl, n=n, mean=mean_b, median=median_b, std_dev=sd_b,
+    sample_b_spec = NumericSampleSpec(label=sample_b.label, n=n, mean=mean_b, median=median_b, std_dev=sd_b,
         sample_min=min_b, sample_max=max_b, ci95=ci95_b)
     return TTestPairedResult(
         t=t, p=p, group_a_spec=sample_a_spec, group_b_spec=sample_b_spec, degrees_of_freedom=df, diffs=diffs)
@@ -573,9 +573,9 @@ def mann_whitney_u(*, sample_a: Sample, sample_b: Sample, high_volume_ok=False) 
     min_b = min(sample_b.vals)
     max_a = max(sample_a.vals)
     max_b = max(sample_b.vals)
-    group_a_spec = MannWhitneyUGroupSpec(lbl=sample_a.lbl, n=n_a, avg_rank=avg_rank_a,
+    group_a_spec = MannWhitneyUGroupSpec(label=sample_a.label, n=n_a, avg_rank=avg_rank_a,
         median=median(sample_a.vals), sample_min=min_a, sample_max=max_a)
-    group_b_spec = MannWhitneyUGroupSpec(lbl=sample_b.lbl, n=n_b, avg_rank=avg_rank_b,
+    group_b_spec = MannWhitneyUGroupSpec(label=sample_b.label, n=n_b, avg_rank=avg_rank_b,
         median=median(sample_b.vals), sample_min=min_b, sample_max=max_b)
     return MannWhitneyUResult(small_u=small_u, p=p, group_a_spec=group_a_spec, group_b_spec=group_b_spec, z=z)
 
@@ -600,13 +600,13 @@ def mann_whitney_u_indiv_comparisons(*,
     if len_b < len_a:  ## make a first unless b shorter
         sample_1 = sample_b.vals
         sample_2 = sample_a.vals
-        label_1 = sample_b.lbl
-        label_2 = sample_a.lbl
+        label_1 = sample_b.label
+        label_2 = sample_a.label
     else:
         sample_1 = sample_a.vals
         sample_2 = sample_b.vals
-        label_1 = sample_a.lbl
-        label_2 = sample_b.lbl
+        label_1 = sample_a.label
+        label_2 = sample_b.label
     len_1 = len(sample_1)
     len_2 = len(sample_2)
     ## vals, counter, ranking
@@ -626,7 +626,7 @@ def mann_whitney_u_indiv_comparisons(*,
     u_2 = len_1 * len_2 - u_1
     u = min(u_1, u_2)
     details = MannWhitneyUIndivComparisonsResult(
-        lbl_1=label_1, lbl_2=label_2,
+        label_1=label_1, label_2=label_2,
         n_1=len_1, n_2=len_2,
         u_1=u_1, u_2=u_2, u=u,
         mw_vals=mw_vals, ranks_1=ranks_1, sum_rank_1=sum_rank_1,
@@ -678,9 +678,9 @@ def wilcoxont(*, sample_a: Sample, sample_b: Sample, high_volume_ok=False) -> Wi
     max_a = max(sample_a.vals)
     max_b = max(sample_b.vals)
     group_a_spec = WilcoxonSignedRanksGroupSpec(
-        lbl=sample_a.lbl, n=n, median=median(sample_a.vals), sample_min=min_a, sample_max=max_a)
+        label=sample_a.label, n=n, median=median(sample_a.vals), sample_min=min_a, sample_max=max_a)
     group_b_spec = WilcoxonSignedRanksGroupSpec(
-        lbl=sample_b.lbl, n=n, median=median(sample_b.vals), sample_min=min_b, sample_max=max_b)
+        label=sample_b.label, n=n, median=median(sample_b.vals), sample_min=min_b, sample_max=max_b)
     return WilcoxonSignedRanksResult(t=wt, p=prob, group_a_spec=group_a_spec, group_b_spec=group_b_spec)
 
 def wilcoxon_signed_ranks_indiv_comparisons(

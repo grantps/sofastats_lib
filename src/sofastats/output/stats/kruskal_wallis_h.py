@@ -81,21 +81,21 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     """
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
-    group_val_lbls = [group_spec.lbl for group_spec in result.group_specs]
-    if len(group_val_lbls) < 2:
+    group_val_labels = [group_spec.label for group_spec in result.group_specs]
+    if len(group_val_labels) < 2:
         raise Exception(f"Expected multiple groups in Kruskal-Wallis analysis. Details:\n{result}")
-    group_a_lbl = group_val_lbls[0]
-    group_b_lbl = group_val_lbls[-1]
+    group_a_label = group_val_labels[0]
+    group_b_label = group_val_labels[-1]
     title = (f'Results of Kruskal-Wallis H test of average "{result.measure_field_name}" '
-        f'for "{result.grouping_field_name}" groups from "{group_a_lbl}" to "{group_b_lbl}"')
-    p_explain = get_p_explain(group_a_lbl, group_b_lbl)
+        f'for "{result.grouping_field_name}" groups from "{group_a_label}" to "{group_b_label}"')
+    p_explain = get_p_explain(group_a_label, group_b_label)
     p_full_explanation = f"{p_explain}</br></br>{ONE_TAILED_EXPLANATION}"
     formatted_group_specs = []
     num_tpl = f"{{:,.{dp}f}}"  ## use comma as thousands separator, and display specified decimal places
     for orig_group_spec in result.group_specs:
         n = format_num(orig_group_spec.n)
         formatted_group_spec = NumericNonParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             median=num_tpl.format(round(orig_group_spec.median, dp)),
             sample_min=num_tpl.format(round(orig_group_spec.sample_min, dp)),

@@ -4,7 +4,8 @@ import uuid
 import jinja2
 
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.interfaces_freq_spec import get_by_chart_category_charting_spec
+from sofastats.data_extraction.charts.interfaces_freq_spec import (
+    get_by_category_charting_spec, get_by_chart_category_charting_spec)
 from sofastats.data_extraction.charts.interfaces import IndivChartSpec
 from sofastats.output.charts.common import (
     get_common_charting_spec, get_html, get_indiv_chart_html,get_line_area_misc_spec)
@@ -43,7 +44,7 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
     has_micro_ticks_js_bool: JSBool = ('true' if charting_spec.n_x_items > LineArea.DOJO_MICRO_TICKS_NEEDED_PER_X_ITEM
         else 'false')
     is_time_series_js_bool: JSBool = 'true' if charting_spec.is_time_series else 'false'
-    legend_lbl = ''
+    series_legend_label = ''
     left_margin_offset_spec = LeftMarginOffsetSpec(
         initial_offset=18, wide_offset=25, rotate_offset=5, multi_chart_offset=10)
     colour_spec = CommonColourSpec(
@@ -57,7 +58,7 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
         plot_font_filled=style_specs.chart.plot_font_colour_filled,
         tooltip_border=style_specs.chart.tooltip_border_colour,
     )
-    misc_spec = get_line_area_misc_spec(charting_spec, style_specs, legend_lbl, left_margin_offset_spec)
+    misc_spec = get_line_area_misc_spec(charting_spec, style_specs, series_legend_label, left_margin_offset_spec)
     options = LineArea.CommonOptions(
         has_micro_ticks_js_bool=has_micro_ticks_js_bool,
         has_minor_ticks_js_bool=has_minor_ticks_js_bool,
@@ -84,16 +85,16 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         raise Exception("Area charts must be single series charts")
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.lbl}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     ## the standard series
     dojo_series_specs = []
     marker_plot_style = PlotStyle.DEFAULT if common_charting_spec.options.show_markers else PlotStyle.UNMARKED
     only_series = indiv_chart_spec.data_series_specs[0]
     series_id = '00'
-    series_lbl = only_series.lbl
+    series_label = only_series.label
     if common_charting_spec.options.is_time_series:
-        series_vals = LineArea.get_time_series_vals(common_charting_spec.misc_spec.x_axis_specs,
+        series_vals = LineArea.get_time_series_vals(common_charting_spec.misc_spec.x_axis_categories,
             only_series.amounts, common_charting_spec.misc_spec.x_axis_title)
     else:
         series_vals = str(only_series.amounts)
@@ -101,11 +102,11 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     ## e.g. {stroke: {color: '#e95f29', width: '6px'}, yLbls: ['x-val: 2016-01-01<br>y-val: 12<br>0.8%', ... ], plot: 'default'};
     line_colour = common_charting_spec.colour_spec.line
     fill_colour = common_charting_spec.colour_spec.fill
-    y_lbls_str = str(only_series.tooltips)
+    y_labels_str = str(only_series.tooltips)
     options = (f"""{{stroke: {{color: "{line_colour}", width: "6px"}}, """
         f"""fill: "{fill_colour}", """
-        f"""yLbls: {y_lbls_str}, plot: "{marker_plot_style}"}}""")
-    dojo_series_specs.append(DojoSeriesSpec(series_id, series_lbl, series_vals, options))
+        f"""yLbls: {y_labels_str}, plot: "{marker_plot_style}"}}""")
+    dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))
     indiv_context = {
         'chart_uuid': chart_uuid,
         'dojo_series_specs': dojo_series_specs,
@@ -127,6 +128,55 @@ class AreaChartDesign(CommonDesign):
 
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder | str = SortOrder.VALUE
+
+    is_time_series: bool = False
+    show_major_ticks_only: bool = True
+    show_markers: bool = True
+    rotate_x_labels: bool = False
+    show_n_records: bool = True
+    x_axis_font_size: int = 12
+    y_axis_title: str = 'Freq'
+
+    def to_html_design(self) -> HTMLItemSpec:
+        # style
+        style_spec = get_style_spec(style_name=self.style_name)
+        ## data
+        intermediate_charting_spec = get_by_category_charting_spec(
+            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            category_field_name=self.category_field_name,
+            sort_orders=self.sort_orders,
+            category_sort_order=self.category_sort_order,
+            tbl_filt_clause=self.table_filter)
+        ## chart details
+        charting_spec = AreaChartingSpec(
+            categories=intermediate_charting_spec.sorted_categories,
+            indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
+            series_legend_label=None,
+            rotate_x_labels=self.rotate_x_labels,
+            show_n_records=self.show_n_records,
+            is_time_series=self.is_time_series,
+            show_major_ticks_only=self.show_major_ticks_only,
+            show_markers=self.show_markers,
+            x_axis_font_size=self.x_axis_font_size,
+            x_axis_title=intermediate_charting_spec.category_field_name,
+            y_axis_title=self.y_axis_title,
+        )
+        ## output
+        html = get_html(charting_spec, style_spec)
+        return HTMLItemSpec(
+            html_item_str=html,
+            style_name=self.style_name,
+            output_item_type=OutputItemType.CHART,
+        )
+
+
+@add_common_methods_from_parent
+@dataclass(frozen=False)
+class MultiChartAreaChartDesign(CommonDesign):
+    style_name: str = 'default'
+
+    category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    category_sort_order: SortOrder | str = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder | str = SortOrder.VALUE
 
@@ -144,17 +194,17 @@ class AreaChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_field_name=self.chart_field_name,
             category_field_name=self.category_field_name,
+            chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
-            chart_sort_order=self.category_sort_order, category_sort_order=self.category_sort_order,
+            category_sort_order=self.category_sort_order, chart_sort_order=self.category_sort_order,
             tbl_filt_clause=self.table_filter)
         ## chart details
         charting_spec = AreaChartingSpec(
-            category_specs=intermediate_charting_spec.sorted_category_specs,
+            categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
-            legend_lbl=self.chart_field_name,
-            rotate_x_lbls=self.rotate_x_labels,
+            series_legend_label=None,
+            rotate_x_labels=self.rotate_x_labels,
             show_n_records=self.show_n_records,
             is_time_series=self.is_time_series,
             show_major_ticks_only=self.show_major_ticks_only,

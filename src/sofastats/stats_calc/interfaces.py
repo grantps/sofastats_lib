@@ -18,7 +18,7 @@ from sofastats.utils.stats import get_quartiles
 
 @dataclass(frozen=True, kw_only=True)
 class NumericSampleSpec:
-    lbl: str
+    label: str
     n: int
     mean: float
     median: float
@@ -41,7 +41,7 @@ class NumericParametricSampleSpecFormatted:
     Usually formatted with decimal places and p in a helpful string already.
     Maybe could be generated from a dataclass with the raw values including numbers before converted into strings
     """
-    lbl: str
+    label: str
     n: str
     mean: str
     ci95: str
@@ -58,7 +58,7 @@ class NumericNonParametricSampleSpecFormatted:
     Just the fields needed for tabular display as output.
     Usually formatted with decimal places.
     """
-    lbl: str
+    label: str
     n: str
     median: str
     sample_min: str
@@ -70,13 +70,13 @@ class Sample:
     """
     Sample including label.
     To refer to the vals of a sample call them "sample_vals" not "sample" to prevent confusion.
-    "sample" must always mean an object with both lbl and vals.
+    "sample" must always mean an object with both label and vals.
     If there are multiple sample_vals call it "samples_vals" not "samples".
     "samples" should only ever refer to a sequence of Sample objects.
     Sample spec refers primarily to metadata about sample values e.g. min, max, mean.
     A "vals" attribute is included.
     """
-    lbl: str
+    label: str
     vals: list[float]  ## np.ravel, shape etc. work on lists but not just Sequence
 
 @dataclass(frozen=True)
@@ -132,7 +132,7 @@ class KruskalWallisHResult:
 
 @dataclass(frozen=True)
 class MannWhitneyUGroupSpec:
-    lbl: str
+    label: str
     n: int
     avg_rank: float
     median: float
@@ -166,8 +166,8 @@ class MannWhitneyUIndivComparisonsResult:
     From the individual comparisons approach.
     Slower but has more obvious workings.
     """
-    lbl_1: str
-    lbl_2: str
+    label_1: str
+    label_2: str
     n_1: int
     n_2: int
     u_1: float
@@ -275,7 +275,7 @@ class WilcoxonIndivComparisonResult:
 
 @dataclass(frozen=True)
 class WilcoxonSignedRanksGroupSpec:
-    lbl: str
+    label: str
     n: int
     median: float
     sample_min: float

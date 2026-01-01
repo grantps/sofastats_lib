@@ -5,13 +5,13 @@ from sofastats.stats_calc.utils import get_optimal_axis_bounds
 
 @dataclass
 class ScatterDataSeriesSpec:
-    lbl: str | None
+    label: str | None
     xy_pairs: Sequence[tuple[float, float]]
 
 @dataclass
 class ScatterIndivChartSpec:
     data_series_specs: Sequence[ScatterDataSeriesSpec]
-    lbl: str | None
+    label: str | None
 
     def __post_init__(self):
         n_records = 0
@@ -22,7 +22,7 @@ class ScatterIndivChartSpec:
 @dataclass
 class ScatterChartingSpec:
     indiv_chart_specs: Sequence[ScatterIndivChartSpec]
-    legend_lbl: str | None
+    series_legend_label: str | None
     show_dot_borders: bool
     show_n_records: bool
     show_regression_line: bool

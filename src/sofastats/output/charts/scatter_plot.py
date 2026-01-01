@@ -5,7 +5,8 @@ import uuid
 
 import jinja2
 
-from sofastats.data_extraction.charts.scatterplot import ScatterChartingSpec, ScatterIndivChartSpec
+from sofastats.conf.main import SortOrder
+from sofastats.data_extraction.charts.scatter_plot import ScatterChartingSpec, ScatterIndivChartSpec
 from sofastats.data_extraction.charts.interfaces_xy import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
                                                             get_by_series_xy_charting_spec, get_by_xy_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
@@ -47,13 +48,13 @@ class ScatterplotConf:
 @dataclass(frozen=True)
 class ScatterplotDojoSeriesSpec:
     """
-    Used for DOJO scatterplots (which have series).
+    Used for DOJO scatter plots (which have series).
 
-    Boxplots, and more general charts with series (e.g. bar charts and line charts),
+    Box plots, and more general charts with series (e.g. bar charts and line charts),
     have different specs of their own for DOJO series.
     """
     series_id: str  ## e.g. 01
-    lbl: str
+    label: str
     xy_pairs: str  ## e.g. [(1.2, 2.0), ...]
     options: str  ## e.g. stroke, color, width etc. - things needed in a generic DOJO series
 
@@ -79,12 +80,12 @@ class CommonOptions:
 
 @dataclass(frozen=True)
 class CommonMiscSpec:
-    axis_lbl_drop: int
+    axis_label_drop: int
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
-    legend_lbl: str
+    series_legend_label: str
     stroke_width: int
     width: float  ## pixels
     x_axis_font_size: float
@@ -124,7 +125,7 @@ make_chart_{{chart_uuid}} = function(){
     var series = new Array();
     {% for series_spec in dojo_series_specs %}
       var series_{{series_spec.series_id}} = new Array();
-          series_{{series_spec.series_id}}["lbl"] = "{{series_spec.lbl}}";
+          series_{{series_spec.series_id}}["label"] = "{{series_spec.label}}";
           series_{{series_spec.series_id}}["xy_pairs"] = {{series_spec.xy_pairs}};
           // options - stroke_width_to_use, fill_colour
           series_{{series_spec.series_id}}["options"] = {{series_spec.options}};
@@ -133,7 +134,7 @@ make_chart_{{chart_uuid}} = function(){
 
     var conf = new Array();
         conf["axis_font_colour"] = "{{axis_font}}";
-        conf["axis_lbl_drop"] = {{axis_lbl_drop}};
+        conf["axis_label_drop"] = {{axis_label_drop}};
         conf["chart_bg_colour"] = "{{chart_bg}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
@@ -165,9 +166,9 @@ make_chart_{{chart_uuid}} = function(){
     <div id="scatterplot_{{chart_uuid}}"
         style="width: {{width}}px; height: {{height}}px;">
     </div>
-    {% if legend_lbl %}
+    {% if series_legend_label %}
         <p style="float: left; font-weight: bold; margin-right: 12px; margin-top: 9px;">
-            {{legend_lbl}}:
+            {{series_legend_label}}:
         </p>
         <div id="legend_for_scatterplot_{{chart_uuid}}">
         </div>
@@ -197,10 +198,10 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         width, height = (700, 385)
     x_axis_title_len = len(charting_spec.x_axis_title)
     y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_lbls=False)
+        x_axis_title_len=x_axis_title_len, rotated_x_labels=False)
     left_margin_offset = get_left_margin_offset(width_after_left_margin=width - 25,  ## not a dynamic settings like x-axis label type charts so 25 is a good guess
         offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_lbls=False)
+        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=False)
 
     colour_spec = CommonColourSpec(
         axis_font=style_spec.chart.axis_font_colour,
@@ -214,12 +215,12 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         tooltip_border=style_spec.chart.tooltip_border_colour,
     )
     misc_spec = CommonMiscSpec(
-        axis_lbl_drop=10,
+        axis_label_drop=10,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
-        legend_lbl=charting_spec.legend_lbl,
+        series_legend_label=charting_spec.series_legend_label,
         stroke_width=stroke_width,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,
@@ -252,19 +253,19 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = f"<p><b>{indiv_chart_spec.lbl}</b></p>" if common_charting_spec.options.is_multi_chart else ''
+    indiv_title_html = f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else ''
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     dojo_series_specs = []
     for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
         series_id = f"{i:>02}"
-        series_lbl = data_series_spec.lbl
+        series_label = data_series_spec.label
         xy_dicts = [f"{{x: {x}, y: {y}}}" for x, y in data_series_spec.xy_pairs]
         series_xy_pairs = '[' + ', '.join(xy_dicts) + ']'
         fill_colour = common_charting_spec.colour_spec.colours[i]
         options = (
             f"""{{stroke: {{color: "white", width: "{common_charting_spec.misc_spec.stroke_width}px"}}, """
             f"""fill: "{fill_colour}", marker: "m-6,0 c0,-8 12,-8 12,0 m-12,0 c0,8 12,8 12,0"}}""")
-        dojo_series_specs.append(ScatterplotDojoSeriesSpec(series_id, series_lbl, series_xy_pairs, options))
+        dojo_series_specs.append(ScatterplotDojoSeriesSpec(series_id, series_label, series_xy_pairs, options))
     indiv_context = {
         'chart_uuid': chart_uuid,
         'dojo_series_specs': dojo_series_specs,
@@ -281,11 +282,11 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class SingleSeriesScatterChartDesign(CommonDesign):
+class SimpleScatterChartDesign(CommonDesign):
+    style_name: str = 'default'
+
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
-    style_name: str = 'default'
 
     show_dot_borders: bool = True
     show_n_records: bool = True
@@ -295,26 +296,22 @@ class SingleSeriesScatterChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        x_fld_lbl = self.data_labels.var2var_lbl.get(self.x_field_name, self.x_field_name)
-        y_fld_lbl = self.data_labels.var2var_lbl.get(self.y_field_name, self.y_field_name)
         ## data
         intermediate_charting_spec = get_by_xy_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            x_fld_name=self.x_field_name, x_fld_lbl=x_fld_lbl,
-            y_fld_name=self.y_field_name, y_fld_lbl=y_fld_lbl,
+            x_field_name=self.x_field_name, y_field_name=self.y_field_name,
             tbl_filt_clause=self.table_filter)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
             indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=None,
+            series_legend_label=None,
             show_dot_borders=self.show_dot_borders,
             show_n_records=self.show_n_records,
             show_regression_line=self.show_regression_line,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.x_fld_lbl,
-            y_axis_title=intermediate_charting_spec.y_fld_lbl,
+            x_axis_title=intermediate_charting_spec.x_field_name,
+            y_axis_title=intermediate_charting_spec.y_field_name,
         )
         ## output
         html = get_html(charting_spec, style_spec)
@@ -327,12 +324,13 @@ class SingleSeriesScatterChartDesign(CommonDesign):
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiSeriesScatterChartDesign(CommonDesign):
+class BySeriesScatterChartDesign(CommonDesign):
+    style_name: str = 'default'
+
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-
-    style_name: str = 'default'
+    series_sort_order: SortOrder = SortOrder.VALUE
 
     show_dot_borders: bool = True
     show_n_records: bool = True
@@ -342,30 +340,25 @@ class MultiSeriesScatterChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        series_fld_lbl = self.data_labels.var2var_lbl.get(self.series_field_name, self.series_field_name)
-        series_vals2lbls = self.data_labels.var2val2lbl.get(self.series_field_name, {})
-        x_fld_lbl = self.data_labels.var2var_lbl.get(self.x_field_name, self.x_field_name)
-        y_fld_lbl = self.data_labels.var2var_lbl.get(self.y_field_name, self.y_field_name)
         ## data
         intermediate_charting_spec = get_by_series_xy_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            series_fld_name=self.series_field_name, series_fld_lbl=series_fld_lbl,
-            x_fld_name=self.x_field_name, x_fld_lbl=x_fld_lbl,
-            y_fld_name=self.y_field_name, y_fld_lbl=y_fld_lbl,
-            series_vals2lbls=series_vals2lbls,
+            x_field_name=self.x_field_name, y_field_name=self.y_field_name,
+            series_field_name=self.series_field_name,
+            sort_orders=self.sort_orders,
+            series_sort_order=self.series_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
             indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=intermediate_charting_spec.series_fld_lbl,
+            series_legend_label=intermediate_charting_spec.series_field_name,
             show_dot_borders=self.show_dot_borders,
             show_n_records=self.show_n_records,
             show_regression_line=self.show_regression_line,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.x_fld_lbl,
-            y_axis_title=intermediate_charting_spec.y_fld_lbl,
+            x_axis_title=intermediate_charting_spec.x_field_name,
+            y_axis_title=intermediate_charting_spec.y_field_name,
         )
         ## output
         html = get_html(charting_spec, style_spec)
@@ -379,10 +372,12 @@ class MultiSeriesScatterChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartScatterChartDesign(CommonDesign):
+    style_name: str = 'default'
+
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    style_name: str = 'default'
+    chart_sort_order: SortOrder = SortOrder.VALUE
 
     show_dot_borders: bool = True
     show_n_records: bool = True
@@ -392,30 +387,25 @@ class MultiChartScatterChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        x_fld_lbl = self.data_labels.var2var_lbl.get(self.x_field_name, self.x_field_name)
-        y_fld_lbl = self.data_labels.var2var_lbl.get(self.y_field_name, self.y_field_name)
         ## data
         intermediate_charting_spec = get_by_chart_xy_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            x_fld_name=self.x_field_name, x_fld_lbl=x_fld_lbl,
-            y_fld_name=self.y_field_name, y_fld_lbl=y_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls,
+            x_field_name=self.x_field_name, y_field_name=self.y_field_name,
+            chart_field_name=self.chart_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.chart_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
             indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=None,
+            series_legend_label=None,
             show_dot_borders=self.show_dot_borders,
             show_n_records=self.show_n_records,
             show_regression_line=self.show_regression_line,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.x_fld_lbl,
-            y_axis_title=intermediate_charting_spec.y_fld_lbl,
+            x_axis_title=intermediate_charting_spec.x_field_name,
+            y_axis_title=intermediate_charting_spec.y_field_name,
         )
         ## output
         html = get_html(charting_spec, style_spec)
@@ -428,12 +418,15 @@ class MultiChartScatterChartDesign(CommonDesign):
 
 @add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiChartSeriesScatterChartDesign(CommonDesign):
+class MultiChartBySeriesScatterChartDesign(CommonDesign):
+    style_name: str = 'default'
+
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    series_sort_order: SortOrder = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    style_name: str = 'default'
+    chart_sort_order: SortOrder = SortOrder.VALUE
 
     show_dot_borders: bool = True
     show_n_records: bool = True
@@ -443,33 +436,25 @@ class MultiChartSeriesScatterChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        series_fld_lbl = self.data_labels.var2var_lbl.get(self.series_field_name, self.series_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        series_vals2lbls = self.data_labels.var2val2lbl.get(self.series_field_name, {})
-        x_fld_lbl = self.data_labels.var2var_lbl.get(self.x_field_name, self.x_field_name)
-        y_fld_lbl = self.data_labels.var2var_lbl.get(self.y_field_name, self.y_field_name)
         ## data
         intermediate_charting_spec = get_by_chart_series_xy_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            series_fld_name=self.series_field_name, series_fld_lbl=series_fld_lbl,
-            x_fld_name=self.x_field_name, x_fld_lbl=x_fld_lbl,
-            y_fld_name=self.y_field_name, y_fld_lbl=y_fld_lbl,
-            chart_vals2lbls=chart_vals2lbls, series_vals2lbls=series_vals2lbls,
+            x_field_name=self.x_field_name, y_field_name=self.y_field_name,
+            series_field_name=self.series_field_name, chart_field_name=self.chart_field_name,
+            sort_orders=self.sort_orders,
+            series_sort_order=self.series_sort_order, chart_sort_order=self.chart_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
             indiv_chart_specs=indiv_chart_specs,
-            legend_lbl=intermediate_charting_spec.series_fld_lbl,
+            series_legend_label=intermediate_charting_spec.series_field_name,
             show_dot_borders=self.show_dot_borders,
             show_n_records=self.show_n_records,
             show_regression_line=self.show_regression_line,
             x_axis_font_size=self.x_axis_font_size,
-            x_axis_title=intermediate_charting_spec.x_fld_lbl,
-            y_axis_title=intermediate_charting_spec.y_fld_lbl,
+            x_axis_title=intermediate_charting_spec.x_field_name,
+            y_axis_title=intermediate_charting_spec.y_field_name,
         )
         ## output
         html = get_html(charting_spec, style_spec)

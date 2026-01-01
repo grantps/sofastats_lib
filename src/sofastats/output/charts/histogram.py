@@ -5,7 +5,7 @@ import uuid
 
 import jinja2
 
-from sofastats.conf.main import HISTO_AVG_CHAR_WIDTH_PIXELS
+from sofastats.conf.main import HISTO_AVG_CHAR_WIDTH_PIXELS, SortOrder
 from sofastats.data_extraction.charts.histogram import (
     HistoIndivChartSpec, get_by_chart_charting_spec, get_by_vals_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
@@ -23,8 +23,8 @@ PADDING_PIXELS = 5
 
 @dataclass(frozen=True, kw_only=True)
 class HistogramConf:
-    var_lbl: str
-    chart_lbl: str | None
+    var_label: str
+    chart_label: str | None
     inner_bg_colour: str
     bar_colour: str
     line_colour: str
@@ -53,15 +53,15 @@ class CommonOptions:
 
 @dataclass(frozen=True)
 class CommonMiscSpec:
-    bin_lbls: Sequence[str]  ## e.g. ["1 to < 6.0", ... "91.0 to <= 96.0"]
-    blank_x_axis_lbls: str
+    bin_labels: Sequence[str]  ## e.g. ["1 to < 6.0", ... "91.0 to <= 96.0"]
+    blank_x_axis_numbers_and_labels: str
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: int
     normal_stroke_width: int
     stroke_width: int
-    var_lbl: str
+    var_label: str
     width: float  ## pixels
     x_axis_font_size: float
     x_axis_max_val: float
@@ -96,10 +96,10 @@ var highlight_{{chart_uuid}} = function(colour){
  make_chart_{{chart_uuid}} = function(){
 
     var data_spec = new Array();
-        data_spec["series_lbl"] = "{{var_lbl}}";
+        data_spec["series_label"] = "{{var_label}}";
         data_spec["y_vals"] = {{y_vals}};
         data_spec["norm_y_vals"] = {{norm_y_vals}};
-        data_spec["bin_lbls"] = {{bin_lbls}};
+        data_spec["bin_labels"] = {{bin_labels}};
         data_spec["style"] = {
             stroke: {
                 color: "white", width: "{{stroke_width}}px"
@@ -117,7 +117,7 @@ var highlight_{{chart_uuid}} = function(colour){
 
     var conf = new Array();
         conf["axis_font_colour"] = "{{axis_font}}";
-        conf["blank_x_axis_lbls"] = {{blank_x_axis_lbls}};
+        conf["blank_x_axis_numbers_and_labels"] = {{blank_x_axis_numbers_and_labels}};
         conf["chart_bg_colour"] = "{{chart_bg}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
@@ -151,11 +151,11 @@ var highlight_{{chart_uuid}} = function(colour){
  </div>
  """
 
-def get_width(var_lbl: str, *, n_bins: int,
+def get_width(var_label: str, *, n_bins: int,
         x_axis_min_val: float, x_axis_max_val: float, is_multi_chart: bool) -> float:
-    max_lbl_width = max(len(str(round(x, 0))) for x in (x_axis_min_val, x_axis_max_val))
-    min_bin_width = max(max_lbl_width * HISTO_AVG_CHAR_WIDTH_PIXELS, MIN_PIXELS_PER_BAR)
-    width_x_axis_title = len(var_lbl) * HISTO_AVG_CHAR_WIDTH_PIXELS + PADDING_PIXELS
+    max_label_width = max(len(str(round(x, 0))) for x in (x_axis_min_val, x_axis_max_val))
+    min_bin_width = max(max_label_width * HISTO_AVG_CHAR_WIDTH_PIXELS, MIN_PIXELS_PER_BAR)
+    width_x_axis_title = len(var_label) * HISTO_AVG_CHAR_WIDTH_PIXELS + PADDING_PIXELS
     width = max([n_bins * min_bin_width, width_x_axis_title, MIN_CHART_WIDTH])
     if is_multi_chart:
         width = width * 0.9  ## vulnerable to x-axis labels vanishing on minor ticks
@@ -163,18 +163,18 @@ def get_width(var_lbl: str, *, n_bins: int,
 
 @dataclass
 class HistoChartingSpec:
-    bin_lbls: Sequence[str]
+    bin_labels: Sequence[str]
     indiv_chart_specs: Sequence[HistoIndivChartSpec]
     show_borders: bool
     show_n_records: bool
     show_normal_curve: bool
-    var_lbl: str | None
+    var_label: str | None
     x_axis_font_size: int
     x_axis_max_val: float
     x_axis_min_val: float
 
     def __post_init__(self):
-        self.n_bins = len(self.bin_lbls)
+        self.n_bins = len(self.bin_labels)
         self.n_charts = len(self.indiv_chart_specs)
         self.is_multi_chart = self.n_charts > 1
         y_axis_max_val = 0
@@ -198,14 +198,15 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
     colour_cases = [f'case "{colour_mapping.main}": hlColour = "{colour_mapping.highlight}"'
         for colour_mapping in colour_mappings]  ## actually only need first one for simple bar charts
     ## misc
-    blank_x_axis_lbls = '[' + ', '.join(f"{{value: {n}, text: ''}}" for n in range(1, charting_spec.n_bins + 1)) + ']'
+    blank_dojo_format_x_axis_numbers_and_labels = (
+            '[' + ', '.join(f"{{value: {n}, text: ''}}" for n in range(1, charting_spec.n_bins + 1)) + ']')
     height = 300 if charting_spec.is_multi_chart else 350
     y_axis_title_offset = 45
     left_margin_offset = 25
     stroke_width = style_spec.chart.stroke_width if charting_spec.show_borders else 0
     normal_stroke_width = 4
     show_normal_curve_js_bool: JSBool = 'true' if charting_spec.show_normal_curve else 'false'
-    width = get_width(charting_spec.var_lbl, n_bins=charting_spec.n_bins,
+    width = get_width(charting_spec.var_label, n_bins=charting_spec.n_bins,
         x_axis_min_val=charting_spec.x_axis_min_val, x_axis_max_val=charting_spec.x_axis_max_val,
         is_multi_chart=charting_spec.is_multi_chart)
     x_axis_font_size = charting_spec.x_axis_font_size
@@ -224,8 +225,8 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
         tooltip_border=style_spec.chart.tooltip_border_colour,
     )
     misc_spec = CommonMiscSpec(
-        bin_lbls=charting_spec.bin_lbls,
-        blank_x_axis_lbls=blank_x_axis_lbls,
+        bin_labels=charting_spec.bin_labels,
+        blank_x_axis_numbers_and_labels=blank_dojo_format_x_axis_numbers_and_labels,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
@@ -233,7 +234,7 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
         x_axis_min_val=charting_spec.x_axis_min_val,
         normal_stroke_width=normal_stroke_width,
         stroke_width=stroke_width,
-        var_lbl=charting_spec.var_lbl,
+        var_label=charting_spec.var_label,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,
         x_axis_max_val=charting_spec.x_axis_max_val,
@@ -262,7 +263,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.lbl}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     indiv_context = {
         'chart_uuid': chart_uuid,
@@ -281,8 +282,9 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class HistogramChartDesign(CommonDesign):
-    field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     style_name: str = 'default'
+
+    field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     show_borders: bool = False
     show_n_records: bool = True
@@ -293,23 +295,21 @@ class HistogramChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        fld_lbl = self.data_labels.var2var_lbl.get(self.field_name, self.field_name)
         ## data
         intermediate_charting_spec = get_by_vals_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            fld_name=self.field_name, fld_lbl=fld_lbl, tbl_filt_clause=self.table_filter)
-        bin_lbls = intermediate_charting_spec.to_bin_lbls(dp=self.decimal_points)
+            field_name=self.field_name, tbl_filt_clause=self.table_filter)
+        bin_labels = intermediate_charting_spec.to_bin_labels(dp=self.decimal_points)
         x_axis_min_val, x_axis_max_val = intermediate_charting_spec.to_x_axis_range()
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = HistoChartingSpec(
-            bin_lbls=bin_lbls,
+            bin_labels=bin_labels,
             indiv_chart_specs=indiv_chart_specs,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             show_normal_curve=self.show_normal_curve,
-            var_lbl=intermediate_charting_spec.fld_lbl,
+            var_label=intermediate_charting_spec.field_name,
             x_axis_font_size=self.x_axis_font_size,
             x_axis_max_val=x_axis_max_val,
             x_axis_min_val=x_axis_min_val,
@@ -325,9 +325,11 @@ class HistogramChartDesign(CommonDesign):
 @add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartHistogramChartDesign(CommonDesign):
+    style_name: str = 'default'
+
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    style_name: str = 'default'
+    chart_sort_order: SortOrder = SortOrder.VALUE
 
     show_borders: bool = False
     show_n_records: bool = True
@@ -338,28 +340,25 @@ class MultiChartHistogramChartDesign(CommonDesign):
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## lbls
-        chart_fld_lbl = self.data_labels.var2var_lbl.get(self.chart_field_name, self.chart_field_name)
-        chart_vals2lbls = self.data_labels.var2val2lbl.get(self.chart_field_name, {})
-        fld_lbl = self.data_labels.var2var_lbl.get(self.field_name, self.field_name)
         ## data
         intermediate_charting_spec = get_by_chart_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_fld_name=self.chart_field_name, chart_fld_lbl=chart_fld_lbl,
-            fld_name=self.field_name, fld_lbl=fld_lbl,
-            chart_vals2lbls=chart_vals2lbls,
+            field_name=self.field_name,
+            chart_field_name=self.chart_field_name,
+            sort_orders=self.sort_orders,
+            chart_sort_order=self.chart_sort_order,
             tbl_filt_clause=self.table_filter)
-        bin_lbls = intermediate_charting_spec.to_bin_lbls(dp=self.decimal_points)
+        bin_labels = intermediate_charting_spec.to_bin_labels(dp=self.decimal_points)
         x_axis_min_val, x_axis_max_val = intermediate_charting_spec.to_x_axis_range()
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = HistoChartingSpec(
-            bin_lbls=bin_lbls,
+            bin_labels=bin_labels,
             indiv_chart_specs=indiv_chart_specs,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,
             show_normal_curve=self.show_normal_curve,
-            var_lbl=intermediate_charting_spec.fld_lbl,
+            var_label=intermediate_charting_spec.field_name,
             x_axis_font_size=self.x_axis_font_size,
             x_axis_max_val=x_axis_max_val,
             x_axis_min_val=x_axis_min_val,

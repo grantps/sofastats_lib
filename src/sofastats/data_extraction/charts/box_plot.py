@@ -1,12 +1,14 @@
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
-from itertools import groupby  ## actually quite performant
+from typing import Any
 
-from sofastats.conf.main import DbeSpec, SortOrder
+import pandas as pd
+
+from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.charts.interfaces import CategorySpec
 from sofastats.stats_calc.interfaces import BoxResult, BoxplotType
+from sofastats.data_extraction.utils import to_sorted_values
 from sofastats.stats_calc.utils import get_optimal_axis_bounds
 
 @dataclass(frozen=False)
@@ -18,28 +20,6 @@ class BoxplotCategoryItemValsSpec:
 class BoxplotSeriesItemCategoryValsSpecs:
     series_val: float | str  ## e.g. 1, or Male
     category_vals_specs: Sequence[BoxplotCategoryItemValsSpec]
-
-def get_sorted_category_specs(
-        category_vals_specs: Sequence[BoxplotCategoryItemValsSpec], category_sort_order: SortOrder):
-    """
-    category_specs = [
-        CategorySpec(val=1, lbl='New Zealand'),
-        CategorySpec(val=2, lbl='United States'),
-        CategorySpec(val=3, lbl='Canada'),
-    ]
-    """
-    category_specs = []
-    for category_vals_spec in category_vals_specs:
-        category_spec = CategorySpec(
-            val=category_vals_spec.category_val,
-            lbl=category_vals_spec.category_val,
-        )
-        category_specs.append(category_spec)
-    if category_sort_order == SortOrder.VALUE:
-        sorted_category_specs = sorted(category_specs, key=lambda x: x.val)
-    else:
-        raise ValueError("Boxplot categories can only be sorted by value")
-    return sorted_category_specs
 
 @dataclass(frozen=False)
 class BoxplotDataItem:
@@ -55,12 +35,12 @@ class BoxplotDataItem:
     box_top_rounded: float
     top_whisker: float
     top_whisker_rounded: float
-    indiv_box_lbl: str | None = None  ## derived later from series lbl and category spec lbls in BoxplotChartingSpec
+    indiv_box_label: str | None = None  ## derived later from series label and category spec labels in BoxplotChartingSpec
     center: float | None = None  ## derived later from offset depending on which item on series (move rightwards) in BoxplotIndivChartSpec
 
 @dataclass
 class BoxplotDataSeriesSpec:
-    lbl: str | None
+    label: str | None
     box_items: Sequence[BoxplotDataItem | None]  ## Use None to indicate a gap for a particular series e.g. US missing
     ## offset - set in BoxplotIndivChartSpec
 
@@ -87,16 +67,13 @@ class BoxplotIndivChartSpec:
 
 @dataclass(frozen=False)
 class BoxplotCategoryValsSpecs:
-    chart_lbl: str | None
-    series_fld_lbl: str | None
-    category_fld_lbl: str  ## e.g. Country
-    fld_lbl: str
+    field_name: str
+    category_field_name: str  ## e.g. Country
+    series_field_name: str | None
+    chart_name: str | None
     category_vals_specs: Sequence[BoxplotCategoryItemValsSpec]
     category_sort_order: SortOrder
     boxplot_type: BoxplotType
-
-    def to_sorted_category_specs(self):
-        return get_sorted_category_specs(self.category_vals_specs, self.category_sort_order)
 
     def to_indiv_chart_spec(self, *, dp: int = 3) -> BoxplotIndivChartSpec:
         n_records = 0
@@ -120,7 +97,7 @@ class BoxplotCategoryValsSpecs:
             )
             box_items.append(box_item)
         data_series_spec = BoxplotDataSeriesSpec(
-            lbl=None,
+            label=None,
             box_items=box_items,
         )
         indiv_chart_spec = BoxplotIndivChartSpec(
@@ -130,44 +107,47 @@ class BoxplotCategoryValsSpecs:
         return indiv_chart_spec
 
 def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        category_fld_name: str, category_fld_lbl: str,
-        fld_name: str, fld_lbl: str,
-        tbl_filt_clause: str | None = None,
-        category_vals2lbls: dict | None = None,
+        field_name: str, category_field_name: str,
+        sort_orders: SortOrderSpecs,
         category_sort_order: SortOrder = SortOrder.VALUE,
-        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR) -> BoxplotCategoryValsSpecs:
-    category_vals2lbls = {} if category_vals2lbls is None else category_vals2lbls
+        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        tbl_filt_clause: str | None = None,) -> BoxplotCategoryValsSpecs:
     ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
-    category_fld_name_quoted = dbe_spec.entity_quoter(category_fld_name)
+    field_name_quoted = dbe_spec.entity_quoter(field_name)
+    category_field_name_quoted = dbe_spec.entity_quoter(category_field_name)
     src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
-    fld_name_quoted = dbe_spec.entity_quoter(fld_name)
+    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     ## assemble SQL
     sql = f"""\
     SELECT
-        {category_fld_name_quoted} AS
+        {category_field_name_quoted} AS
       category_val,
-      {fld_name_quoted}
+      {field_name_quoted}
     FROM {src_tbl_name_quoted}
-    WHERE {category_fld_name_quoted} IS NOT NULL
-    AND {fld_name_quoted} IS NOT NULL
+    WHERE {category_field_name_quoted} IS NOT NULL
+    AND {field_name_quoted} IS NOT NULL
     {and_tbl_filt_clause}
-    ORDER BY {category_fld_name_quoted}, {fld_name_quoted}
+    ORDER BY {category_field_name_quoted}, {field_name_quoted}
     """
     ## get data
     cur.exe(sql)
-    sorted_data = cur.fetchall()
+    data = cur.fetchall()
+    cols = ['category_val', 'field_val']
+    df = pd.DataFrame(data, columns=cols)
     ## build result
     category_vals_specs = []
-    for category_val, raw_vals in groupby(sorted_data, lambda t: t[0]):
-        vals = [measure_val for _cat_val, measure_val in raw_vals]
+    orig_category_vals = df['category_val'].unique()
+    sorted_category_vals = to_sorted_values(orig_vals=orig_category_vals,
+        field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
+    for category_val in sorted_category_vals:
+        vals = df.loc[df['category_val'] == category_val, 'field_val'].tolist()
         category_vals_spec = BoxplotCategoryItemValsSpec(category_val=category_val, vals=vals)
         category_vals_specs.append(category_vals_spec)
     result = BoxplotCategoryValsSpecs(
-        chart_lbl=None,
-        series_fld_lbl='',
-        category_fld_lbl=category_fld_lbl,
-        fld_lbl=fld_lbl,
+        field_name=field_name,
+        category_field_name=category_field_name,
+        series_field_name='',
+        chart_name=None,
         category_vals_specs=category_vals_specs,
         category_sort_order=category_sort_order,
         boxplot_type=boxplot_type,
@@ -176,16 +156,12 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src
 
 @dataclass(frozen=False)
 class BoxplotSeriesCategoryValsSpecs:
-    series_fld: str | None  ## e.g. Gender
-    category_fld: str  ## e.g. Country
-    fld: str
+    field: str
+    category_field: str  ## e.g. Country
+    series_field: str | None  ## e.g. Gender
     series_category_vals_specs: Sequence[BoxplotSeriesItemCategoryValsSpecs]
     category_sort_order: SortOrder
     boxplot_type: BoxplotType
-
-    def to_sorted_category_specs(self):
-        first_series_category_vals_specs = self.series_category_vals_specs[0].category_vals_specs  ## same for all of them so look at first chart
-        return get_sorted_category_specs(first_series_category_vals_specs, self.category_sort_order)
 
     def to_indiv_chart_spec(self, *, dp: int = 3):
         n_records = 0
@@ -211,7 +187,7 @@ class BoxplotSeriesCategoryValsSpecs:
                 )
                 box_items.append(box_item)
             data_series_spec = BoxplotDataSeriesSpec(
-                lbl=series_item_category_vals_specs.series_val,
+                label=series_item_category_vals_specs.series_val,
                 box_items=box_items,
             )
             data_series_specs.append(data_series_spec)
@@ -222,43 +198,55 @@ class BoxplotSeriesCategoryValsSpecs:
         return indiv_chart_spec
 
 def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        series_fld_name: str,
-        category_fld_name: str,
-        fld_name: str,
-        tbl_filt_clause: str | None = None,
+        field_name: str,
+        category_field_name: str,
+        series_field_name: str,
+        sort_orders: SortOrderSpecs,
         category_sort_order: SortOrder = SortOrder.VALUE,
-        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR) -> BoxplotSeriesCategoryValsSpecs:
+        series_sort_order: SortOrder = SortOrder.VALUE,
+        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        tbl_filt_clause: str | None = None) -> BoxplotSeriesCategoryValsSpecs:
     ## prepare items
+    field_name_quoted = dbe_spec.entity_quoter(field_name)
+    category_field_name_quoted = dbe_spec.entity_quoter(category_field_name)
+    series_field_name_quoted = dbe_spec.entity_quoter(series_field_name)
     and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
-    fld_name_quoted = dbe_spec.entity_quoter(fld_name)
-    series_fld_name_quoted = dbe_spec.entity_quoter(series_fld_name)
-    category_fld_name_quoted = dbe_spec.entity_quoter(category_fld_name)
     src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
     ## assemble SQL
     sql = f"""\
     SELECT
-        {series_fld_name_quoted} AS
+        {series_field_name_quoted} AS
       series_val,
-        {category_fld_name_quoted} AS
+        {category_field_name_quoted} AS
       category_val,
-      {fld_name_quoted}
+      {field_name_quoted}
     FROM {src_tbl_name_quoted}
-    WHERE {series_fld_name_quoted} IS NOT NULL
-    AND {category_fld_name_quoted} IS NOT NULL
-    AND {fld_name_quoted} IS NOT NULL
+    WHERE {series_field_name_quoted} IS NOT NULL
+    AND {category_field_name_quoted} IS NOT NULL
+    AND {field_name_quoted} IS NOT NULL
     {and_tbl_filt_clause}
-    ORDER BY {series_fld_name_quoted}, {category_fld_name_quoted}, {fld_name_quoted}
+    ORDER BY {series_field_name_quoted}, {category_field_name_quoted}, {field_name_quoted}
     """
     ## get data
     cur.exe(sql)
-    sorted_data = cur.fetchall()
+    data = cur.fetchall()
+    cols = ['series_val', 'category_val', 'field_val']
+    df = pd.DataFrame(data, columns=cols)
     ## build result
     series_category_vals_specs_dict = defaultdict(list)
-    for (series_val, category_val), raw_vals in groupby(sorted_data, lambda t: t[:2]):
-        ## Gather by series
-        vals = [measure_val for _chart_val, _cat_val, measure_val in raw_vals]
-        category_vals_spec = BoxplotCategoryItemValsSpec(category_val=category_val, vals=vals)
-        series_category_vals_specs_dict[series_val].append(category_vals_spec)
+    orig_series_vals = df['series_val'].unique()
+    sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
+        field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+    for series_val in sorted_series_vals:
+        orig_category_vals = df.loc[df['series_val'] == series_val, 'category_val'].unique()
+        sorted_category_vals = to_sorted_values(orig_vals=orig_category_vals,
+            field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
+        for category_val in sorted_category_vals:
+            vals = df.loc[
+                (df['series_val'] == series_val) & (df['category_val'] == category_val), 'field_val'].tolist()
+            ## Gather by series
+            category_vals_spec = BoxplotCategoryItemValsSpec(category_val=category_val, vals=vals)
+            series_category_vals_specs_dict[series_val].append(category_vals_spec)
     ## make item for each series
     series_category_vals_specs = []
     for series_val, category_vals_specs in series_category_vals_specs_dict.items():
@@ -268,9 +256,9 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         )
         series_category_vals_specs.append(series_category_vals_spec)
     result = BoxplotSeriesCategoryValsSpecs(
-        series_fld=series_fld_name,
-        category_fld=category_fld_name,
-        fld=fld_name,
+        field=field_name,
+        category_field=category_field_name,
+        series_field=series_field_name,
         series_category_vals_specs=series_category_vals_specs,
         category_sort_order=category_sort_order,
         boxplot_type=boxplot_type,
@@ -279,10 +267,10 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
 
 @dataclass
 class BoxplotChartingSpec:
-    category_specs: Sequence[CategorySpec]
+    categories: Sequence[Any]
     indiv_chart_specs: Sequence[BoxplotIndivChartSpec]  ## even though only ever one follow the standard pattern so get_html works for all chart types the same way
-    legend_lbl: str | None
-    rotate_x_lbls: bool
+    series_legend_label: str | None
+    rotate_x_labels: bool
     show_n_records: bool
     x_axis_title: str
     y_axis_title: str
@@ -290,12 +278,12 @@ class BoxplotChartingSpec:
     def __post_init__(self):
         if len(self.indiv_chart_specs) != 1:
             raise Exception("Boxplot charts can only have one individual chart")
-        self.has_minor_ticks = len(self.category_specs) > 10
+        self.has_minor_ticks = len(self.categories) > 10
         self.n_series = len(self.indiv_chart_specs[0].data_series_specs)
         self.is_single_series = (self.n_series == 1)
-        self.n_x_items = len(self.category_specs)
+        self.n_x_items = len(self.categories)
         ## get max x axis val
-        self.x_axis_max_val = len(self.category_specs) + 0.5
+        self.x_axis_max_val = len(self.categories) + 0.5
         ## get min and max y values
         all_min_ys = []
         all_max_ys = []
@@ -316,24 +304,24 @@ class BoxplotChartingSpec:
         max_y_val = max(all_max_ys)
         self.y_axis_min_val, self.y_axis_max_val = get_optimal_axis_bounds(min_y_val, max_y_val)
         ## misc
-        max_x_axis_lbl_len = 0
-        max_x_axis_lbl_lines = 0
-        for category_spec in self.category_specs:
-            x_axis_lbl_len = len(category_spec.lbl)
-            if x_axis_lbl_len > max_x_axis_lbl_len:
-                max_x_axis_lbl_len = x_axis_lbl_len
-            x_lbl_lines = len(category_spec.lbl.split('<br>'))
-            if x_lbl_lines > max_x_axis_lbl_lines:
-                max_x_axis_lbl_lines = x_lbl_lines
-        self.max_x_axis_lbl_len = max_x_axis_lbl_len
-        self.max_x_axis_lbl_lines = max_x_axis_lbl_lines  ## used to set axis lbl drop
+        max_x_axis_label_len = 0
+        max_x_axis_label_lines = 0
+        for category in self.categories:
+            x_axis_label_len = len(category)
+            if x_axis_label_len > max_x_axis_label_len:
+                max_x_axis_label_len = x_axis_label_len
+            x_label_lines = len(str(category).split('<br>'))
+            if x_label_lines > max_x_axis_label_lines:
+                max_x_axis_label_lines = x_label_lines
+        self.max_x_axis_label_len = max_x_axis_label_len
+        self.max_x_axis_label_lines = max_x_axis_label_lines  ## used to set axis label drop
         ## set box labels
         for indiv_chart_spec in self.indiv_chart_specs:
             for data_series_spec in indiv_chart_spec.data_series_specs:
-                series_lbl = data_series_spec.lbl
-                for box_item, category_spec in zip(data_series_spec.box_items, self.category_specs, strict=True):
+                series_label = data_series_spec.label
+                for box_item, category in zip(data_series_spec.box_items, self.categories, strict=True):
                     if box_item:
-                        if series_lbl:
-                            box_item.indiv_box_lbl = f"{series_lbl}, {category_spec.lbl}"
+                        if series_label:
+                            box_item.indiv_box_label = f"{series_label}, {category}"
                         else:
-                            box_item.indiv_box_lbl = category_spec.lbl
+                            box_item.indiv_box_label = category

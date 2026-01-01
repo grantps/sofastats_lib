@@ -60,7 +60,7 @@ def get_worked_example(result: MannWhitneyUIndivComparisonsResult, style_name_hy
     <p>Note on ranking - rank such that all examples of a value get the median rank for all items of that value.</p>
     <p>If calculating by hand, and one sample is shorter than the others,
     make that the first sample to reduce the number of calculations</p>
-    <p>For the rest of this worked example, sample 1 is "{result.lbl_1}" and sample 2 is {result.lbl_2}".""")
+    <p>For the rest of this worked example, sample 1 is "{result.label_1}" and sample 2 is {result.label_2}".""")
     html.append(f"""<table>
     <thead>
         <tr>
@@ -170,20 +170,20 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = (f'Results of Mann-Whitney U Test of "{result.measure_field_name}" '
-        f'''for "{result.grouping_field_name}" groups "{result.group_a_spec.lbl}" and "{result.group_b_spec.lbl}"''')
+        f'''for "{result.grouping_field_name}" groups "{result.group_a_spec.label}" and "{result.group_b_spec.label}"''')
 
-    lbl_a = result.group_a_spec.lbl
-    lbl_b = result.group_b_spec.lbl
+    label_a = result.group_a_spec.label
+    label_b = result.group_b_spec.label
 
-    p_explain = get_p_explain(lbl_a, lbl_b)
+    p_explain = get_p_explain(label_a, label_b)
     two_tailed_explanation = (
         "This is a two-tailed result i.e. based on the likelihood of a difference "
-        f'where the direction ("{lbl_a}" higher than "{lbl_b}" or "{lbl_b}" higher than "{lbl_a}") '
+        f'where the direction ("{label_a}" higher than "{label_b}" or "{label_b}" higher than "{label_a}") '
         "doesn't matter.")
     p_full_explanation = f"{p_explain}</br></br>{two_tailed_explanation}"
 
     u_statistic_explain = ("U is based on the results of matches "
-    f'between the "{lbl_a}" and "{lbl_b}" groups. '
+    f'between the "{label_a}" and "{label_b}" groups. '
     f'In each match,<br>the winner is the one with the highest "{result.measure_field_name}" '
     "(in a draw, each group gets half a point which is<br>why U can sometimes end in .5). "
     "The further the number is away from an even result"
@@ -199,7 +199,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
         sample_median = num_tpl.format(round(orig_group_spec.median, dp))
         avg_rank = num_tpl.format(round(orig_group_spec.avg_rank, dp))
         formatted_group_spec = NumericNonParametricSampleSpecFormatted(
-            lbl=orig_group_spec.lbl,
+            label=orig_group_spec.label,
             n=n,
             median=sample_median,
             sample_min=str(orig_group_spec.sample_min),

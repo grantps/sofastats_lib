@@ -41,10 +41,10 @@ class CommonOptions:
 class CommonMiscSpec:
     connector_style: str
     height: float  ## pixels
-    lbl_offset: int
+    label_offset: int
     radius: float
     slice_font_size: int
-    slice_lbls: Sequence[str]
+    slice_labels: Sequence[str]
     slice_vals: Sequence[float]
     width: float  ## pixels
 
@@ -88,7 +88,7 @@ var highlight_{{chart_uuid}} = function(colour){
          conf["tooltip_border_colour"] = "{{tooltip_border}}";
          // distinct fields for pie charts
          conf["highlight"] = highlight_{{chart_uuid}};
-         conf["lbl_offset"] = {{lbl_offset}};
+         conf["label_offset"] = {{label_offset}};
 
      makePieChart("pie_chart_{{chart_uuid}}", slices, conf);
  }
@@ -99,9 +99,9 @@ var highlight_{{chart_uuid}} = function(colour){
      <div id="pie_chart_{{chart_uuid}}"
          style="width: {{width}}px; height: {{height}}px;">
      </div>
-     {% if legend_lbl %}
+     {% if series_legend_label %}
          <p style="float: left; font-weight: bold; margin-right: 12px; margin-top: 9px;">
-             {{legend_lbl}}:
+             {{series_legend_label}}:
          </p>
          <div id="legend_for_pie_chart_{{chart_uuid}}">
          </div>
@@ -118,11 +118,10 @@ def get_common_pie_charting_spec(charting_spec: PieChartingSpec, style_spec: Sty
     slice_colours = get_long_colour_list(colour_mappings)
     ## misc
     height = 370 if charting_spec.is_multi_chart else 420
-    lbl_offset = -20 if charting_spec.is_multi_chart else -30
+    label_offset = -20 if charting_spec.is_multi_chart else -30
     radius = 120 if charting_spec.is_multi_chart else 140
     slice_font_size = 14 if charting_spec.n_charts < 10 else 10
     slice_vals = charting_spec.indiv_chart_specs[0].data_series_specs[0].amounts
-    slice_lbls = [spec.lbl for spec in charting_spec.category_specs]
     if charting_spec.is_multi_chart:
         slice_font_size *= 0.8
     colour_spec = CommonColourSpec(
@@ -137,10 +136,10 @@ def get_common_pie_charting_spec(charting_spec: PieChartingSpec, style_spec: Sty
     misc_spec = CommonMiscSpec(
         connector_style=style_spec.dojo.connector_style,
         height=height,
-        lbl_offset=lbl_offset,
+        label_offset=label_offset,
         radius=radius,
         slice_font_size=slice_font_size,
-        slice_lbls=slice_lbls,
+        slice_labels=charting_spec.categories,
         slice_vals=slice_vals,
         width=450,
     )
@@ -166,24 +165,24 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.lbl}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
     ## slices
     only_series = indiv_chart_spec.data_series_specs[0]
-    slice_lbls = common_charting_spec.misc_spec.slice_lbls
+    slice_labels = common_charting_spec.misc_spec.slice_labels
     slice_colours = common_charting_spec.colour_spec.slice_colours
-    slice_colours = slice_colours[:len(slice_lbls)]
+    slice_colours = slice_colours[:len(slice_labels)]
     slice_details = zip(
-        slice_lbls,
+        slice_labels,
         only_series.amounts,  ## the actual frequencies e.g. 120 for avg NZ IQ
         slice_colours,
         only_series.tooltips,
         strict=True)
     slice_strs = []
     slice_colours_as_displayed = []
-    for slice_lbl, slice_val, colour, tool_tip in slice_details:
+    for slice_label, slice_val, colour, tool_tip in slice_details:
         if slice_val == 0:
             continue
-        slice_str = f"""{{"val": {slice_val}, "lbl": "{slice_lbl}", "tooltip": "{tool_tip}"}},"""
+        slice_str = f"""{{"val": {slice_val}, "label": "{slice_label}", "tooltip": "{tool_tip}"}},"""
         slice_strs.append(slice_str)
         slice_colours_as_displayed.append(colour)
     slice_strs[-1] = slice_strs[-1].rstrip(',')
@@ -209,7 +208,6 @@ class PieChartDesign(CommonDesign):
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
-    legend_label: str | None = None,
     rotate_x_labels: bool = False,
     show_borders: bool = False,
     show_n_records: bool = True,
@@ -227,7 +225,7 @@ class PieChartDesign(CommonDesign):
             tbl_filt_clause=self.table_filter)
         ## charts details
         charting_spec = PieChartingSpec(
-            category_specs=intermediate_charting_spec.sorted_category_specs,
+            categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             show_n_records=self.show_n_records,
         )
@@ -250,7 +248,6 @@ class MultiChartPieChartDesign(CommonDesign):
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE
 
-    legend_label: str | None = None,
     rotate_x_labels: bool = False,
     show_borders: bool = False,
     show_n_records: bool = True,
@@ -263,14 +260,13 @@ class MultiChartPieChartDesign(CommonDesign):
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            chart_field_name=self.chart_field_name,
-            category_field_name=self.category_field_name,
+            category_field_name=self.category_field_name, chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
-            chart_sort_order=self.chart_sort_order, category_sort_order=self.category_sort_order,
+            category_sort_order=self.category_sort_order, chart_sort_order=self.chart_sort_order,
             tbl_filt_clause=self.table_filter)
         ## charts details
         charting_spec = PieChartingSpec(
-            category_specs=intermediate_charting_spec.sorted_category_specs,
+            categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             show_n_records=self.show_n_records,
         )

@@ -171,8 +171,7 @@ from itertools import count
 
 import pandas as pd
 
-from sofastats.conf.main import SortOrder
-from sofastats.conf.var_labels import SortOrderSpecs
+from sofastats.conf.main import SortOrder, SortOrderSpecs
 from sofastats.output.tables.interfaces import BLANK, TOTAL, Column, Metric, Row
 
 pd.set_option('display.max_rows', 200)
@@ -216,18 +215,18 @@ and
         print(f"{orig_tuple} => {items}")
     return tuple(items)
 
-def _by_freq(variable: str, lbl: str, df: pd.DataFrame, filts: tuple[tuple[str, str]] | None = None, *,
+def _by_freq(variable: str, label: str, df: pd.DataFrame, filters: tuple[tuple[str, str]] | None = None, *,
         increasing=True) -> tuple[int, float]:
     """
     Args:
         filts: [('browser', 'Firefox'), ...] or [('agegroup', '< 20'), ...]
     """
-    if lbl == TOTAL:
+    if label == TOTAL:
         sort_val = (1, 'anything ;-)')
     else:
-        df_filt = df.copy().loc[df[variable] == lbl]
-        for filt_variable, filt_val_lbl in filts:
-            df_filt = df_filt.loc[df_filt[filt_variable] == filt_val_lbl]
+        df_filt = df.copy().loc[df[variable] == label]
+        for filt_variable, filt_val_label in filters:
+            df_filt = df_filt.loc[df_filt[filt_variable] == filt_val_label]
         freq = len(df_filt)
         if increasing:
             sort_val = freq
@@ -235,11 +234,11 @@ def _by_freq(variable: str, lbl: str, df: pd.DataFrame, filts: tuple[tuple[str, 
             try:
                 sort_val = 1 / freq
             except ZeroDivisionError as e:
-                sort_val = 1.1  ## so always at end after lbls with freq of at least one (given we are decreasing)
+                sort_val = 1.1  ## so always at end after labels with freq of at least one (given we are decreasing)
         sort_val = (0, sort_val)
     return sort_val
 
-def _get_branch_of_variables_key(index_with_lbls: tuple, *, debug=False) -> tuple:
+def _get_branch_of_variables_key(index_with_labels: tuple, *, debug=False) -> tuple:
     """
     How should we sort the multi-index? The details are configured against variable branch trees. E.g.
     {
@@ -254,8 +253,8 @@ def _get_branch_of_variables_key(index_with_lbls: tuple, *, debug=False) -> tupl
     ('browser', 'car', )
     """
     index_with_vars = []
-    for i, item in enumerate(index_with_lbls):
-        vars_finished = ((item == BLANK) or i == len(index_with_lbls) - 1)
+    for i, item in enumerate(index_with_labels):
+        vars_finished = ((item == BLANK) or i == len(index_with_labels) - 1)
         if vars_finished:
             index_with_vars.append(item)
             continue
@@ -299,7 +298,7 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
     """
     max_idx = len(orig_index_tuple) - 1
     metric_idx = max_idx if has_metrics else None
-    branch_of_variables_key = _get_branch_of_variables_key(index_with_lbls=orig_index_tuple)
+    branch_of_variables_key = _get_branch_of_variables_key(index_with_labels=orig_index_tuple)
     order_rule = order_rules_for_multi_index_branches[branch_of_variables_key]  ## e.g. (1, Sort.LBL, 0, Sort.INCREASING)
     list_for_sorting = []
     variable_value_pairs = []  ## so we know what filters apply depending on how far across the index we have come e.g. if we have passed Gender Female then we need to filter to that
@@ -313,13 +312,13 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
         is_var_idx = (idx % 2 == 0 and not is_metric_idx)
         is_val_idx = not (is_var_idx or is_metric_idx)
         if is_var_idx:
-            variable_lbl = orig_index_tuple[idx]
-            if variable_lbl == BLANK:
+            variable_label = orig_index_tuple[idx]
+            if variable_label == BLANK:
                 variable_order = 0  ## never more than one BLANK below a parent so no sorting occurs - so 0 as good as anything else
             else:
                 variable_order = order_rule[idx]
             if debug:
-                print(f"{variable_lbl=}; {variable_order=}")
+                print(f"{variable_label=}; {variable_order=}")
             list_for_sorting.append(variable_order)
         elif is_val_idx:
             """
@@ -358,8 +357,8 @@ def get_tuple_for_sorting(orig_index_tuple: tuple, *, order_rules_for_multi_inde
                             'anything - the idx_for_ordered_position_of_total is enough to ensure sort order')
                 elif value_order_rule in (SortOrder.INCREASING, SortOrder.DECREASING):
                     increasing = (value_order_rule == SortOrder.INCREASING)
-                    filts = tuple(variable_value_pairs)
-                    value_order = _by_freq(variable, value, df=raw_df, filts=filts, increasing=increasing)  ## can't use df as arg for cached function  ## want TOTAL last
+                    filters = tuple(variable_value_pairs)
+                    value_order = _by_freq(variable, value, df=raw_df, filters=filters, increasing=increasing)  ## can't use df as arg for cached function  ## want TOTAL last
                 else:
                     raise ValueError(f"Unexpected value order spec ({value_order_rule})")
                 variable_value_pairs.append((variable, value))

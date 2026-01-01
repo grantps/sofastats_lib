@@ -6,7 +6,7 @@ import pandas as pd
 from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.stats.common import get_optimal_min_max
 from sofastats.output.charts.mpl_pngs import get_scatterplot_fig
-from sofastats.output.charts.scatterplot import ScatterplotConf, ScatterplotSeries
+from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
 from sofastats.output.stats.interfaces import Coord, CorrelationResult

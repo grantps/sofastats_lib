@@ -20,7 +20,7 @@ makeBarChart = function(chartname, series, conf){
             {l: conf["left_margin_offset"],
              t: 10,
              r: 10,
-             b: 10+conf["axis_lbl_drop"]},
+             b: 10+conf["axis_label_drop"]},
         yTitleOffset: conf["y_axis_title_offset"]});
     var sofa_theme = new dc.Theme({
         chart:{
@@ -57,14 +57,13 @@ makeBarChart = function(chartname, series, conf){
 	        }
 	    }
     });
-
     mychart.setTheme(sofa_theme);
     mychart.addAxis("x",
         {title: conf["x_axis_title"],
-         labels: conf["x_axis_lbls"],
+         labels: conf["x_axis_numbers_and_labels"],
          minorTicks: conf["has_minor_ticks"],
          font: "normal normal normal " + conf["x_axis_font_size"] + "pt Arial",
-         rotation: conf["axis_lbl_rotate"]
+         rotation: conf["axis_label_rotate"]
     });
     mychart.addAxis("y",
        {title: conf["y_axis_title"],
@@ -88,7 +87,7 @@ makeBarChart = function(chartname, series, conf){
     );
     var i
     for (i in series){
-        mychart.addSeries(series[i]["lbl"], series[i]["vals"], series[i]["options"]);
+        mychart.addSeries(series[i]["label"], series[i]["vals"], series[i]["options"]);
     }
     var anim_a = new dc.action2d.Highlight(mychart, "default", {
         highlight: conf["highlight"],
@@ -132,7 +131,7 @@ makePieChart = function(chartname, slices, conf){
             type: "Pie",
             font: "normal normal " + conf["slice_font_size"] + "px Arial",
             fontColor: conf["plot_font_colour_filled"],
-            labelOffset: conf['lbl_offset'],
+            labelOffset: conf['label_offset'],
             radius: conf['radius']
         });
 
@@ -142,7 +141,7 @@ makePieChart = function(chartname, slices, conf){
         pieSeries[i] =
         {
             y: slices[i]["val"],
-            text: slices[i]["lbl"],
+            text: slices[i]["label"],
             stroke: pieStroke,
             tooltip: slices[i]["tooltip"]
         }
@@ -192,7 +191,7 @@ makeLineChart = function(chartname, series, conf){
             l: conf['left_margin_offset'],
             t: 10,
             r: 10,
-            b: 10+conf['axis_lbl_drop']},
+            b: 10+conf['axis_label_drop']},
             yTitleOffset: conf['y_axis_title_offset']});
     var sofa_theme = new dc.Theme({
         chart:{
@@ -236,7 +235,7 @@ makeLineChart = function(chartname, series, conf){
     var xaxis_conf = {
         title: conf['x_axis_title'],
         font: "normal normal normal " + conf["x_axis_font_size"] + "pt Arial",
-        rotation: conf['axis_lbl_rotate'],
+        rotation: conf['axis_label_rotate'],
         minorTicks: conf['has_minor_ticks'],
         microTicks: conf['has_micro_ticks'],
         minorLabels: conf['has_minor_ticks']
@@ -244,7 +243,7 @@ makeLineChart = function(chartname, series, conf){
     if (conf['is_time_series']) {
         xaxis_conf.labelFunc = labelfTime;
     } else {
-        xaxis_conf.labels = conf["x_axis_lbls"];
+        xaxis_conf.labels = conf["x_axis_numbers_and_labels"];
     };
     mychart.addAxis("x", xaxis_conf);
     // y-axis
@@ -259,7 +258,7 @@ makeLineChart = function(chartname, series, conf){
     mychart.addPlot("grid", {type: "Grid", vMajorLines: false});
     var i
     for (i in series){
-        mychart.addSeries(series[i]["lbl"], series[i]["vals"], series[i]["options"]);
+        mychart.addSeries(series[i]["label"], series[i]["vals"], series[i]["options"]);
     }
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default", {text: getTooltip,
@@ -282,7 +281,7 @@ makeAreaChart = function(chartname, series, conf){
             l: conf['left_margin_offset'],
             t: 10,
             r: 10,
-            b: 10+conf['axis_lbl_drop']},
+            b: 10+conf['axis_label_drop']},
         yTitleOffset: conf['y_axis_title_offset']});
     var sofa_theme = new dc.Theme({
         chart:{
@@ -326,7 +325,7 @@ makeAreaChart = function(chartname, series, conf){
     var xaxis_conf = {
         title: conf['x_axis_title'],
         font: "normal normal normal " + conf["x_axis_font_size"] + "pt Arial",
-        rotation: conf['axis_lbl_rotate'],
+        rotation: conf['axis_label_rotate'],
         minorTicks: conf['has_minor_ticks'],
         microTicks: conf['has_micro_ticks'],
         minorLabels: conf['has_minor_ticks']
@@ -334,7 +333,7 @@ makeAreaChart = function(chartname, series, conf){
     if (conf['time_series']) {
         xaxis_conf.labelFunc = labelfTime;
     } else {
-        xaxis_conf.labels = conf["x_axis_lbls"];
+        xaxis_conf.labels = conf["x_axis_numbers_and_labels"];
     };
     mychart.addAxis("x", xaxis_conf);
     // y-axis
@@ -348,7 +347,7 @@ makeAreaChart = function(chartname, series, conf){
     mychart.addPlot("grid", {type: "Grid", vMajorLines: false});
     var i
     for (i in series){
-        mychart.addSeries(series[i]["lbl"], series[i]["vals"], series[i]["options"]);
+        mychart.addSeries(series[i]["label"], series[i]["vals"], series[i]["options"]);
     }
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default",
@@ -364,7 +363,7 @@ makeHistogram = function(chartname, data_spec, conf){
     nChart = conf["n_records"];
     // chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
     var getTooltip = function(val){
-        return "Values: " + data_spec["bin_lbls"][val.index] + "<br>" + conf['y_axis_title'] + ": " + val.y;
+        return "Values: " + data_spec["bin_labels"][val.index] + "<br>" + conf['y_axis_title'] + ": " + val.y;
     };
     var dc = dojox.charting;
     var mychart = new dc.Chart2D(chartname,
@@ -411,8 +410,8 @@ makeHistogram = function(chartname, data_spec, conf){
 	    }
     });
     mychart.setTheme(sofa_theme);
-    mychart.addAxis("x", {title: data_spec["series_lbl"],
-        labels: conf["blank_x_axis_lbls"], minorTicks: false, microTicks: false,
+    mychart.addAxis("x", {title: data_spec["series_label"],
+        labels: conf["blank_x_axis_numbers_and_labels"], minorTicks: false, microTicks: false,
         font: "normal normal normal " + conf["x_axis_font_size"] + "pt Arial"
     });
     mychart.addAxis("x2", {
@@ -430,7 +429,7 @@ makeHistogram = function(chartname, data_spec, conf){
     mychart.addPlot("default", {type: "Columns", gap: 0, shadows: {dx: 12, dy: 12}});
     mychart.addPlot("grid", {type: "Grid", vMajorLines: false});
     mychart.addPlot("othergrid", {type: "Areas", hAxis: "x2", vAxis: "y"});
-    mychart.addSeries(data_spec["series_lbl"], data_spec["y_vals"], data_spec["style"]);
+    mychart.addSeries(data_spec["series_label"], data_spec["y_vals"], data_spec["style"]);
     if(conf['show_normal_curve'] == true){
         mychart.addPlot("normal", {type: "Lines", markers: false, shadows: {dx: 2, dy: 2, dw: 2}});
         mychart.addSeries("Normal Dist Curve", data_spec["norm_y_vals"], data_spec["norm_style"]);
@@ -465,7 +464,7 @@ makeScatterplot = function(chartname, series, conf){
             {l: conf['left_margin_offset'],
              t: 10,
              r: 10,
-             b: 10+conf['axis_lbl_drop']},
+             b: 10+conf['axis_label_drop']},
          yTitleOffset: conf['y_axis_title_offset']});
     var sofa_theme = new dc.Theme({
         chart:{
@@ -517,7 +516,7 @@ makeScatterplot = function(chartname, series, conf){
         mychart.addPlot("regression", {type: "Lines", markers: false, shadows: {dx: 2, dy: 2, dw: 2}});
         for (i in series){
             try {
-                mychart.addSeries(series[i]["lbl"], series[i]["xy_pairs"], series[i]["options"]);
+                mychart.addSeries(series[i]["label"], series[i]["xy_pairs"], series[i]["options"]);
             } catch(err) {
                 /*do nothing*/
             }
@@ -527,7 +526,7 @@ makeScatterplot = function(chartname, series, conf){
     mychart.addPlot("grid", {type: "Grid", vMajorLines: true});
     var i
     for (i in series){
-        mychart.addSeries(series[i]["lbl"], series[i]["xy_pairs"], series[i]["options"]);
+        mychart.addSeries(series[i]["label"], series[i]["xy_pairs"], series[i]["options"]);
     }
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default",
@@ -563,7 +562,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
             {l: conf['left_margin_offset'],
              t: 10,
              r: 10,
-             b: 10+conf['axis_lbl_drop']},
+             b: 10+conf['axis_label_drop']},
          yTitleOffset: conf['y_axis_title_offset']});
     var sofa_theme = new dc.Theme({
         chart:{
@@ -610,9 +609,9 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
          max: conf["x_axis_max_val"],
          majorTicks: true,
          minorTicks: conf['has_minor_ticks'],
-         labels: conf["x_axis_lbls"],
+         labels: conf["x_axis_numbers_and_labels"],
          font: "normal normal normal " + conf["x_axis_font_size"] + "pt Arial",
-         rotation: conf['axis_lbl_rotate']});
+         rotation: conf['axis_label_rotate']});
     mychart.addAxis(
         "y",
         {title: conf['y_axis_title'],
@@ -625,7 +624,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
          });
     var i
     for (i in series){  // each item in series is a box (one per x value per data series)
-        mychart.addSeries('dummy_lbl_' + i, [], series[i]);  // Dojo expects a lbl and data but we won't use them  in boxplot so dummy vals used
+        mychart.addSeries('dummy_label_' + i, [], series[i]);  // Dojo expects a label and data but we won't use them  in boxplot so dummy vals used
     }
     var anim_a = new dc.action2d.Highlight(mychart, "default", {
         highlight: conf["highlight"],

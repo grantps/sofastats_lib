@@ -36,7 +36,7 @@ class BinSpec:
             self.bin_ranges.append((bin_start, bin_end))
             bin_start = bin_end
 
-    def to_bin_lbls(self, *, dp: int = 3):
+    def to_bin_labels(self, *, dp: int = 3):
         rounded_bin_ranges = []
         for raw_bin_start, raw_bin_end in self.bin_ranges:
             ## if ints
@@ -51,9 +51,9 @@ class BinSpec:
             else:
                 bin_end = rounded_end
             rounded_bin_ranges.append((bin_start, bin_end))
-        bin_lbls = [f"{lower} to < {upper}" for lower, upper in rounded_bin_ranges]
-        bin_lbls[-1] = bin_lbls[-1].replace('<', '<=')
-        return bin_lbls
+        bin_labels = [f"{lower} to < {upper}" for lower, upper in rounded_bin_ranges]
+        bin_labels[-1] = bin_labels[-1].replace('<', '<=')
+        return bin_labels
 
 def get_nice_initial_bin_details(vals: Sequence[float], *, debug=False) -> tuple[float, float, int]:
     """

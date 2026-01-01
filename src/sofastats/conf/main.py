@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import platform
 from subprocess import Popen, PIPE
-from typing import Literal
+from typing import Any, Literal
 
 SOFASTATS_WEB_RESOURCES_ROOT = 'http://www.sofastatistics.com/sofastats'  ## e.g. JS that needs to work when the HTML output is shared to other machines and users
 
@@ -17,11 +17,13 @@ MIN_VALS_FOR_NORMALITY_TEST = 20
 N_WHERE_NORMALITY_USUALLY_FAILS_NO_MATTER_WHAT = 100
 
 AVG_LINE_HEIGHT_PIXELS = 12
+
 AVG_CHAR_WIDTH_PIXELS = 20
+BOX_PLOT_AVG_CHAR_WIDTH_PIXELS = 9
 HISTO_AVG_CHAR_WIDTH_PIXELS = 10.5
+
 DOJO_Y_AXIS_TITLE_OFFSET = 45
 TEXT_WIDTH_WHEN_ROTATED = 4
-MIN_CHART_WIDTH_PIXELS = 450
 MAX_SAFE_X_LBL_LEN_PIXELS = 180
 
 JS_BOOL = Literal['true', 'false']
@@ -132,6 +134,8 @@ class DbeSpec:
         SELECT * FROM `demo_tbl` WHERE `country` = 'New Zealand'
         """
         return f"{self.str_value_quote}{str_value}{self.str_value_quote}"
+
+type SortOrderSpecs = dict[str, list[Any]]
 
 class SortOrder(StrEnum):
     CUSTOM = 'by custom order'
