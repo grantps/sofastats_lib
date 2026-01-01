@@ -66,9 +66,6 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
     axis_label_rotate = -90 if charting_spec.rotate_x_labels else 0
     max_x_label_width = (
         TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
-    horiz_x_labels = not charting_spec.rotate_x_labels
-    show_major_ticks_only = (False if charting_spec.is_time_series and horiz_x_labels
-        else charting_spec.show_major_ticks_only)  ## override
     width_after_left_margin = get_width_after_left_margin(
         n_x_items=charting_spec.n_x_items, n_items_horizontally_per_x_item=charting_spec.n_series, min_pixels_per_sub_item=10,
         x_item_padding_pixels=2, sub_item_padding_pixels=5,
@@ -76,7 +73,7 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
         widest_x_label_n_characters=max_x_label_width, avg_pixels_per_character=8,
         min_chart_width_one_item=200, min_chart_width_multi_item=400,
         is_multi_chart=charting_spec.is_multi_chart, multi_chart_size_scalar=0.9,
-        is_time_series=charting_spec.is_time_series, show_major_ticks_only=show_major_ticks_only,
+        is_time_series=charting_spec.is_time_series, show_major_ticks_only=charting_spec.show_major_ticks_only,
     )
     x_axis_title_len = len(charting_spec.x_axis_title)
     y_axis_title_offset = get_y_axis_title_offset(

@@ -72,8 +72,10 @@ def get_width_after_left_margin(*,
         + ((n_items_horizontally_per_x_item- 1) * sub_item_padding_pixels)  ## in-between padding
     )
     widest_x_label_width = (widest_x_label_n_characters * avg_pixels_per_character)
+    if show_major_ticks_only:
+        widest_x_label_width = 0.6 * widest_x_label_width  ## wide labels still won't bang into each other because they are separated by unlabelled minor ticks
     if is_time_series:
-        item_min_width = max(10, widest_x_label_width)
+        item_min_width = max(5, widest_x_label_width)
     else:
         item_min_width = max(item_min_width_from_sub_item_contents, widest_x_label_width)
     min_width_from_item_content = (
