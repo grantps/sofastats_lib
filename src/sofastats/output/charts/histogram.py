@@ -11,7 +11,7 @@ from sofastats.data_extraction.charts.histogram import (
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import JSBool
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.utils.maths import format_num
@@ -279,7 +279,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     html_result = template.render(context)
     return html_result
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class HistogramChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -322,7 +321,6 @@ class HistogramChartDesign(CommonDesign):
             output_item_type=OutputItemType.CHART,
         )
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartHistogramChartDesign(CommonDesign):
     style_name: str = 'default'

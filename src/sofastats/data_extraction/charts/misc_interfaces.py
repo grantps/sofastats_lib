@@ -1,6 +1,7 @@
 ## No project dependencies :-)
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
 ## Data Chart parts - multi-chart, chart, category, then series, containing data points
@@ -14,8 +15,8 @@ class DataItem:
     label: HTML label e.g. "Ubuntu<br>Linux" - ready for display in chart
     """
     amount: float
-    label: str
-    tooltip: str
+    tool_tip: str
+    sub_total: int
 
 @dataclass
 class DataSeriesSpec:
@@ -27,17 +28,14 @@ class DataSeriesSpec:
         Used in JS which often grabs bits separately.
         """
         self.amounts = []
-        self.labels = []
-        self.tooltips = []
+        self.tool_tips = []
         for data_item in self.data_items:
             if data_item is not None:
                 self.amounts.append(data_item.amount)
-                self.labels.append(data_item.label)
-                self.tooltips.append(data_item.tooltip)
+                self.tool_tips.append(data_item.tool_tip)
             else:
                 self.amounts.append(0)
-                self.labels.append('')
-                self.tooltips.append('')
+                self.tool_tips.append('')
 
 ## everything with categories i.e. all charts with frequencies + box plots
 ## The categories e.g. NZ (common across all individual charts and series within any charts)

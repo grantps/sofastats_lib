@@ -24,9 +24,9 @@ from itertools import product
 import pandas as pd
 
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.utils import get_style_spec
-from sofastats.output.tables.interfaces import BLANK, Column, DimSpec, Metric, PctType, Row
+from sofastats.output.tables.interfaces import BLANK, Column, Metric, PctType, Row
 from sofastats.output.tables.utils.html_fixes import (
     fix_top_left_box, merge_cols_of_blanks, merge_rows_of_blanks)
 from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
@@ -203,7 +203,6 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[st
     return df
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class CrossTabDesign(CommonDesign):
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

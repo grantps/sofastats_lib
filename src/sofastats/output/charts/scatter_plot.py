@@ -7,13 +7,13 @@ import jinja2
 
 from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.charts.scatter_plot import ScatterChartingSpec, ScatterIndivChartSpec
-from sofastats.data_extraction.charts.interfaces_xy import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
+from sofastats.data_extraction.charts.xy_interfaces import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
                                                             get_by_series_xy_charting_spec, get_by_xy_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import JSBool, LeftMarginOffsetSpec
 from sofastats.output.charts.utils import get_left_margin_offset, get_y_axis_title_offset
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.stats.interfaces import Coord
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
@@ -280,7 +280,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class SimpleScatterChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -322,7 +321,6 @@ class SimpleScatterChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class BySeriesScatterChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -369,7 +367,6 @@ class BySeriesScatterChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartScatterChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -416,7 +413,6 @@ class MultiChartScatterChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartBySeriesScatterChartDesign(CommonDesign):
     style_name: str = 'default'

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Literal
 
-from sofastats.data_extraction.charts.interfaces import CategorySpec, IndivChartSpec
+from sofastats.data_extraction.charts.misc_interfaces import CategorySpec, IndivChartSpec
 from sofastats.utils.dates import get_epoch_secs_from_datetime_str
 
 JSBool = Literal['false', 'true']

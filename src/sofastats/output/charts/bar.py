@@ -5,17 +5,15 @@ import uuid
 
 import jinja2
 
-from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED, SortOrder
-from sofastats.data_extraction.charts.interfaces_freq_spec import (get_by_category_charting_spec,
-    get_by_chart_category_charting_spec, get_by_chart_series_category_charting_spec,
-    get_by_series_category_charting_spec)
-from sofastats.data_extraction.charts.interfaces import IndivChartSpec
+from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED, ChartMetric, SortOrder
+import sofastats.data_extraction.charts.amount_spec_extraction as from_data
+from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec
 from sofastats.output.charts.utils import (get_axis_label_drop, get_left_margin_offset, get_height,
     get_dojo_format_x_axis_numbers_and_labels, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonBarDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
@@ -27,9 +25,8 @@ PADDING_PIXELS = 35
 DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM = 10  ## whatever works. Tested on cluster of Age vs Cars
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
-class SimpleBarChartDesign(CommonDesign):
+class SimpleBarChartDesign(CommonBarDesign):
     style_name: str = 'default'
 
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -39,16 +36,17 @@ class SimpleBarChartDesign(CommonDesign):
     show_borders: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
-    y_axis_title: str = 'Freq'
 
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        intermediate_charting_spec = get_by_category_charting_spec(
+        intermediate_charting_spec = from_data.get_by_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             category_field_name=self.category_field_name, sort_orders=self.sort_orders,
-            category_sort_order=self.category_sort_order, tbl_filt_clause=self.table_filter)
+            category_sort_order=self.category_sort_order,
+            metric=self.metric, field_name=self.field_name,
+            tbl_filt_clause=self.table_filter)
         ## chart details
         charting_spec = BarChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -62,7 +60,7 @@ class SimpleBarChartDesign(CommonDesign):
             y_axis_title=self.y_axis_title,
         )
         ## output
-        html = get_html(charting_spec, style_spec)
+        html = get_html(charting_spec, style_spec)  ## see get_indiv_chart_html() below
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,
@@ -70,9 +68,8 @@ class SimpleBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiBarChartDesign(CommonDesign):
+class MultiBarChartDesign(CommonBarDesign):
     style_name: str = 'default'
 
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -80,21 +77,22 @@ class MultiBarChartDesign(CommonDesign):
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE
 
+    metric: ChartMetric = ChartMetric.FREQ
     rotate_x_labels: bool = False
     show_borders: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
-    y_axis_title: str = 'Freq'
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        intermediate_charting_spec = get_by_chart_category_charting_spec(
+        intermediate_charting_spec = from_data.get_by_chart_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             category_field_name=self.category_field_name, chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, chart_sort_order=self.chart_sort_order,
+            metric=self.metric, field_name=self.field_name,
             tbl_filt_clause=self.table_filter)
         ## charts details
         charting_spec = BarChartingSpec(
@@ -117,9 +115,8 @@ class MultiBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
-class ClusteredBarChartDesign(CommonDesign):
+class ClusteredBarChartDesign(CommonBarDesign):
     style_name: str = 'default'
 
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -127,21 +124,22 @@ class ClusteredBarChartDesign(CommonDesign):
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_sort_order: SortOrder = SortOrder.VALUE
 
+    metric: ChartMetric = ChartMetric.FREQ
     rotate_x_labels: bool = False
     show_borders: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
-    y_axis_title: str = 'Freq'
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        intermediate_charting_spec = get_by_series_category_charting_spec(
+        intermediate_charting_spec = from_data.get_by_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             category_field_name=self.category_field_name, series_field_name=self.series_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, series_sort_order=self.series_sort_order,
+            metric=self.metric, field_name=self.field_name,
             tbl_filt_clause=self.table_filter)
         ## chart details
         charting_spec = BarChartingSpec(
@@ -164,9 +162,8 @@ class ClusteredBarChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
-class MultiChartClusteredBarChartDesign(CommonDesign):
+class MultiChartClusteredBarChartDesign(CommonBarDesign):
     style_name: str = 'default'
 
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -176,17 +173,17 @@ class MultiChartClusteredBarChartDesign(CommonDesign):
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE
 
-    rotate_x_labels: bool = False,
-    show_borders: bool = False,
-    show_n_records: bool = True,
-    x_axis_font_size: int = 12,
-    y_axis_title: str = 'Freq',
+    metric: ChartMetric = ChartMetric.FREQ
+    rotate_x_labels: bool = False
+    show_borders: bool = False
+    show_n_records: bool = True
+    x_axis_font_size: int = 12
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        intermediate_charting_spec = get_by_chart_series_category_charting_spec(
+        intermediate_charting_spec = from_data.get_by_chart_series_category_charting_spec(
             cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
             category_field_name=self.category_field_name,
             series_field_name=self.series_field_name,
@@ -195,6 +192,7 @@ class MultiChartClusteredBarChartDesign(CommonDesign):
             category_sort_order=self.category_sort_order,
             series_sort_order=self.series_sort_order,
             chart_sort_order=self.chart_sort_order,
+            metric=self.metric, field_name=self.field_name,
             tbl_filt_clause=self.table_filter)
         ## chart details
         charting_spec = BarChartingSpec(
@@ -219,6 +217,7 @@ class MultiChartClusteredBarChartDesign(CommonDesign):
 @dataclass
 class BarChartingSpec(ChartingSpecAxes):
     show_borders: bool
+    metric: ChartMetric = ChartMetric.FREQ
 
 @dataclass(frozen=True)
 class CommonColourSpec:
@@ -247,6 +246,7 @@ class CommonMiscSpec:
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
+    metric: ChartMetric
     series_legend_label: str
     stroke_width: int
     width: float  ## pixels
@@ -431,6 +431,7 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
+        metric=charting_spec.metric,
         series_legend_label=series_legend_label,
         stroke_width=stroke_width,
         width=width,
@@ -471,7 +472,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         series_vals = str(data_series_spec.amounts)
         ## options e.g. {stroke: {color: "white", width: "0px"}, fill: "#e95f29", yLbls: ['66.38', ...]}
         fill_colour = common_charting_spec.colour_spec.colours[i]
-        y_lbls_str = str(data_series_spec.tooltips)
+        y_lbls_str = str(data_series_spec.tool_tips)
         options = (f"""{{stroke: {{color: "white", width: "{common_charting_spec.misc_spec.stroke_width}px"}}, """
             f"""fill: "{fill_colour}", yLbls: {y_lbls_str}}}""")
         dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))

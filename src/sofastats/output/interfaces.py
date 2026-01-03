@@ -15,7 +15,8 @@ import jinja2
 import pandas as pd
 
 from sofastats import SQLITE_DB, logger
-from sofastats.conf.main import INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName, SortOrderSpecs
+from sofastats.conf.main import (
+    INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, ChartMetric, DbeName, SortOrderSpecs)
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
@@ -67,7 +68,7 @@ class CommonDesign(ABC):
         Source supplies all code that inherits from it dbe_spec ready to use.
         """
         if self.csv_file_path:
-            if self.cur or self.database_engine_name:
+            if self.cur or self.database_engine_name or self.source_table_name or self.table_filter:
                 raise Exception("If supplying a CSV path don't also supply database requirements")
             if not self.csv_separator:
                 self.csv_separator = ','
@@ -91,11 +92,13 @@ class CommonDesign(ABC):
         elif self.cur:
             self.cur = ExtendedCursor(self.cur)
             if not self.database_engine_name:
-                raise Exception("When supplying a cursor, a database_engine_name must also be supplied")
+                supported_names = '"' + '", "'.join(name.value for name in DbeName) + '"'
+                raise Exception("When supplying a cursor, a database_engine_name must also be supplied. "
+                    f"Supported names currently are: {supported_names}")
             else:
                 self.dbe_spec = get_dbe_spec(self.database_engine_name)
             if not self.source_table_name:
-                raise Exception("When supplying a cursor, a tbl_name must also be supplied")
+                raise Exception("When supplying a cursor, a source_table_name must also be supplied")
         elif self.source_table_name:
             if not SQLITE_DB.get('sqlite_default_cur'):
                 SQLITE_DB['sqlite_default_con'] = sqlite.connect(INTERNAL_DATABASE_FPATH)
@@ -135,33 +138,43 @@ class CommonDesign(ABC):
     def __post_init__(self):
         self.handle_inputs()
         self.handle_outputs()
+        for field in fields(self):
+            if self.__getattribute__(field.name) == DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY:
+                ## raise a friendly error for when they didn't supply a mandatory field that technically had a default (DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY), but we want to insist they supply a real value
+                client_module = self.__module__.split('.')[-1]
+                nice_name = f"{client_module}.{self.__class__.__name__}"  ## e.g. anova.AnovaDesign
+                raise Exception(f"Oops - you need to supply a value for {field.name} in your {nice_name}")
 
     def __repr_html__(self):
         return self.__str__
-
-
-def add_common_methods_from_parent(cls):
-    """
-    Add methods from parent (CommonDesign).
-    Ensures we can run some standard __post_init__ special sauce
-    while ensuring parent dataclasses also have their __post_init__ run
-    """
-    def run_all_post_inits(self):
-        CommonDesign.__post_init__(self)
-        for field in fields(self):
-            if self.__getattribute__(field.name) == DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY:
-                last_module = cls.__module__.split('.')[-1]
-                nice_name = f"{last_module}.{cls.__name__}"  ## e.g. anova.AnovaDesign
-                raise Exception(f"Oops - you need to supply a value for {field.name} in your {nice_name}")
 
     def make_output(self):
         self.to_html_design().to_file(fpath=self.output_file_path, html_title=self.output_title)
         if self.show_in_web_browser:
             open_new_tab(url=f"file://{self.output_file_path}")
 
-    cls.__post_init__ = run_all_post_inits
-    cls.make_output = make_output
-    return cls
+
+@dataclass(frozen=False)
+class CommonBarDesign(CommonDesign):
+
+    metric: ChartMetric = ChartMetric.FREQ
+    field_name: str | None = None
+    y_axis_title: str | None = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.y_axis_title is None:
+            if self.metric == ChartMetric.AVG:
+                self.y_axis_title = f"Average {self.field_name}"
+            elif self.metric == ChartMetric.FREQ:
+                self.y_axis_title = 'Frequency'
+            elif self.metric == ChartMetric.PCT:
+                self.y_axis_title = 'Percent'
+            elif self.metric == ChartMetric.SUM:
+                self.y_axis_title = f"Summed {self.field_name}"
+            else:
+                raise ValueError(f'Metric {self.metric} is not supported.')
+
 
 HTML_AND_SOME_HEAD_TPL = """\
 <!DOCTYPE html>

@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from statistics import median
 import uuid
 
@@ -8,16 +7,16 @@ import jinja2
 
 from sofastats import logger
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.interfaces_freq_spec import (
+from sofastats.data_extraction.charts.amount_spec_extraction import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec, get_by_chart_series_category_charting_spec,
     get_by_series_category_charting_spec)
-from sofastats.data_extraction.charts.interfaces import DataSeriesSpec, IndivChartSpec
+from sofastats.data_extraction.charts.misc_interfaces import DataSeriesSpec, IndivChartSpec
 from sofastats.output.charts.common import (
     get_common_charting_spec, get_html, get_indiv_chart_html, get_line_area_misc_spec)
 from sofastats.output.charts.interfaces import (
     DojoSeriesSpec, JSBool, LeftMarginOffsetSpec, LineArea, LineChartingSpec, PlotStyle)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
@@ -214,7 +213,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         ## options
         ## e.g. {stroke: {color: '#e95f29', width: '6px'}, yLbls: ['x-val: 2016-01-01<br>y-val: 12<br>0.8%', ... ], plot: 'default'};
         line_colour = common_charting_spec.colour_spec.colours[i]
-        y_lbls_str = str(data_series_spec.tooltips)
+        y_lbls_str = str(data_series_spec.tool_tips)
         options = (f"""{{stroke: {{color: "{line_colour}", width: "6px"}}, """
             f"""yLbls: {y_lbls_str}, plot: "{marker_plot_style}"}}""")
         dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))
@@ -247,7 +246,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class LineChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -300,7 +298,6 @@ class LineChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiLineChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -355,7 +352,6 @@ class MultiLineChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartLineChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -412,7 +408,6 @@ class MultiChartLineChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartMultiLineChartDesign(CommonDesign):
     style_name: str = 'default'

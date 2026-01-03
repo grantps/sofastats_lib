@@ -5,13 +5,13 @@ import uuid
 import jinja2
 
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.interfaces_freq_spec import (
+from sofastats.data_extraction.charts.amount_spec_interfaces import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
-from sofastats.data_extraction.charts.interfaces import IndivChartSpec
+from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecNoAxes
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.misc import todict
@@ -200,7 +200,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class PieChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -238,7 +237,6 @@ class PieChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartPieChartDesign(CommonDesign):
     style_name: str = 'default'

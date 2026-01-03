@@ -13,7 +13,7 @@ from sofastats.output.charts.utils import (
     get_axis_label_drop, get_height, get_left_margin_offset, get_dojo_format_x_axis_numbers_and_labels,
     get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.stats_calc.interfaces import BoxplotType
@@ -350,7 +350,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class BoxplotChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -399,7 +398,6 @@ class BoxplotChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class ClusteredBoxplotChartDesign(CommonDesign):
     style_name: str = 'default'

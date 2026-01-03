@@ -8,7 +8,7 @@ from sofastats.output.stats.common import get_optimal_min_max
 from sofastats.output.charts.mpl_pngs import get_scatterplot_fig
 from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.stats.interfaces import Coord, CorrelationResult
 from sofastats.output.stats.msgs import ONE_TAILED_EXPLANATION
 from sofastats.output.styles.interfaces import StyleSpec
@@ -88,7 +88,6 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     return html
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class PearsonsRDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

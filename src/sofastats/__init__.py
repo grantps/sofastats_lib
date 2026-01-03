@@ -170,7 +170,7 @@ do so by making a new dc which inherits from the earlier one.
 4) When creating a new dataclass, or extending its methods, can simply mutate it and add attributes,
 use inheritance, or feed in the values from one dc as an unpacked dict into the new one.
 
-5) If dataclass is specific to something e.g. anova, define it under anova. If not, use interfaces.py at the same level.
+5) If dataclass is specific to something e.g. anova, define it under anova. If not, use misc_interfaces.py at the same level.
 """
 import logging
 from sys import stdout

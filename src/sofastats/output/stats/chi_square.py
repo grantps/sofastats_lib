@@ -12,7 +12,7 @@ from sofastats import logger
 from sofastats.data_extraction.stats.chi_square import get_chi_square_data
 from sofastats.output.charts import boomslang
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.stats_calc.chi_square import WorkedResult, get_worked_result
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
@@ -467,7 +467,6 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=Fa
     return html
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class ChiSquareDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

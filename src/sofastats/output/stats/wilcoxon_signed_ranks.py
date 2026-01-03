@@ -6,15 +6,15 @@ import pandas as pd
 
 from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.stats.msgs import WILCOXON_VARIANCE_BY_APP_EXPLAIN
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
 from sofastats.output.utils import get_p_explain
 from sofastats.stats_calc.engine import (wilcoxon_signed_ranks_indiv_comparisons as wilcoxon_signed_ranks_for_workings,
-                                         wilcoxont as wilcoxon_signed_ranks_stats_calc, )
+    wilcoxont as wilcoxon_signed_ranks_stats_calc, )
 from sofastats.stats_calc.interfaces import (NumericNonParametricSampleSpecFormatted, Sample,
-                                             WilcoxonSignedRanksResult, WilcoxonIndivComparisonResult)
+    WilcoxonSignedRanksResult, WilcoxonIndivComparisonResult)
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import pluralise_with_s, todict
 from sofastats.utils.stats import get_p_str
@@ -214,7 +214,6 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
     return html
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class WilcoxonSignedRanksDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

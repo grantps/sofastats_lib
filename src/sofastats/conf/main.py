@@ -142,3 +142,9 @@ class SortOrder(StrEnum):
     DECREASING = 'by decreasing frequency'
     INCREASING = 'by increasing frequency'
     VALUE = 'by value'
+
+class ChartMetric(StrEnum):
+    AVG = 'avg'
+    FREQ = 'freq'
+    PCT = 'pct'
+    SUM = 'sum'

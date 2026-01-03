@@ -4,7 +4,7 @@ from functools import partial
 import pandas as pd
 
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.tables.interfaces import BLANK, PctType, Row
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.utils.html_fixes import fix_top_left_box, merge_cols_of_blanks
@@ -103,7 +103,6 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
     return df
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False, kw_only=True)
 class FrequencyTableDesign(CommonDesign):
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

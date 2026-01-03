@@ -4,15 +4,15 @@ import uuid
 import jinja2
 
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.interfaces_freq_spec import (
+from sofastats.data_extraction.charts.amount_spec_extraction import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
-from sofastats.data_extraction.charts.interfaces import IndivChartSpec
+from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
 from sofastats.output.charts.common import (
     get_common_charting_spec, get_html, get_indiv_chart_html,get_line_area_misc_spec)
 from sofastats.output.charts.interfaces import (
     AreaChartingSpec, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec, LineArea, PlotStyle)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign, add_common_methods_from_parent)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.utils.maths import format_num
@@ -102,7 +102,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     ## e.g. {stroke: {color: '#e95f29', width: '6px'}, yLbls: ['x-val: 2016-01-01<br>y-val: 12<br>0.8%', ... ], plot: 'default'};
     line_colour = common_charting_spec.colour_spec.line
     fill_colour = common_charting_spec.colour_spec.fill
-    y_labels_str = str(only_series.tooltips)
+    y_labels_str = str(only_series.tool_tips)
     options = (f"""{{stroke: {{color: "{line_colour}", width: "6px"}}, """
         f"""fill: "{fill_colour}", """
         f"""yLbls: {y_labels_str}, plot: "{marker_plot_style}"}}""")
@@ -121,7 +121,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     return html_result
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class AreaChartDesign(CommonDesign):
     style_name: str = 'default'
@@ -170,7 +169,6 @@ class AreaChartDesign(CommonDesign):
         )
 
 
-@add_common_methods_from_parent
 @dataclass(frozen=False)
 class MultiChartAreaChartDesign(CommonDesign):
     style_name: str = 'default'
