@@ -4,9 +4,9 @@ import uuid
 import jinja2
 
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.amount_spec_extraction import (
+from sofastats.data_extraction.charts.amounts import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
-from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
+from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import (
     get_common_charting_spec, get_html, get_indiv_chart_html,get_line_area_misc_spec)
 from sofastats.output.charts.interfaces import (

@@ -7,7 +7,7 @@ import jinja2
 
 from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.charts.scatter_plot import ScatterChartingSpec, ScatterIndivChartSpec
-from sofastats.data_extraction.charts.xy_interfaces import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
+from sofastats.data_extraction.charts.interfaces.xy import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
                                                             get_by_series_xy_charting_spec, get_by_xy_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import JSBool, LeftMarginOffsetSpec
@@ -196,9 +196,15 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         width, height = (630, 350)
     else:
         width, height = (700, 385)
-    x_axis_title_len = len(charting_spec.x_axis_title)
+    ## y-axis offset
+    y_axis_max = charting_spec.y_axis_max_val * 1.1
+    widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_labels=False)
+        widest_x_axis_label_n_characters=4,  ## not really a factor as an axis of integers
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
+        avg_pixels_per_character=10.5,
+    )
+    ## sizing left margin offset
     left_margin_offset = get_left_margin_offset(width_after_left_margin=width - 25,  ## not a dynamic settings like x-axis label type charts so 25 is a good guess
         offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
         y_axis_title_offset=y_axis_title_offset, rotated_x_labels=False)

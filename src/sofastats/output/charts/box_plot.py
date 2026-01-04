@@ -4,21 +4,21 @@ import uuid
 
 import jinja2
 
-from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED, SortOrder
+from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, SortOrder
 from sofastats.data_extraction.charts.box_plot import (
     BoxplotChartingSpec, BoxplotIndivChartSpec, get_by_category_charting_spec, get_by_series_category_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import JSBool, LeftMarginOffsetSpec
 from sofastats.output.charts.utils import (
     get_axis_label_drop, get_height, get_left_margin_offset, get_dojo_format_x_axis_numbers_and_labels,
-    get_x_axis_font_size, get_y_axis_title_offset)
+    get_width_after_left_margin, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.stats_calc.interfaces import BoxplotType
 from sofastats.utils.maths import format_num
-from sofastats.utils.misc import get_width_after_left_margin, todict
+from sofastats.utils.misc import todict
 
 left_margin_offset_spec = LeftMarginOffsetSpec(
     initial_offset=25, wide_offset=35, rotate_offset=10, multi_chart_offset=0)
@@ -225,11 +225,11 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
     has_minor_ticks_js_bool: JSBool = 'true' if charting_spec.has_minor_ticks else 'false'
     series_legend_label = '' if charting_spec.is_single_series else charting_spec.series_legend_label
     dojo_format_x_axis_numbers_and_labels = get_dojo_format_x_axis_numbers_and_labels(charting_spec.categories)
-    y_axis_max_val = charting_spec.y_axis_max_val * 1.1
     ## sizing
     height = get_height(axis_label_drop=axis_label_drop,
         rotated_x_labels=charting_spec.rotate_x_labels, max_x_axis_label_len=charting_spec.max_x_axis_label_len)
-    max_x_label_width = (TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
+    max_x_label_width = (
+        TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
     width_after_left_margin = get_width_after_left_margin(
         n_x_items=charting_spec.n_x_items, n_items_horizontally_per_x_item=charting_spec.n_series, min_pixels_per_sub_item=50,
         x_item_padding_pixels=2, sub_item_padding_pixels=5,
@@ -238,9 +238,19 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         min_chart_width_one_item=200, min_chart_width_multi_item=400,
         is_multi_chart=False,  ## haven't made multi-chart box-plots
         multi_chart_size_scalar=0.9)
-    x_axis_title_len = len(charting_spec.x_axis_title)
+    ## y-axis offset
+    x_labels = charting_spec.categories
+    first_x_label = x_labels[0]
+    widest_x_axis_label_n_characters = (
+        TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else len(first_x_label))
+    y_axis_max = charting_spec.y_axis_max_val * 1.1
+    widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_labels=charting_spec.rotate_x_labels)
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
+        avg_pixels_per_character=10.5,
+    )
+    ## other sizing
     left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
         offsets=left_margin_offset_spec, is_multi_chart=False,
         y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
@@ -270,7 +280,7 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         x_axis_font_size=x_axis_font_size,
         x_axis_max_val=charting_spec.x_axis_max_val,
         x_axis_title=charting_spec.x_axis_title,
-        y_axis_max_val=y_axis_max_val,
+        y_axis_max_val=y_axis_max,
         y_axis_min_val=charting_spec.y_axis_min_val,
         y_axis_title=charting_spec.y_axis_title,
         y_axis_title_offset=y_axis_title_offset,

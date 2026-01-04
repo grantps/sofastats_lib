@@ -1,7 +1,12 @@
+"""
+Amounts - frequencies, percentages, averages, and sums.
+Common code used by Area, Bar, and Line charts
+"""
+
 import pandas as pd
 
 from sofastats.conf.main import ChartMetric, DbeSpec, SortOrder, SortOrderSpecs
-from sofastats.data_extraction.charts.amount_spec_interfaces import (
+from sofastats.data_extraction.charts.interfaces.amounts import (
     CategoryFreqSpecs, CategoryItemAmountSpec,
     ChartCategoryFreqSpec, ChartCategoryFreqSpecs,
     ChartSeriesCategoryFreqSpec, ChartSeriesCategoryFreqSpecs,

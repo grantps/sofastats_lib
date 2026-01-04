@@ -26,7 +26,7 @@ from textwrap import dedent
 from typing import Any
 
 from sofastats.conf.main import ChartMetric, SortOrder, SortOrderSpecs
-from sofastats.data_extraction.charts.misc_interfaces import DataItem, DataSeriesSpec, IndivChartSpec
+from sofastats.data_extraction.charts.interfaces.common import DataItem, DataSeriesSpec, IndivChartSpec
 
 ## by category only (one chart, one series)
 

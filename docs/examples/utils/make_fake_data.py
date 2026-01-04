@@ -99,6 +99,10 @@ class Genre(StrEnum):
 round2 = partial(round, ndigits=2)
 
 def constrain(orig: float, *, max_val, min_val) -> float | int:
+    """
+    Accept the original value as long as it isn't outside the range - in which case use the limit it is beyond.
+    E.g. if min_val is 6 and the value is 3 then return 6.
+    """
     return max(min(orig, max_val), min_val)
 
 def change_float_usually_up(orig: float, *, min_val: float, max_val: float) -> float:
@@ -116,21 +120,24 @@ def change_int_usually_up(orig: int) -> int:
     val = constrain(raw_val, min_val=1, max_val=5)
     return val
 
-def make_paired_difference(con, *, debug=False):
+def make_education_paired_difference(con, *, debug=False):
     """
     Reading scores and educational_satisfaction before and after intervention
     """
     n_records = 5_000
     data = [(fake.name(), ) for _i in range(n_records)]
     df = pd.DataFrame(data, columns = ['name'])
+    df['Country'] = pd.Series([sample(countries, counts=[200, 100, 80, 70], k=1)[0] for _i in range(n_records)])
+    df['Home Location Type'] = df['Country'].apply(country2location)
     df['Reading Score Before Help'] = pd.Series([
         round(constrain(gauss(mu=60, sigma=20), max_val=100, min_val=40), 2)
         for _i in range(n_records)])
-    change_usually_up = partial(change_float_usually_up, min_val=1, max_val=5)
-    df['Reading Score After Help'] = df['Reading Score Before Help'].apply(change_usually_up)
+    change_reading_score_usually_up = partial(change_float_usually_up, min_val=0, max_val=100)
+    df['Reading Score After Help'] = df['Reading Score Before Help'].apply(change_reading_score_usually_up)
     df['Reading Score After Help'] = df['Reading Score After Help'].apply(round2)
     df['School Satisfaction Before Help'] = pd.Series([sample([1, 2, 3, 4, 5], counts=[1, 2, 4, 3, 1], k=1)[0] for _x in range(n_records)])
-    df['School Satisfaction After Help'] = df['School Satisfaction Before Help'].apply(change_usually_up)
+    change_satisfaction_usually_up = partial(change_float_usually_up, min_val=1, max_val=5)
+    df['School Satisfaction After Help'] = df['School Satisfaction Before Help'].apply(change_satisfaction_usually_up)
     if debug: print(df)
     df.to_csv(files_folder / 'education.csv', index=False)
     df.to_sql('education', con=con, if_exists='replace', index=False)
@@ -371,7 +378,7 @@ def run(*, debug=False):
     sqlite_demo_db_file_path.unlink(missing_ok=True)
     con = sqlite.connect(sqlite_demo_db_file_path)
 
-    make_paired_difference(con, debug=debug)
+    make_education_paired_difference(con, debug=debug)
     make_sport_independent_difference(con, debug=debug)
     make_group_pattern(con, debug=debug)
     make_correlation(con, debug=debug)

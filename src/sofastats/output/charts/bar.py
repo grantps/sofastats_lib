@@ -1,23 +1,24 @@
-from collections.abc import Collection, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 import uuid
 
 import jinja2
 
-from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED, ChartMetric, SortOrder
-import sofastats.data_extraction.charts.amount_spec_extraction as from_data
-from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
+from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, ChartMetric, SortOrder
+import sofastats.data_extraction.charts.amounts as from_data
+from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec
 from sofastats.output.charts.utils import (get_axis_label_drop, get_left_margin_offset, get_height,
-    get_dojo_format_x_axis_numbers_and_labels, get_x_axis_font_size, get_y_axis_title_offset)
+    get_dojo_format_x_axis_numbers_and_labels, get_width_after_left_margin, get_x_axis_font_size,
+    get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonBarDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
-from sofastats.utils.misc import get_width_after_left_margin, todict
+from sofastats.utils.misc import todict
 
 MIN_PIXELS_PER_X_ITEM = 60
 MIN_CLUSTER_WIDTH_PIXELS = 60
@@ -381,13 +382,12 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
         for colour_mapping in colour_mappings]  ## actually only need first one for simple bar charts
     ## misc
     dojo_format_x_axis_numbers_and_labels = get_dojo_format_x_axis_numbers_and_labels(charting_spec.categories)
-    y_axis_max = charting_spec.max_y_val * 1.1
     has_minor_ticks_js_bool: JSBool = 'true' if charting_spec.n_x_items >= DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM else 'false'
     series_legend_label = '' if charting_spec.is_single_series else charting_spec.series_legend_label
     stroke_width = style_spec.chart.stroke_width if charting_spec.show_borders else 0
     ## sizing
-    x_labels = charting_spec.categories
-    max_x_label_width = (TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
+    ## width_after_left_margin
+    max_x_label_width = (TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
     width_after_left_margin = get_width_after_left_margin(
         n_x_items=charting_spec.n_x_items, n_items_horizontally_per_x_item=charting_spec.n_series, min_pixels_per_sub_item=50,
         x_item_padding_pixels=2, sub_item_padding_pixels=5,
@@ -395,11 +395,21 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
         widest_x_label_n_characters=max_x_label_width, avg_pixels_per_character=10.5,
         min_chart_width_one_item=200, min_chart_width_multi_item=400,
         is_multi_chart=charting_spec.is_multi_chart, multi_chart_size_scalar=0.9)
+    ## y-axis offset
+    x_labels = charting_spec.categories
+    first_x_label = x_labels[0]
+    widest_x_axis_label_n_characters = (
+        TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else len(first_x_label))
+    y_axis_max = charting_spec.max_y_val * 1.1
+    widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
+    y_axis_title_offset = get_y_axis_title_offset(
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
+        avg_pixels_per_character=10.5,
+    )
+    ## misc sizing
     x_axis_font_size = get_x_axis_font_size(n_x_items=charting_spec.n_x_items, is_multi_chart=charting_spec.is_multi_chart)
     x_gap = get_x_gap(n_x_items=charting_spec.n_x_items, is_multi_chart=charting_spec.is_multi_chart)
-    x_axis_title_len = len(charting_spec.x_axis_title)
-    y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_labels=charting_spec.rotate_x_labels)
     axis_label_drop = get_axis_label_drop(
         is_multi_chart=charting_spec.is_multi_chart, rotated_x_labels=charting_spec.rotate_x_labels,
         max_x_axis_label_lines=charting_spec.max_x_axis_label_lines)

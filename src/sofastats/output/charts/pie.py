@@ -5,9 +5,9 @@ import uuid
 import jinja2
 
 from sofastats.conf.main import SortOrder
-from sofastats.data_extraction.charts.amount_spec_interfaces import (
+from sofastats.data_extraction.charts.amounts import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
-from sofastats.data_extraction.charts.misc_interfaces import IndivChartSpec
+from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import ChartingSpecNoAxes
 from sofastats.output.interfaces import (
@@ -175,7 +175,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         slice_labels,
         only_series.amounts,  ## the actual frequencies e.g. 120 for avg NZ IQ
         slice_colours,
-        only_series.tooltips,
+        only_series.tool_tips,
         strict=True)
     slice_strs = []
     slice_colours_as_displayed = []

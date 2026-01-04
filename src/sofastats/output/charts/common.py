@@ -15,12 +15,11 @@ get_html(charting_spec, style_spec)
 """
 from functools import singledispatch
 
-from sofastats.conf.main import TEXT_WIDTH_WHEN_ROTATED
+from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED
 from sofastats.output.charts.interfaces import AreaChartingSpec, LeftMarginOffsetSpec, LineArea, LineChartingSpec
 from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_left_margin_offset, get_x_axis_font_size,
-    get_dojo_format_x_axis_numbers_and_labels, get_y_axis_title_offset)
+    get_dojo_format_x_axis_numbers_and_labels, get_width_after_left_margin, get_y_axis_title_offset)
 from sofastats.output.styles.interfaces import StyleSpec
-from sofastats.utils.misc import get_width_after_left_margin
 
 ## https://towardsdatascience.com/simplify-your-functions-with-functools-partial-and-singledispatch-b7071f7543bb
 @singledispatch
@@ -59,13 +58,13 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
         dojo_format_x_axis_numbers_and_labels = '[]'
     else:
         x_axis_categories = None
-    y_axis_max = charting_spec.max_y_val * 1.1
     axis_label_drop = get_axis_label_drop(is_multi_chart=charting_spec.is_multi_chart,
         rotated_x_labels=charting_spec.rotate_x_labels,
         max_x_axis_label_lines=charting_spec.max_x_axis_label_lines)
     axis_label_rotate = -90 if charting_spec.rotate_x_labels else 0
+    ## width_after_left_margin
     max_x_label_width = (
-        TEXT_WIDTH_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
+        TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
     width_after_left_margin = get_width_after_left_margin(
         n_x_items=charting_spec.n_x_items, n_items_horizontally_per_x_item=charting_spec.n_series, min_pixels_per_sub_item=10,
         x_item_padding_pixels=2, sub_item_padding_pixels=5,
@@ -75,9 +74,19 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
         is_multi_chart=charting_spec.is_multi_chart, multi_chart_size_scalar=0.9,
         is_time_series=charting_spec.is_time_series, show_major_ticks_only=charting_spec.show_major_ticks_only,
     )
-    x_axis_title_len = len(charting_spec.x_axis_title)
+    ## y-axis offset
+    x_labels = charting_spec.categories
+    first_x_label = x_labels[0]
+    widest_x_axis_label_n_characters = (
+        TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else len(first_x_label))
+    y_axis_max = charting_spec.max_y_val * 1.1
+    widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        x_axis_title_len=x_axis_title_len, rotated_x_labels=charting_spec.rotate_x_labels)
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
+        avg_pixels_per_character=10.5,
+    )
+    ## misc sizing
     left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
         offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
         y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
