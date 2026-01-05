@@ -105,13 +105,14 @@ def constrain(orig: float, *, max_val, min_val) -> float | int:
     """
     return max(min(orig, max_val), min_val)
 
-def change_float_usually_up(orig: float, *, min_val: float, max_val: float) -> float:
+def change_float_usually_up(orig: float, *, scalar_centre: float, variation: float,
+        min_val: float, max_val: float) -> float:
     """
     Between 0.8x to 1.5x
     mu = 1.35
     sigma = 0.2
     """
-    scalar = gauss(mu=1.2, sigma=0.12)
+    scalar = gauss(mu=scalar_centre, sigma=variation)
     return constrain(orig * scalar, min_val=min_val, max_val=max_val)
 
 def change_int_usually_up(orig: int) -> int:
@@ -132,11 +133,13 @@ def make_education_paired_difference(con, *, debug=False):
     df['Reading Score Before Help'] = pd.Series([
         round(constrain(gauss(mu=60, sigma=20), max_val=100, min_val=40), 2)
         for _i in range(n_records)])
-    change_reading_score_usually_up = partial(change_float_usually_up, min_val=0, max_val=100)
+    change_reading_score_usually_up = partial(change_float_usually_up,
+        scalar_centre=1.2, variation=1.2, min_val=0, max_val=100)
     df['Reading Score After Help'] = df['Reading Score Before Help'].apply(change_reading_score_usually_up)
     df['Reading Score After Help'] = df['Reading Score After Help'].apply(round2)
     df['School Satisfaction Before Help'] = pd.Series([sample([1, 2, 3, 4, 5], counts=[1, 2, 4, 3, 1], k=1)[0] for _x in range(n_records)])
-    change_satisfaction_usually_up = partial(change_float_usually_up, min_val=1, max_val=5)
+    change_satisfaction_usually_up = partial(change_float_usually_up,
+        scalar_centre=1.2, variation=0.12, min_val=1, max_val=5)
     df['School Satisfaction After Help'] = df['School Satisfaction Before Help'].apply(change_satisfaction_usually_up)
     if debug: print(df)
     df.to_csv(files_folder / 'education.csv', index=False)
@@ -321,6 +324,23 @@ counts = ([3, ] * 50) + ([2, ] * 30) + ([1, ] * 12)
 def get_age(_row) -> int:
     return sample(population, counts=counts, k=1)[0]
 
+def get_weight(age: int) -> float:
+    if age < 10:
+        mu = 40 + (age * 4)
+    elif age < 15:
+        mu = 70 + (age / 1.5)
+    elif age < 20:
+        mu = 60 + (age * 1.75)
+    elif age < 65:
+        mu = 90 + (age / 10)
+    elif age < 85:
+        mu = 100 - (age / 20)
+    else:
+        mu = 105 - (age / 10)
+    raw_weight = gauss(mu=mu, sigma=2.5)
+    weight = constrain(raw_weight, min_val=35, max_val=150)
+    return round(weight, 2)
+
 def get_country(_row) -> str:
     country = sample(countries, counts=[5, 2, 1, 1], k=1)[0]
     return country
@@ -367,7 +387,10 @@ def make_varied_nestable_data(con, *, debug=False):
         100, 300, 250,
         250], k=1)[0] for _i in range(n_records)])
     df['Registration Date'] = pd.Series(choice(possible_month_dates) for _i in range(n_records))
-
+    df['Weight Time 1'] = df['Age'].apply(get_weight)
+    change_weight_usually_up = partial(change_float_usually_up,
+        scalar_centre=1.05, variation=0.07, min_val=30, max_val=150)
+    df['Weight Time 2'] = df['Weight Time 1'].apply(change_weight_usually_up)
     if debug: print(df)
     df.to_csv(files_folder / 'people.csv', index=False)
     df.to_sql('people', con=con, if_exists='replace', index=False)
@@ -388,4 +411,4 @@ def run(*, debug=False):
 
 if __name__ == '__main__':
     pass
-    # run(debug=True)
+    run(debug=True)

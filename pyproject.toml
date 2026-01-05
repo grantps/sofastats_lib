@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.11.11"
+version = "0.11.12"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -23,7 +23,7 @@ build-backend = "hatchling.build"
 
 [tool.uv.build-backend]
 exclude = [
-    "docs/*", "example_scripts/*", "store/*", "validation/*", "tests/*",
+    "docs/*", "store/*", "validation/*", "tests/*",
     "uv.lock", "0_minify_sofastats.py", "requirements*",
 ]
 

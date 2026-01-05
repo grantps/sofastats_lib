@@ -327,10 +327,10 @@ def get_chi_square_charts(style_spec: StyleSpec,
     ## NB observed_values_a_then_b_ordered is 'b's within 'a', and we need data structured the other way around
     n_clusters = variable_b_values_n = len(variable_b_values)
     if n_clusters < 8:
-        width = 7
+        width = 10
         height = None  ## allow height to be set by golden ratio
     else:
-        width = n_clusters * 1.5
+        width = n_clusters * 1.75
         height = 4.5
     rows_n = int(len(observed_values_a_then_b_ordered) / variable_b_values_n)
     cols_n = variable_b_values_n
