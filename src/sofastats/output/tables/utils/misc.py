@@ -133,12 +133,15 @@ def get_data_from_spec(cur, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_claus
             print(row)
     return data
 
-def _round_kws(x, *, dp: int) -> float:
+def rounder(raw, dp: int = 2):
     """
-    Need kwargs so we can use with partial given we are not changing the first positional args - see
-    https://stackoverflow.com/questions/11173660/can-one-partially-apply-the-second-argument-of-a-function-that-takes-no-keyword
+    If it finds a string (i.e. anything other than a number it can round) it returns N/A
     """
-    return round(x, dp)
+    try:
+        ret = round(raw, dp)
+    except TypeError:
+        ret = 'N/A'
+    return ret
 
 def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
         is_cross_tab=True, pct_type: PctType, dp: int = 2, debug=False) -> pd.DataFrame:
@@ -208,6 +211,23 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
     Why? Because if we can get to that structure, we can just append the different dfs-by-metric together,
     and pivot the resulting combined df to get a column per metric.
     Trivial if we can get to that point - it Just Works™!
+
+    Calculating percentages has to cope with zero totals:
+
+        age_group_var  Age Group  handedness_var  Handedness    metric
+    Age Group      20 to <30  Handedness      Ambidextrous  Freq        0
+                                              Right         Freq        0
+                   30 to <40  Handedness      Left          Freq        0
+                                              Right         Freq      100
+    ...
+                   TOTAL      Handedness      TOTAL         Freq      700
+
+        Age Group
+    20 to <30    0.0
+    30 to <40    1.0
+    ...
+    80+          4.0
+    TOTAL        7.0
     """
     if pct_type == PctType.COL_PCT:
         df = df.T  ## if unpivoted, each row has values for the Row % calculation; otherwise has values for Col % calculation. If pivoted, it is the reverse. But still rows refers to rows and cols to cols in the df we're working through here either way.
@@ -224,17 +244,26 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
     if debug: print(vals_in_final_col)
     has_total_col = TOTAL in vals_in_final_col  ## e.g. ['Chrome', 'Firefox', 'TOTAL']
     ## divide by 2 to handle doubling caused by inclusion of already-calculated value in TOTAL row in summing
-    divide_by = 2 if has_total_col else 1
+    divide_by_to_handle_included_totals = 2 if has_total_col else 1
     index = list(df.index.names + var_names + ['n'])
     df_pre_pivot_inc_pct = pd.DataFrame(data=[], columns=index)  ## order doesn't matter - it will append based on col names, so both row % and col % work fine as long as original Freq df_pre_pivot comes first
-    rounder = partial(_round_kws, dp=dp)
     for i, row in df.iterrows():
-        ## do calculations
+        ## do calculations - have to handle division by 0 - if we replace 0's in the divisor with NaN's
+        ## then everywhere a percentage calculation is impossible the result will be a NaN which we can turn into a 'N/A' later
         if use_groupby:
-            s_row_pcts = (100 * row) / (row.groupby(col_names_for_grouping).agg('sum') / divide_by)
+            raw_summed_values = (
+                row.groupby(col_names_for_grouping).agg('sum')
+                .infer_objects(copy=False)  ## so replace can be used even though it is being broadcast (deprecated unless infer_objects used)
+                .replace({0: np.nan}))  ## returns NaN instead of raising a ZeroDivisionError - it happens when there are no values in a row for a particular bunch of columns (the row exists because it has non-zero values in other columns)
+            summed_values = raw_summed_values / divide_by_to_handle_included_totals
+            s_row_pcts = (100 * row) / summed_values
         else:
-            s_row_pcts = (100 * row) / (sum(row) / divide_by)
-        s_row_pcts = s_row_pcts.apply(rounder)
+            summed_value = sum(row) / divide_by_to_handle_included_totals
+            if summed_value == 0:
+                summed_value = np.nan
+            s_row_pcts = (100 * row) / summed_value
+        s_row_pcts = s_row_pcts.replace(np.nan, 'N/A')
+        s_row_pcts = s_row_pcts.apply(rounder, dp=dp)
         if debug: print(s_row_pcts)
         ## create rows ready to append to df_pre_pivot before re-pivoting but with additional metric type
         for sub_index, val in s_row_pcts.items():

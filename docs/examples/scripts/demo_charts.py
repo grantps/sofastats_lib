@@ -1,4 +1,3 @@
-from pathlib import Path
 import sqlite3 as sqlite
 
 from sofastats.conf.main import ChartMetric, SortOrder
@@ -16,15 +15,8 @@ from sofastats.output.charts.scatter_plot import (BySeriesScatterChartDesign,
     MultiChartBySeriesScatterChartDesign, MultiChartScatterChartDesign, SimpleScatterChartDesign)
 from sofastats.stats_calc.interfaces import BoxplotType
 
-examples_folder = Path.cwd().parent
-files_folder = examples_folder / 'files'
-output_folder = examples_folder / 'output'
-
-sort_orders_yaml_file_path = files_folder / 'sort_orders.yaml'
-
-education_csv_file_path = files_folder / 'education.csv'
-people_csv_file_path = files_folder / 'people.csv'
-sports_csv_file_path = files_folder / 'sports.csv'
+from conf import (education_csv_file_path, output_folder, people_csv_file_path,
+    sort_orders_yaml_file_path, sports_csv_file_path, sqlite_demo_db_file_path)
 
 def simple_bar_chart_from_sqlite_db(sqlite_cur):
     chart_design = SimpleBarChartDesign(
@@ -32,7 +24,7 @@ def simple_bar_chart_from_sqlite_db(sqlite_cur):
         database_engine_name='sqlite',
         source_table_name='people',
         output_file_path=output_folder / 'demo_simple_bar_chart_from_sqlite_db.html',
-        output_title="Simple Bar Chart (Frequencies)",
+        output_title="Simple Bar Chart (Frequencies) from SQLite",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
@@ -122,7 +114,7 @@ def simple_bar_chart_sums_from_csv(csv_file_path):
 def simple_bar_chart_lots_of_x_vals(csv_file_path):
     chart_design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_simple_bar_chart_wide.html',
+        output_file_path=output_folder / 'demo_simple_bar_chart_wide.html',
         output_title="Simple Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -139,7 +131,7 @@ def simple_bar_chart_lots_of_x_vals(csv_file_path):
 def multi_bar_chart(csv_file_path):
     chart_design = MultiBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_bar_chart.html',
+        output_file_path=output_folder / 'demo_multi_bar_chart.html',
         output_title="Multi Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -158,7 +150,7 @@ def multi_bar_chart(csv_file_path):
 def clustered_bar_chart(csv_file_path):
     chart_design = ClusteredBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_clustered_bar_chart.html',
+        output_file_path=output_folder / 'demo_clustered_bar_chart.html',
         output_title="Clustered Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -177,7 +169,7 @@ def clustered_bar_chart(csv_file_path):
 def multi_chart_clustered_bar_chart(csv_file_path):
     chart_design = MultiChartClusteredBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_clustered_bar_chart.html',
+        output_file_path=output_folder / 'demo_multi_chart_clustered_bar_chart.html',
         output_title="Multi Chart Clustered Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -198,7 +190,7 @@ def multi_chart_clustered_bar_chart(csv_file_path):
 def multi_chart_clustered_percents_bar_chart(csv_file_path):
     chart_design = MultiChartClusteredBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_clustered_percents_bar_chart.html',
+        output_file_path=output_folder / 'demo_multi_chart_clustered_percents_bar_chart.html',
         output_title="Multi Chart Clustered Bar Chart (Percents)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -220,7 +212,7 @@ def multi_chart_clustered_percents_bar_chart(csv_file_path):
 def line_chart(csv_file_path):
     chart_design = LineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_line_chart.html',
+        output_file_path=output_folder / 'demo_line_chart.html',
         output_title="Line Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -241,7 +233,7 @@ def line_chart(csv_file_path):
 def line_chart_time_series(csv_file_path):
     chart_design = LineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_line_chart_time_series.html',
+        output_file_path=output_folder / 'demo_line_chart_time_series.html',
         output_title="Line Chart Time Series",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -262,7 +254,7 @@ def line_chart_time_series(csv_file_path):
 def line_chart_time_series_rotated_labels(csv_file_path):
     chart_design = LineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_line_chart_time_series_rotated_labels.html',
+        output_file_path=output_folder / 'demo_line_chart_time_series_rotated_labels.html',
         output_title="Line Chart Time Series (Rotated Labels)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -283,7 +275,7 @@ def line_chart_time_series_rotated_labels(csv_file_path):
 def multi_line_chart(csv_file_path):
     chart_design = MultiLineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_line_chart.html',
+        output_file_path=output_folder / 'demo_multi_line_chart.html',
         output_title="Multi-Line Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -306,7 +298,7 @@ def multi_line_chart(csv_file_path):
 def multi_chart_line_chart(csv_file_path):
     chart_design = MultiChartLineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_line_chart.html',
+        output_file_path=output_folder / 'demo_multi_chart_line_chart.html',
         output_title="Multi Chart Line Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -329,7 +321,7 @@ def multi_chart_line_chart(csv_file_path):
 def multi_chart_multi_line_chart(csv_file_path):
     chart_design = MultiChartMultiLineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_multi_line_chart.html',
+        output_file_path=output_folder / 'demo_multi_chart_multi_line_chart.html',
         output_title="Multi-Chart Multi-Line Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -354,7 +346,7 @@ def multi_chart_multi_line_chart(csv_file_path):
 def multi_chart_multi_line_chart_time_series(csv_file_path):
     chart_design = MultiChartMultiLineChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_multi_line_chart_time_series.html',
+        output_file_path=output_folder / 'demo_multi_chart_multi_line_chart_time_series.html',
         output_title="Multi-Chart Multi-Line Chart Time Series",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -379,7 +371,7 @@ def multi_chart_multi_line_chart_time_series(csv_file_path):
 def area_chart(csv_file_path):
     chart_design = AreaChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_area_chart.html',
+        output_file_path=output_folder / 'demo_area_chart.html',
         output_title="Area Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -398,7 +390,7 @@ def area_chart(csv_file_path):
 def multi_chart_area_chart(csv_file_path):
     chart_design = MultiChartAreaChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_area_chart.html',
+        output_file_path=output_folder / 'demo_multi_chart_area_chart.html',
         output_title="Area Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -419,7 +411,7 @@ def multi_chart_area_chart(csv_file_path):
 def pie_chart(csv_file_path):
     chart_design = PieChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_pie_chart.html',
+        output_file_path=output_folder / 'demo_pie_chart.html',
         output_title="Pie Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -436,7 +428,7 @@ def pie_chart(csv_file_path):
 def multi_chart_pie_chart(csv_file_path):
     chart_design = MultiChartPieChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_pie_chart.html',
+        output_file_path=output_folder / 'demo_pie_chart.html',
         output_title="Pie Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -455,7 +447,7 @@ def multi_chart_pie_chart(csv_file_path):
 def simple_scatterplot(csv_file_path):
     chart_design = SimpleScatterChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_simple_scatterplot.html',
+        output_file_path=output_folder / 'demo_simple_scatterplot.html',
         output_title="Single Series Scatterplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -472,7 +464,7 @@ def simple_scatterplot(csv_file_path):
 def by_series_scatterplot(csv_file_path):
     chart_design = BySeriesScatterChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_by_series_scatterplot.html',
+        output_file_path=output_folder / 'demo_by_series_scatterplot.html',
         output_title="Multi-Series Scatterplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -491,7 +483,7 @@ def by_series_scatterplot(csv_file_path):
 def multi_chart_scatterplot(csv_file_path):
     chart_design = MultiChartScatterChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_scatterplot.html',
+        output_file_path=output_folder / 'demo_multi_chart_scatterplot.html',
         output_title="Multi-Chart Scatterplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -510,7 +502,7 @@ def multi_chart_scatterplot(csv_file_path):
 def multi_chart_by_series_scatterplot(csv_file_path):
     chart_design = MultiChartBySeriesScatterChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_by_series_scatterplot.html',
+        output_file_path=output_folder / 'demo_multi_chart_by_series_scatterplot.html',
         output_title="Multi-Chart Multi-Series Scatterplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -531,7 +523,7 @@ def multi_chart_by_series_scatterplot(csv_file_path):
 def histogram_chart(csv_file_path):
     chart_design = HistogramChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_histogram.html',
+        output_file_path=output_folder / 'demo_histogram.html',
         output_title="Histogram Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -548,7 +540,7 @@ def histogram_chart(csv_file_path):
 def multi_chart_histogram(csv_file_path):
     chart_design = MultiChartHistogramChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multi_chart_histogram.html',
+        output_file_path=output_folder / 'demo_multi_chart_histogram.html',
         output_title="Multi Chart Histogram Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -567,7 +559,7 @@ def multi_chart_histogram(csv_file_path):
 def boxplot_chart(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_boxplot.html',
+        output_file_path=output_folder / 'demo_boxplot.html',
         output_title="Boxplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -585,7 +577,7 @@ def boxplot_chart(csv_file_path):
 def boxplot_chart_narrow_labels(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_boxplot_narrow_labels.html',
+        output_file_path=output_folder / 'demo_boxplot_narrow_labels.html',
         output_title="Boxplot (narrow)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -603,7 +595,7 @@ def boxplot_chart_narrow_labels(csv_file_path):
 def boxplot_chart_very_wide(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_boxplot_very_wide.html',
+        output_file_path=output_folder / 'demo_boxplot_very_wide.html',
         output_title="Boxplot (very wide)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -621,7 +613,7 @@ def boxplot_chart_very_wide(csv_file_path):
 def clustered_boxplot(csv_file_path):
     chart_design = ClusteredBoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'test_multiseries_boxplot.html',
+        output_file_path=output_folder / 'demo_multiseries_boxplot.html',
         output_title="Multi-Series Boxplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -639,7 +631,7 @@ def clustered_boxplot(csv_file_path):
     chart_design.make_output()
 
 if __name__ == '__main__':
-    sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
+
     con = sqlite.connect(sqlite_demo_db_file_path)
     cur = con.cursor()
 

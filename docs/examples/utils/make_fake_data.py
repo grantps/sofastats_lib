@@ -295,11 +295,11 @@ def age2group(age: int) -> str:
 
 def age2qual(age: int) -> str:
     if age < 20:
-        qual = 'None'
+        qual = 'No Qualifications'  ## Do not use None unless you want the system to treat it as None and then NaN etc with problematic consequences! You have been warned!
     elif age < 22:
-        qual = sample(['None', 'Undergraduate', ], counts=[3, 1], k=1)[0]
+        qual = sample(['No Qualifications', 'Undergraduate', ], counts=[3, 1], k=1)[0]
     else:
-        qual = sample(['None', 'Undergraduate', 'Postgraduate', ], counts=[12, 3, 1], k=1)[0]
+        qual = sample(['No Qualifications', 'Undergraduate', 'Postgraduate', ], counts=[12, 3, 1], k=1)[0]
     return qual
 
 def country2location(country: int) -> str:

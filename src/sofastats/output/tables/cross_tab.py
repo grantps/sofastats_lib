@@ -116,7 +116,6 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[st
     Then we pivot the new, combined df_pre_pivot and metric splays across intoFreq, Row %, and Col % as appropriate.
     Here is a case with Freq, Row %, and Col %:
 
-    TODO: sort out, err ... sorting
     Note - yet to have the columns reordered so we have Freq Row % Freq Row % etc
 
     web_browser_var                           Web Browser                                                                                                                                                                             ...
