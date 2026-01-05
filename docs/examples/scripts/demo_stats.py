@@ -12,8 +12,7 @@ from sofastats.output.stats.ttest_indep import TTestIndepDesign
 from sofastats.output.stats.ttest_paired import TTestPairedDesign
 from sofastats.output.stats.wilcoxon_signed_ranks import WilcoxonSignedRanksDesign
 
-from conf import (education_csv_file_path, output_folder, people_csv_file_path,
-    sort_orders_yaml_file_path, sports_csv_file_path, sqlite_demo_db_file_path)
+from conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path
 
 def run_anova(csv_file_path):
     stats_design = AnovaDesign(

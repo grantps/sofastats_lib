@@ -134,7 +134,7 @@ def make_education_paired_difference(con, *, debug=False):
         round(constrain(gauss(mu=60, sigma=20), max_val=100, min_val=40), 2)
         for _i in range(n_records)])
     change_reading_score_usually_up = partial(change_float_usually_up,
-        scalar_centre=1.2, variation=1.2, min_val=0, max_val=100)
+        scalar_centre=1.2, variation=0.12, min_val=0, max_val=100)
     df['Reading Score After Help'] = df['Reading Score Before Help'].apply(change_reading_score_usually_up)
     df['Reading Score After Help'] = df['Reading Score After Help'].apply(round2)
     df['School Satisfaction Before Help'] = pd.Series([sample([1, 2, 3, 4, 5], counts=[1, 2, 4, 3, 1], k=1)[0] for _x in range(n_records)])

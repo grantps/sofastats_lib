@@ -7,7 +7,7 @@ from sofastats.output.tables.interfaces import Column, Metric, Row
 
 from conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path
 
-def run_cross_tab_from_sqlite_db_filtered(cur):
+def run_cross_tab_from_sqlite_db_filtered(sqlite_cur):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
@@ -23,7 +23,7 @@ def run_cross_tab_from_sqlite_db_filtered(cur):
     col_variables_design_3 = Column(variable='Tertiary Qualifications', has_total=True, sort_order=SortOrder.CUSTOM)
 
     table_design = CrossTabDesign(
-        cur=cur,
+        cur=sqlite_cur,
         database_engine_name=DbeName.SQLITE,  ## or just the string 'sqlite'
         source_table_name='people',
         table_filter="WHERE Car IN ('Porsche', 'Audi', 'Toyota', 'Aston Martin')",  ## must have backticks around entity names containing spaces in SQLite; no trailing commas - this is SQL not Python
@@ -38,7 +38,7 @@ def run_cross_tab_from_sqlite_db_filtered(cur):
     )
     table_design.make_output()
 
-def run_cross_tab_from_sqlite_db(cur):
+def run_cross_tab_from_sqlite_db(sqlite_cur):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
@@ -54,7 +54,7 @@ def run_cross_tab_from_sqlite_db(cur):
     col_variables_design_3 = Column(variable='Tertiary Qualifications', has_total=True, sort_order=SortOrder.CUSTOM)
 
     table_design = CrossTabDesign(
-        cur=cur,
+        cur=sqlite_cur,
         database_engine_name=DbeName.SQLITE,  ## or just the string 'sqlite'
         source_table_name='people',
         output_file_path=output_folder / 'demo_main_cross_tab_from_sqlite_db.html',
