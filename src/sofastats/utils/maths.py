@@ -1,5 +1,24 @@
 import decimal
 import math
+from typing import Any
+
+def nice_number_if_possible(raw: Any, *, decimal_points: int | None = None) -> str:
+    if raw is None:
+        nice = 'None'
+    else:
+        if decimal_points is None:
+            nice = f"{raw:,}"
+        else:
+            try:
+                rounded = round(raw, decimal_points)
+            except TypeError as e:
+                try:
+                    rounded = round(float(raw), decimal_points)  ## can't round numpy.ndarray
+                except Exception as e:
+                    e.add_note(f"Unable to round '{raw}' ({type(raw)})")
+                    raise
+            nice = f"{rounded:,}"
+    return nice
 
 def is_numeric(val, *, comma_dec_sep_ok=False):
     """

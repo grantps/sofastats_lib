@@ -8,10 +8,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
 from statistics import median
+from textwrap import dedent
 from typing import Literal
 
 from sofastats.stats_calc.boxplot import get_bottom_whisker, get_top_whisker
 from sofastats.stats_calc.histogram import BinSpec  ## noqa - so available for import from here as the one-stop shop for stats interfaces
+from sofastats.utils.maths import nice_number_if_possible
 from sofastats.utils.stats import get_quartiles
 
 ## samples
@@ -27,12 +29,30 @@ class NumericSampleSpec:
     sample_max: float
     ci95: tuple[float, float] | None = None
 
+    def __str__(self):
+        return dedent(f"""\
+        Group Label: {self.label}
+        N Values: {self.n:,}
+        Mean Value: {self.mean:,}
+        Standard Deviation: {self.std_dev:,}
+        Minimum Value: {self.sample_min:,}
+        Maximum Value: {self.sample_max:,}
+        95% Confidence Interval: {self.ci95}
+        """)
+
 @dataclass(frozen=True, kw_only=True)
 class NumericSampleSpecExt(NumericSampleSpec):
     kurtosis: float | str
     skew: float | str
     normality_test_p: float | str
     vals: Sequence[float]
+
+    def __str__(self):
+        return str(super().__str__()) + dedent(f"""\
+        Kurtosis: {self.kurtosis:,}
+        Skew: {self.skew:,}
+        Normality Test p: {self.normality_test_p}
+        """)
 
 @dataclass(frozen=True)
 class NumericParametricSampleSpecFormatted:
@@ -107,21 +127,31 @@ class AnovaResult:
     obriens_msg: str
 
     def __str__(self):
-        return f"""\
+        return dedent(f"""\
+        ANOVA Result
+        ============
         p-value: {self.p}
         F: {self.F}
-        Sum of squares within groups: {self.sum_squares_within_groups}
-        Degrees of freedom within groups: {self.degrees_freedom_within_groups}
-        Mean squares within groups: {self.mean_squares_within_groups}
-        Sum of squares between groups: {self.sum_squares_between_groups}
-        Degrees of freedom between groups: {self.degrees_freedom_between_groups}
-        Mean of squares between groups: {self.mean_squares_between_groups}
-        """
+        Sum of squares within groups: {self.sum_squares_within_groups:,}
+        Degrees of freedom within groups: {self.degrees_freedom_within_groups:,}
+        Mean squares within groups: {self.mean_squares_within_groups:,}
+        Sum of squares between groups: {self.sum_squares_between_groups:,}
+        Degrees of freedom between groups: {self.degrees_freedom_between_groups:,}
+        Mean of squares between groups: {self.mean_squares_between_groups:,}
+        """)
 
 @dataclass(frozen=True)
 class ChiSquareResult:
     chi_square: float
     p: float
+
+    def __str__(self):
+        return dedent(f"""\
+        Chi Square Result
+        =================
+        p-value: {self.p:,}
+        Chi Square: {self.chi_square:,}
+        """)
 
 @dataclass(frozen=True)
 class KruskalWallisHResult:
@@ -129,6 +159,19 @@ class KruskalWallisHResult:
     p: float
     group_specs: Sequence[NumericSampleSpecExt]
     degrees_of_freedom: int
+
+    def __str__(self):
+        bits = []
+        bits.append(dedent(f"""\
+        Kruskal-Wallis H Result
+        =======================
+        p-value: {self.p:,}
+        Kruskal-Wallis H: {self.h:,}
+        Degrees of Freedom: {self.degrees_of_freedom:,}
+        """))
+        for group_spec in self.group_specs:
+            bits.append(str(group_spec))
+        return '\n'.join(bits)
 
 @dataclass(frozen=True)
 class MannWhitneyUGroupSpec:
@@ -138,6 +181,16 @@ class MannWhitneyUGroupSpec:
     median: float
     sample_min: float
     sample_max: float
+
+    def __str__(self):
+        return dedent(f"""\
+        Group Label: {self.label}
+        N Values: {self.n:,}
+        Average Rank: {self.avg_rank:,}
+        Median Value: {self.median:,}
+        Minimum Value: {self.sample_min:,}
+        Maximum Value: {self.sample_max:,}
+        """)
 
 @dataclass(frozen=True)
 class MannWhitneyUResult:
@@ -149,6 +202,18 @@ class MannWhitneyUResult:
     group_a_spec: MannWhitneyUGroupSpec
     group_b_spec: MannWhitneyUGroupSpec
     z: float
+
+    def __str__(self):
+        bits = []
+        bits.append(dedent(f"""\
+        Mann Whitney U Result
+        =====================
+        Small u: {self.small_u:,}
+        p-value: {self.p:,}
+        """))
+        for group_spec in (self.group_a_spec, self.group_b_spec):
+            bits.append(str(group_spec))
+        return '\n'.join(bits)
 
 @dataclass(frozen=False)
 class MannWhitneyUVal:
@@ -186,11 +251,39 @@ class NormalTestResult:
     c_kurtosis: float | None
     z_kurtosis: float | None
 
+    def __str__(self):
+        k2 = nice_number_if_possible(self.k2)
+        p = nice_number_if_possible(self.p)
+        c_skew = nice_number_if_possible(self.c_skew)
+        z_skew = nice_number_if_possible(self.z_skew)
+        c_kurtosis = nice_number_if_possible(self.c_kurtosis)
+        z_kurtosis = nice_number_if_possible(self.z_kurtosis)
+        str_representation = dedent(f"""\
+        Normality Test Result
+        =====================
+        k2: {k2}
+        p-value: {p}
+        c Skew: {c_skew}
+        z Skew: {z_skew}
+        c Kurtosis: {c_kurtosis}
+        z Kurtosis: {z_kurtosis}
+        """)
+        return str_representation
+
 @dataclass(frozen=True)
 class CorrelationCalcResult:
     r: float
     p: float
     degrees_of_freedom: int
+
+    def __str__(self):
+        return dedent(f"""\
+        Correlation Result
+        ==================
+        r-value: {self.r:,}
+        p-value: {self.p:,}
+        Degrees of Freedom: {self.degrees_of_freedom:,}
+        """)
 
 @dataclass(frozen=True)
 class RegressionResult:
@@ -235,6 +328,20 @@ class TTestIndepResult:
     degrees_of_freedom: float
     obriens_msg: str
 
+    def __str__(self):
+        bits = []
+        bits.append(dedent(f"""\
+        Independent T-Test Result
+        =========================
+        t-value: {self.t:,}
+        p-value: {self.p:,}
+        Degrees of Freedom: {self.degrees_of_freedom:,}
+        O'Brien's Result: {self.obriens_msg}
+        """))
+        for group_spec in (self.group_a_spec, self.group_b_spec):
+            bits.append(str(group_spec))
+        return '\n'.join(bits)
+
 @dataclass(frozen=True)
 class TTestPairedResult:
     """
@@ -246,6 +353,20 @@ class TTestPairedResult:
     group_b_spec: NumericSampleSpec
     degrees_of_freedom: float
     diffs: Sequence[float]
+
+    def __str__(self):
+        bits = []
+        bits.append(dedent(f"""\
+        Paired T-Test Result
+        ====================
+        t-value: {self.t:,}
+        p-value: {self.p:,}
+        Degrees of Freedom: {self.degrees_of_freedom:,}
+        Diffs: {self.diffs[0]:,} ... {self.diffs[-1]:,} (N diffs: {len(self.diffs):,})
+        """))
+        for group_spec in (self.group_a_spec, self.group_b_spec):
+            bits.append(str(group_spec))
+        return '\n'.join(bits)
 
 @dataclass(frozen=True)
 class WilcoxonSignedRanksDiffSpec:
@@ -281,12 +402,33 @@ class WilcoxonSignedRanksGroupSpec:
     sample_min: float
     sample_max: float
 
+    def __str__(self):
+        return dedent(f"""\
+        Group Label: {self.label}
+        N Values: {self.n:,}
+        Median Value: {self.median:,}
+        Minimum Value: {self.sample_min:,}
+        Maximum Value: {self.sample_max:,}
+        """)
+
 @dataclass(frozen=True)
 class WilcoxonSignedRanksResult:
     t: int  ## based on ranks and addition and subtraction only
     p: float
     group_a_spec: WilcoxonSignedRanksGroupSpec
     group_b_spec: WilcoxonSignedRanksGroupSpec
+
+    def __str__(self):
+        bits = []
+        bits.append(dedent(f"""\
+        Wilcoxon Signed Ranks Test Result
+        =================================
+        t-value: {self.t:,}
+        p-value: {self.p:,}
+        """))
+        for group_spec in (self.group_a_spec, self.group_b_spec):
+            bits.append(str(group_spec))
+        return '\n'.join(bits)
 
 class BoxplotType(StrEnum):
     MIN_MAX_WHISKERS = 'min-max whiskers'

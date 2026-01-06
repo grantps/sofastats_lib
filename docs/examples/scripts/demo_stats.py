@@ -29,6 +29,7 @@ def run_anova(csv_file_path):
         decimal_points=3,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_chi_square(csv_file_path):
     stats_design = ChiSquareDesign(
@@ -44,6 +45,7 @@ def run_chi_square(csv_file_path):
         show_workings=True,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_kruskal_wallis_h(csv_file_path):
     stats_design = KruskalWallisHDesign(
@@ -60,6 +62,7 @@ def run_kruskal_wallis_h(csv_file_path):
         show_workings=True,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_mann_whitney_u(csv_file_path):
     stats_design = MannWhitneyUDesign(
@@ -76,6 +79,7 @@ def run_mann_whitney_u(csv_file_path):
         show_workings=True,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_normality(csv_file_path):
     stats_design = NormalityDesign(
@@ -88,6 +92,7 @@ def run_normality(csv_file_path):
         variable_b_name='Weight Time 2',
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_pearsons_r(csv_file_path):
     stats_design = PearsonsRDesign(
@@ -101,6 +106,7 @@ def run_pearsons_r(csv_file_path):
         decimal_points=3,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_spearmans_r(csv_file_path):
     stats_design = SpearmansRDesign(
@@ -114,6 +120,7 @@ def run_spearmans_r(csv_file_path):
         show_workings=True,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_ttest_indep(csv_file_path):
     stats_design = TTestIndepDesign(
@@ -128,6 +135,7 @@ def run_ttest_indep(csv_file_path):
         measure_field_name='Age',
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_t_test_paired(csv_file_path):
     stats_design = TTestPairedDesign(
@@ -140,6 +148,7 @@ def run_t_test_paired(csv_file_path):
         variable_b_name='Weight Time 2',
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 def run_wilcoxon_signed_ranks(csv_file_path):
     stats_design = WilcoxonSignedRanksDesign(
@@ -153,6 +162,7 @@ def run_wilcoxon_signed_ranks(csv_file_path):
         show_workings=True,
     )
     stats_design.make_output()
+    print(stats_design.to_result())
 
 if __name__ == '__main__':
     con = sqlite.connect(sqlite_demo_db_file_path)
