@@ -281,24 +281,21 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class HistogramChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     show_borders: bool = False
     show_n_records: bool = True
     show_normal_curve: bool = True
     x_axis_font_size: int = 12
-    decimal_points: int = 3
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_vals_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-            field_name=self.field_name, tbl_filt_clause=self.table_filter)
-        bin_labels = intermediate_charting_spec.to_bin_labels(dp=self.decimal_points)
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
+            field_name=self.field_name, table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
+        bin_labels = intermediate_charting_spec.to_bin_labels()
         x_axis_min_val, x_axis_max_val = intermediate_charting_spec.to_x_axis_range()
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
@@ -323,8 +320,6 @@ class HistogramChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartHistogramChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE
@@ -333,25 +328,25 @@ class MultiChartHistogramChartDesign(CommonDesign):
     show_n_records: bool = True
     show_normal_curve: bool = True
     x_axis_font_size: int = 12
-    decimal_points: int = 3
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_chart_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             field_name=self.field_name,
             chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             chart_sort_order=self.chart_sort_order,
-            tbl_filt_clause=self.table_filter)
-        bin_labels = intermediate_charting_spec.to_bin_labels(dp=self.decimal_points)
+            table_filter_sql=self.table_filter_sql,
+            decimal_points=self.decimal_points,
+        )
         x_axis_min_val, x_axis_max_val = intermediate_charting_spec.to_x_axis_range()
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = HistoChartingSpec(
-            bin_labels=bin_labels,
+            bin_labels=intermediate_charting_spec.to_bin_labels(),
             indiv_chart_specs=indiv_chart_specs,
             show_borders=self.show_borders,
             show_n_records=self.show_n_records,

@@ -37,6 +37,7 @@ def wilcoxon_signed_ranks_r_from_df(df: pd.DataFrame) -> WilcoxonSignedRanksResu
 @dataclass(frozen=True)
 class Result(WilcoxonSignedRanksResult):
     worked_example: str
+    decimal_points: int = 3
 
 def get_worked_example(result: WilcoxonIndivComparisonResult, style_name_hyphens: str) -> str:
     row_or_rows_str = partial(pluralise_with_s, singular_word='row')
@@ -122,7 +123,7 @@ def get_worked_example(result: WilcoxonIndivComparisonResult, style_name_hyphens
         f'between "{result.label_a}" and "{result.label_b}" could occur by chance.</p>')
     return '\n'.join(html)
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <style>
         {{ generic_unstyled_css }}
@@ -170,6 +171,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
 
     </div>
     """
+    dp = result.decimal_points
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = f'Results of Wilcoxon Signed Ranks Test of "{result.group_a_spec.label}" vs "{result.group_b_spec.label}"'
@@ -219,15 +221,13 @@ class WilcoxonSignedRanksDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-    decimal_points: int = 3
     show_workings: bool = False
 
     def to_result(self) -> WilcoxonSignedRanksResult:
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = wilcoxon_signed_ranks_stats_calc(
             sample_a=paired_data.sample_a, sample_b=paired_data.sample_b, high_volume_ok=False)
         return stats_result
@@ -236,9 +236,9 @@ class WilcoxonSignedRanksDesign(CommonDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = wilcoxon_signed_ranks_stats_calc(
             sample_a=paired_data.sample_a, sample_b=paired_data.sample_b, high_volume_ok=False)
 
@@ -252,8 +252,9 @@ class WilcoxonSignedRanksDesign(CommonDesign):
 
         result = Result(**todict(stats_result),
             worked_example=worked_example,
+            decimal_points=self.decimal_points,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

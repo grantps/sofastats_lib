@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.12.0"
+version = "0.12.2"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -165,7 +165,7 @@ exhaustive_ignores = []
 name = "data_extraction charts"
 type = "layers"
 layers = [
-    "interfaces_freq_specs | interfaces_xys | interfaces",
+    "interfaces_amount_specs | interfaces_xys | interfaces",
     "boxplot | histogram | scatterplot",
 ]
 containers = ["sofastats.data_extraction.charts"]

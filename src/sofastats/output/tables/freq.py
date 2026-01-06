@@ -107,10 +107,7 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
 class FrequencyTableDesign(CommonDesign):
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-
     include_column_percent: bool = False
-    decimal_points: int = 3
     debug: bool = False
     verbose: bool = False
 
@@ -151,7 +148,7 @@ class FrequencyTableDesign(CommonDesign):
         totalled_variables = row_spec.self_and_descendant_totalled_vars
         row_vars = row_spec.self_and_descendant_vars
         data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
-            src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+            source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
             all_variables=row_vars, totalled_variables=totalled_variables, debug=self.debug)
         n_row_fillers = self.max_row_depth - len(row_vars)
         df = get_all_metrics_df_from_vars(data, row_vars=row_vars, n_row_fillers=n_row_fillers,
@@ -172,7 +169,7 @@ class FrequencyTableDesign(CommonDesign):
         df = df_t.T  ## re-transpose back so cols are cols and rows are rows again
         if self.debug: print(f"\nCOMBINED:\n{df}")
         ## Sorting indexes
-        raw_df = get_raw_df(cur, src_tbl_name=self.source_table_name)
+        raw_df = get_raw_df(cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name)
         order_rules_for_multi_index_branches = get_order_rules_for_multi_index_branches(self.row_variable_designs)
         ## ROWS
         unsorted_row_multi_index_list = list(df.index)

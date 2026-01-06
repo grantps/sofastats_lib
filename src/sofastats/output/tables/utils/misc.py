@@ -26,15 +26,16 @@ def correct_str_dps(val: str, *, dp: int) -> str:
     zeros2add = '0' * n_zeros2add
     return val + zeros2add
 
-def get_raw_df(cur, src_tbl_name: str, *, debug=False) -> pd.DataFrame:
-    cur.exe(f"SELECT * FROM {src_tbl_name}")
+def get_raw_df(cur, dbe_spec: DbeSpec, source_table_name: str, *, debug=False) -> pd.DataFrame:
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    cur.exe(f"SELECT * FROM {source_table_name_quoted}")
     data = cur.fetchall()
     df = pd.DataFrame(data, columns=[desc[0] for desc in cur.description])
     if debug:
         print(df)
     return df
 
-def get_data_from_spec(cur, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_clause: str,
+def get_data_from_spec(cur, dbe_spec: DbeSpec, source_table_name: str, table_filter_sql: str,
         all_variables: Collection[str], totalled_variables: Collection[str], *, debug=False) -> list[list]:
     """
     rows: country (TOTAL) > gender (TOTAL)
@@ -81,16 +82,17 @@ def get_data_from_spec(cur, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_claus
         (where N is the total number of totalled variables) and then generate the SQL and data (lists of col-val lists)
     Step 3 - concat all data (data + ...)
     """
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
     data = []
     ## Step 0 - variable lists
     n_totalled = len(totalled_variables)
     ## Step 1 - group by all
-    all_quoted_variables = [dbe_spec.entity_quoter(var) for var in all_variables]
-    main_fields = ', '.join(all_quoted_variables)
+    all_variables_quoted = [dbe_spec.entity_quoter(var) for var in all_variables]
+    main_fields = ', '.join(all_variables_quoted)
     sql_main = f"""\
     SELECT {main_fields}, COUNT(*) AS n
-    FROM {src_tbl_name}
-    {tbl_filt_clause}
+    FROM {source_table_name_quoted}
+    {table_filter_sql}
     GROUP BY {main_fields}
     """
     cur.exe(sql_main)
@@ -111,18 +113,18 @@ def get_data_from_spec(cur, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_claus
         group_by_vars = []
         for var in all_variables:
             if var in totalled_combination:
-                quoted_var = dbe_spec.entity_quoter(var)
-                select_clauses.append(f'"{TOTAL}" AS {quoted_var}')
+                var_quoted = dbe_spec.entity_quoter(var)
+                select_clauses.append(f'"{TOTAL}" AS {var_quoted}')
             else:
-                quoted_var = dbe_spec.entity_quoter(var)
-                select_clauses.append(quoted_var)
-                group_by_vars.append(quoted_var)
+                var_quoted = dbe_spec.entity_quoter(var)
+                select_clauses.append(var_quoted)
+                group_by_vars.append(var_quoted)
         select_str = "SELECT " + ', '.join(select_clauses) + ", COUNT(*) AS n"
         group_by = "GROUP BY " + ', '.join(group_by_vars) if group_by_vars else ''
         sql_totalled = f"""\
         {select_str}
-        FROM {src_tbl_name}
-        {tbl_filt_clause}
+        FROM {source_table_name_quoted}
+        {table_filter_sql}
         {group_by}
         """
         if debug: print(f"sql_totalled={sql_totalled}")

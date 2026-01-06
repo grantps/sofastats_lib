@@ -18,9 +18,9 @@ def to_sorted_values(*, orig_vals: list[Any], field_name: str,
             "\nINCREASING and DECREASING not allowed when multiple series of charts.")
     return sorted_series_vals
 
-def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         variable_a_name: str, variable_b_name: str,
-        tbl_filt_clause: str | None = None, unique=False) -> PairedSamples:
+        table_filter_sql: str | None = None, unique=False) -> PairedSamples:
     """
     For each field, returns a list of all non-missing values where there is also a non-missing value in the other field.
     Used in, for example, the paired samples t-test.
@@ -28,23 +28,23 @@ def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str
     Args:
         unique: if True only look at unique pairs. Useful for scatter plotting.
     """
-    and_tbl_filt_clause = f"AND {tbl_filt_clause}" if tbl_filt_clause else ''
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
     variable_a_name_quoted = dbe_spec.entity_quoter(variable_a_name)
     variable_b_name_quoted = dbe_spec.entity_quoter(variable_b_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND {table_filter_sql}" if table_filter_sql else ''
     if unique:
         sql_get_pairs = f"""\
         SELECT {variable_a_name_quoted }, {variable_b_name_quoted}
-        FROM {src_tbl_name_quoted}
+        FROM {source_table_name_quoted}
         WHERE {variable_a_name_quoted } IS NOT NULL
-        AND {variable_b_name_quoted} IS NOT NULL {and_tbl_filt_clause}
+        AND {variable_b_name_quoted} IS NOT NULL {AND_table_filter_sql}
         GROUP BY {variable_a_name_quoted }, {variable_b_name_quoted}"""
     else:
         sql_get_pairs = f"""\
         SELECT {variable_a_name_quoted }, {variable_b_name_quoted}
-        FROM {src_tbl_name_quoted}
+        FROM {source_table_name_quoted}
         WHERE {variable_a_name_quoted } IS NOT NULL
-        AND {variable_b_name_quoted} IS NOT NULL {and_tbl_filt_clause}"""
+        AND {variable_b_name_quoted} IS NOT NULL {AND_table_filter_sql}"""
     cur.exe(sql_get_pairs)
     a_b_val_tuples = cur.fetchall()
     ## SQLite sometimes returns strings even if REAL
@@ -55,22 +55,22 @@ def get_paired_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str
         sample_b=Sample(label=f'Sample B - {variable_b_name}', vals=variable_b_vals),
     )
 
-def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
-        variable_a_name: str, variable_b_name: str, tbl_filt_clause: str | None = None) -> Sample:
+def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
+        variable_a_name: str, variable_b_name: str, table_filter_sql: str | None = None) -> Sample:
     """
     For every pair of A and B get the difference - those are the values in this sample.
     """
     ## prepare items
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
     variable_a_name_quoted = dbe_spec.entity_quoter(variable_a_name)
     variable_b_name_quoted = dbe_spec.entity_quoter(variable_b_name)
-    and_tbl_filt_clause = f"AND {tbl_filt_clause}" if tbl_filt_clause else ''
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND {table_filter_sql}" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT {variable_a_name_quoted} - {variable_b_name_quoted} AS diff
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {variable_a_name_quoted} IS NOT NULL
-    AND {variable_b_name_quoted} IS NOT NULL {and_tbl_filt_clause}"""
+    AND {variable_b_name_quoted} IS NOT NULL {AND_table_filter_sql}"""
     ## get data
     cur.exe(sql)
     data = cur.fetchall()
@@ -84,9 +84,9 @@ def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_n
     sample = Sample(label=sample_desc.title(), vals=sample_vals)
     return sample
 
-def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         measure_field_name: str, grouping_filt: ValFilterSpec | None = None,
-        tbl_filt_clause: str | None = None) -> Sample:
+        table_filter_sql: str | None = None) -> Sample:
     """
     Get list of non-missing values in numeric measure field for a group defined by another field
     e.g. getting weights for males.
@@ -97,16 +97,16 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
     but only where age > 10
 
     Args:
-        src_tbl_name: name of table containing the data
-        measure_fld_name: e.g. weight
+        source_table_name: name of table containing the data
+        measure_field_name: e.g. weight
         grouping_filt: the grouping variable details
-        tbl_filt_clause: clause ready to put after AND in a WHERE filter.
+        table_filter_sql: clause ready to put after AND in a WHERE filter.
             E.g. WHERE ... AND age > 10
             Sometimes there is a global filter active in SOFA for a table e.g. age > 10,
             and we will need to apply that filter to ensure we are only getting the correct values
     """
     ## prepare items
-    and_tbl_filt_clause = f"AND {tbl_filt_clause}" if tbl_filt_clause else ''
+    AND_table_filter_sql = f"AND {table_filter_sql}" if table_filter_sql else ''
     if grouping_filt:
         if grouping_filt.val_is_numeric:
             grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = {grouping_filt.value}"
@@ -115,14 +115,14 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
         and_grouping_filt_clause = f"AND {grouping_filt_clause}"
     else:
         and_grouping_filt_clause = ''
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
     measure_field_name_quoted = dbe_spec.entity_quoter(measure_field_name)
     ## assemble SQL
     sql = f"""
     SELECT {measure_field_name_quoted}
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {measure_field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     {and_grouping_filt_clause}
     """
     ## get data

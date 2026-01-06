@@ -10,8 +10,8 @@ from sofastats.data_extraction.charts.scatter_plot import ScatterChartingSpec, S
 from sofastats.data_extraction.charts.interfaces.xy import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
                                                             get_by_series_xy_charting_spec, get_by_xy_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
-from sofastats.output.charts.interfaces import JSBool, LeftMarginOffsetSpec
-from sofastats.output.charts.utils import get_left_margin_offset, get_y_axis_title_offset
+from sofastats.output.charts.interfaces import JSBool
+from sofastats.output.charts.utils import  get_intrusion_of_first_x_axis_label_leftwards, get_y_axis_title_offset
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.stats.interfaces import Coord
@@ -19,9 +19,6 @@ from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
-
-left_margin_offset_spec = LeftMarginOffsetSpec(
-    initial_offset=25, wide_offset=35, rotate_offset=15, multi_chart_offset=15)
 
 @dataclass(frozen=True)
 class ScatterplotSeries:
@@ -200,14 +197,11 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
     y_axis_max = charting_spec.y_axis_max_val * 1.1
     widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        widest_x_axis_label_n_characters=4,  ## not really a factor as an axis of integers
-        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
-        avg_pixels_per_character=10.5,
-    )
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters, avg_pixels_per_y_character=8)
+    intrusion_of_first_x_axis_label_leftwards = get_intrusion_of_first_x_axis_label_leftwards(
+        widest_x_axis_label_n_characters=4, avg_pixels_per_x_character=5)
+    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 25
     ## sizing left margin offset
-    left_margin_offset = get_left_margin_offset(width_after_left_margin=width - 25,  ## not a dynamic settings like x-axis label type charts so 25 is a good guess
-        offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=False)
 
     colour_spec = CommonColourSpec(
         axis_font=style_spec.chart.axis_font_colour,
@@ -288,8 +282,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class SimpleScatterChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
@@ -303,9 +295,9 @@ class SimpleScatterChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_xy_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             x_field_name=self.x_field_name, y_field_name=self.y_field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
@@ -329,8 +321,6 @@ class SimpleScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class BySeriesScatterChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -346,12 +336,12 @@ class BySeriesScatterChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_series_xy_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             x_field_name=self.x_field_name, y_field_name=self.y_field_name,
             series_field_name=self.series_field_name,
             sort_orders=self.sort_orders,
             series_sort_order=self.series_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
@@ -375,8 +365,6 @@ class BySeriesScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartScatterChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -392,12 +380,12 @@ class MultiChartScatterChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_chart_xy_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             x_field_name=self.x_field_name, y_field_name=self.y_field_name,
             chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             chart_sort_order=self.chart_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(
@@ -421,8 +409,6 @@ class MultiChartScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartBySeriesScatterChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -440,12 +426,12 @@ class MultiChartBySeriesScatterChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_chart_series_xy_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             x_field_name=self.x_field_name, y_field_name=self.y_field_name,
             series_field_name=self.series_field_name, chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             series_sort_order=self.series_sort_order, chart_sort_order=self.chart_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         indiv_chart_specs = intermediate_charting_spec.to_indiv_chart_specs()
         charting_spec = ScatterChartingSpec(

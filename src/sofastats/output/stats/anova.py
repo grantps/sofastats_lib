@@ -45,8 +45,9 @@ class Result(AnovaResult):
     grouping_field_name: str
     measure_field_name: str
     histograms2show: Sequence[str]
+    decimal_points: int = 3
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <style>
         {{ generic_unstyled_css }}
@@ -133,6 +134,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
 
     </div>
     """
+    dp = result.decimal_points
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     group_val_labels = [group_spec.label for group_spec in result.group_specs]
@@ -200,9 +202,7 @@ class AnovaDesign(CommonDesign):
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     grouping_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     group_values: Collection[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    style_name: str = 'default'
     high_precision_required: bool = False
-    decimal_points: int = 3
 
     def to_result(self) -> AnovaResult:
         ## values (sorted)
@@ -215,9 +215,9 @@ class AnovaDesign(CommonDesign):
         for grouping_field_value in grouping_field_values:
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
-            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
                 grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
-                tbl_filt_clause=self.table_filter)
+                table_filter_sql=self.table_filter_sql)
             samples.append(sample)
         stats_result = anova_stats_calc(
             self.grouping_field_name, self.measure_field_name, samples, high=self.high_precision_required)
@@ -236,9 +236,9 @@ class AnovaDesign(CommonDesign):
         for grouping_field_value in grouping_field_values:
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
-            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
                 grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
-                tbl_filt_clause=self.table_filter)
+                table_filter_sql=self.table_filter_sql)
             samples.append(sample)
         ## calculations
         stats_result = anova_stats_calc(
@@ -258,8 +258,9 @@ class AnovaDesign(CommonDesign):
             grouping_field_name=self.grouping_field_name,
             measure_field_name=self.measure_field_name,
             histograms2show=histograms2show,
+            decimal_points=self.decimal_points,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

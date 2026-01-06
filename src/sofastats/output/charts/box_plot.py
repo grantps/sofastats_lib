@@ -8,10 +8,10 @@ from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, SortOrder
 from sofastats.data_extraction.charts.box_plot import (
     BoxplotChartingSpec, BoxplotIndivChartSpec, get_by_category_charting_spec, get_by_series_category_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
-from sofastats.output.charts.interfaces import JSBool, LeftMarginOffsetSpec
-from sofastats.output.charts.utils import (
-    get_axis_label_drop, get_height, get_left_margin_offset, get_dojo_format_x_axis_numbers_and_labels,
-    get_width_after_left_margin, get_x_axis_font_size, get_y_axis_title_offset)
+from sofastats.output.charts.interfaces import JSBool
+from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_dojo_format_x_axis_numbers_and_labels,
+    get_intrusion_of_first_x_axis_label_leftwards, get_width_after_left_margin, get_x_axis_font_size,
+    get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
@@ -19,9 +19,6 @@ from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.stats_calc.interfaces import BoxplotType
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
-
-left_margin_offset_spec = LeftMarginOffsetSpec(
-    initial_offset=25, wide_offset=35, rotate_offset=10, multi_chart_offset=0)
 
 @dataclass(frozen=True)
 class DojoBoxSpec:
@@ -246,14 +243,11 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
     y_axis_max = charting_spec.y_axis_max_val * 1.1
     widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
-        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
-        avg_pixels_per_character=10.5,
-    )
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters, avg_pixels_per_y_character=8)
+    intrusion_of_first_x_axis_label_leftwards = get_intrusion_of_first_x_axis_label_leftwards(
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters, avg_pixels_per_x_character=5)
+    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 45
     ## other sizing
-    left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
-        offsets=left_margin_offset_spec, is_multi_chart=False,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
     x_axis_font_size = get_x_axis_font_size(n_x_items=charting_spec.n_x_items, is_multi_chart=False)
     width = left_margin_offset + width_after_left_margin
 
@@ -362,8 +356,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class BoxplotChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
@@ -372,24 +364,23 @@ class BoxplotChartDesign(CommonDesign):
     rotate_x_labels: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
-    decimal_points: int = 3
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             field_name=self.field_name,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
-            tbl_filt_clause=self.table_filter,
+            table_filter_sql=self.table_filter_sql,
             boxplot_type=self.boxplot_type)
         ## charts details
         categories = [
             category_vals_spec.category_val for category_vals_spec in intermediate_charting_spec.category_vals_specs]
-        indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec(dp=self.decimal_points)
+        indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec()
         charting_spec = BoxplotChartingSpec(
             categories=categories,
             indiv_chart_specs=[indiv_chart_spec, ],
@@ -410,8 +401,6 @@ class BoxplotChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class ClusteredBoxplotChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
@@ -422,21 +411,20 @@ class ClusteredBoxplotChartDesign(CommonDesign):
     rotate_x_labels: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
-    decimal_points: int = 3
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_series_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             field_name=self.field_name,
             category_field_name=self.category_field_name,
             series_field_name=self.series_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
             series_sort_order=self.series_sort_order,
-            tbl_filt_clause=self.table_filter,
+            table_filter_sql=self.table_filter_sql,
             boxplot_type=self.boxplot_type)
         ## charts details
         categories = [category_vals_spec.category_val

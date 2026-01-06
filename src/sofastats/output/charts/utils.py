@@ -4,7 +4,6 @@ from typing import Any
 from sofastats import logger
 from sofastats.conf.main import (AVG_CHAR_WIDTH_PIXELS, AVG_LINE_HEIGHT_PIXELS, DOJO_Y_AXIS_TITLE_OFFSET_PIXELS,
     GAP_BEFORE_FIRST_X_LABEL_TICK_PIXELS, PADDING_TO_RIGHT_OF_Y_AXIS_VALUES_PIXELS)
-from sofastats.output.charts.interfaces import LeftMarginOffsetSpec
 
 def get_width_after_left_margin(*,
         n_x_items: int, n_items_horizontally_per_x_item: int, min_pixels_per_sub_item: int,
@@ -108,10 +107,9 @@ def get_width_after_left_margin(*,
         ********************************************************************************************************""")
     return width
 
-def get_y_axis_title_offset(*, widest_y_axis_label_n_characters: int, widest_x_axis_label_n_characters: int,
-        avg_pixels_per_character: float) -> int:
+def get_y_axis_title_offset(*, widest_y_axis_label_n_characters: int, avg_pixels_per_y_character: float) -> float:
     """
-    Need to shift y-axis title left by y_axis_title_offset
+    Need to shift y-axis title so it is further left than the widest y-axis label
     if first x-axis label is wide or the highest y-axis label is wide.
     Note - must convert characters to pixels as all offsets and other chart dimensions are in pixels.
 
@@ -127,27 +125,37 @@ def get_y_axis_title_offset(*, widest_y_axis_label_n_characters: int, widest_x_a
           0 |
             ------------------------------------------------->
                `          '         '      ...
+    Args:
+        avg_pixels_per_y_character: how many pixels per characters
+          (an estimated average only because not a mono-space font)
+    """
+    offset_required_for_widest_y_axis_label = (
+            (widest_y_axis_label_n_characters * avg_pixels_per_y_character) + PADDING_TO_RIGHT_OF_Y_AXIS_VALUES_PIXELS)
+    return offset_required_for_widest_y_axis_label
+
+def get_intrusion_of_first_x_axis_label_leftwards(*,
+        widest_x_axis_label_n_characters: int, avg_pixels_per_x_character: float) -> float:
+    """
+            ^
+       1000 |
+    F       |
+    r       |
+    e   500 |
+    q       |
+            |
+          0 |
+            ------------------------------------------------->
+               `          '         '      ...
           New Zealand   Canada  Colombia
           |    |<------ half of width of first x-label           This
             |  |<---- GAP_BEFORE_FIRST_X_LABEL_TICK_PIXELS       minus
-         |  |<----- offset required for first x-axis label       this
-                                                                 is the offset required for the first x-axis label
+         |  |<----- intrusion of first x-axis label              this
+                                                                 is the intrusion of the first x-axis label
     """
-    offset_required_for_widest_y_axis_label = (
-            (widest_y_axis_label_n_characters * avg_pixels_per_character) + PADDING_TO_RIGHT_OF_Y_AXIS_VALUES_PIXELS)
-    half_of_width_of_first_x_label = (widest_x_axis_label_n_characters / 2) * avg_pixels_per_character
-    offset_required_for_first_x_axis_label = half_of_width_of_first_x_label - GAP_BEFORE_FIRST_X_LABEL_TICK_PIXELS  ## half of label goes to the right
-    y_axis_title_offset_required = max(offset_required_for_widest_y_axis_label, offset_required_for_first_x_axis_label)
-    return y_axis_title_offset_required
-
-def get_left_margin_offset(*, width_after_left_margin: float, offsets: LeftMarginOffsetSpec,
-        is_multi_chart: bool, y_axis_title_offset: float, rotated_x_labels: bool) -> float:
-    wide = width_after_left_margin > 1_200
-    initial_offset = offsets.wide_offset if wide else offsets.initial_offset  ## otherwise gets squeezed out e.g. in pct
-    offset = initial_offset + y_axis_title_offset - DOJO_Y_AXIS_TITLE_OFFSET_PIXELS
-    offset = offset + offsets.rotate_offset if rotated_x_labels else offset
-    offset = offset + offsets.multi_chart_offset if is_multi_chart else offset
-    return offset
+    half_of_width_of_first_x_label = (widest_x_axis_label_n_characters / 2) * avg_pixels_per_x_character
+    intrusion_of_first_x_axis_label = half_of_width_of_first_x_label - GAP_BEFORE_FIRST_X_LABEL_TICK_PIXELS  ## half of label goes to the right
+    intrusion_of_first_x_axis_label = max(0, intrusion_of_first_x_axis_label)
+    return intrusion_of_first_x_axis_label
 
 def get_x_axis_font_size(*, n_x_items: int, is_multi_chart: bool) -> float:
     if n_x_items <= 5:

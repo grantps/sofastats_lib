@@ -26,7 +26,7 @@ def run_cross_tab_from_sqlite_db_filtered(sqlite_cur):
         cur=sqlite_cur,
         database_engine_name=DbeName.SQLITE,  ## or just the string 'sqlite'
         source_table_name='people',
-        table_filter="WHERE Car IN ('Porsche', 'Audi', 'Toyota', 'Aston Martin')",  ## must have backticks around entity names containing spaces in SQLite; no trailing commas - this is SQL not Python
+        table_filter_sql="WHERE Car IN ('Porsche', 'Audi', 'Toyota', 'Aston Martin')",  ## must have backticks around entity names containing spaces in SQLite; no trailing commas - this is SQL not Python
         output_file_path=output_folder / 'demo_main_cross_tab_from_sqlite_db_filtered.html',
         output_title='Cross Tab from SQLite (Filtered by Car)',
         show_in_web_browser=True,

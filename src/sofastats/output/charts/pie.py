@@ -202,8 +202,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class PieChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
@@ -218,10 +216,10 @@ class PieChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders, category_sort_order=self.category_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         charting_spec = PieChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -239,8 +237,6 @@ class PieChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartPieChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -257,11 +253,11 @@ class MultiChartPieChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name, chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, chart_sort_order=self.chart_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## charts details
         charting_spec = PieChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,

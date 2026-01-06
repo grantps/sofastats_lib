@@ -33,8 +33,9 @@ def paired_t_test_from_df(df: pd.DataFrame) -> TTestPairedResult:
 @dataclass(frozen=True)
 class Result(TTestPairedResult):
     html_or_msg: str
+    decimal_points: int = 3
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <style>
         {{ generic_unstyled_css }}
@@ -86,6 +87,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
 
     </div>
     """
+    dp = result.decimal_points
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = f'Results of Paired Samples t-test of "{result.group_a_spec.label}" vs "{result.group_b_spec.label}"'
@@ -142,14 +144,11 @@ class TTestPairedDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-    decimal_points: int = 3
-
     def to_result(self) -> TTestPairedResult:
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
         return stats_result
 
@@ -157,9 +156,9 @@ class TTestPairedDesign(CommonDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = ttest_paired_stats_calc(sample_a=paired_data.sample_a, sample_b=paired_data.sample_b)
         measure_field_label = f'Differences between "{self.variable_a_name}" and "{self.variable_b_name}"'
         try:
@@ -172,8 +171,9 @@ class TTestPairedDesign(CommonDesign):
 
         result = Result(**todict(stats_result),
             html_or_msg=html_or_msg,
+            decimal_points=self.decimal_points,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

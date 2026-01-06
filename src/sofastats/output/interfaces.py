@@ -46,13 +46,15 @@ class CommonDesign(ABC):
     cur: Any | None = None
     database_engine_name: str | None = None
     source_table_name: str | None = None
-    table_filter: str | None = None
+    table_filter_sql: str | None = None
     ## outputs **********************************
+    style_name: str = 'default'
     output_file_path: Path | str | None = None
     output_title: str | None = None
     show_in_web_browser: bool = True
     sort_orders: SortOrderSpecs | None = None
     sort_orders_yaml_file_path: Path | str | None = None
+    decimal_points: int = 3
 
     def handle_inputs(self):
         """
@@ -68,7 +70,7 @@ class CommonDesign(ABC):
         Source supplies all code that inherits from it dbe_spec ready to use.
         """
         if self.csv_file_path:
-            if self.cur or self.database_engine_name or self.source_table_name or self.table_filter:
+            if self.cur or self.database_engine_name or self.source_table_name or self.table_filter_sql:
                 raise Exception("If supplying a CSV path don't also supply database requirements")
             if not self.csv_separator:
                 self.csv_separator = ','

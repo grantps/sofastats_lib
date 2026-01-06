@@ -74,8 +74,9 @@ class BoxplotCategoryValsSpecs:
     category_vals_specs: Sequence[BoxplotCategoryItemValsSpec]
     category_sort_order: SortOrder
     boxplot_type: BoxplotType
+    decimal_points: int = 3
 
-    def to_indiv_chart_spec(self, *, dp: int = 3) -> BoxplotIndivChartSpec:
+    def to_indiv_chart_spec(self) -> BoxplotIndivChartSpec:
         n_records = 0
         box_items = []
         for category_vals_spec in self.category_vals_specs:
@@ -83,17 +84,17 @@ class BoxplotCategoryValsSpecs:
             box_result = BoxResult(category_vals_spec.vals, self.boxplot_type)
             box_item = BoxplotDataItem(
                 box_bottom=box_result.box_bottom,
-                box_bottom_rounded=round(box_result.box_bottom, dp),
+                box_bottom_rounded=round(box_result.box_bottom, self.decimal_points),
                 bottom_whisker=box_result.bottom_whisker,
-                bottom_whisker_rounded=round(box_result.bottom_whisker, dp),
+                bottom_whisker_rounded=round(box_result.bottom_whisker, self.decimal_points),
                 median=box_result.median,
-                median_rounded=round(box_result.median, dp),
+                median_rounded=round(box_result.median, self.decimal_points),
                 outliers=box_result.outliers,
-                outliers_rounded=[round(outlier, dp) for outlier in box_result.outliers],
+                outliers_rounded=[round(outlier, self.decimal_points) for outlier in box_result.outliers],
                 box_top=box_result.box_top,
-                box_top_rounded=round(box_result.box_top, dp),
+                box_top_rounded=round(box_result.box_top, self.decimal_points),
                 top_whisker=box_result.top_whisker,
-                top_whisker_rounded=round(box_result.top_whisker, dp)
+                top_whisker_rounded=round(box_result.top_whisker, self.decimal_points)
             )
             box_items.append(box_item)
         data_series_spec = BoxplotDataSeriesSpec(
@@ -106,27 +107,27 @@ class BoxplotCategoryValsSpecs:
         )
         return indiv_chart_spec
 
-def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         field_name: str, category_field_name: str,
         sort_orders: SortOrderSpecs,
         category_sort_order: SortOrder = SortOrder.VALUE,
         boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
-        tbl_filt_clause: str | None = None,) -> BoxplotCategoryValsSpecs:
+        table_filter_sql: str | None = None, decimal_points: int = 3) -> BoxplotCategoryValsSpecs:
     ## prepare items
     field_name_quoted = dbe_spec.entity_quoter(field_name)
     category_field_name_quoted = dbe_spec.entity_quoter(category_field_name)
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
         {category_field_name_quoted} AS
       category_val,
       {field_name_quoted}
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {category_field_name_quoted} IS NOT NULL
     AND {field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     ORDER BY {category_field_name_quoted}, {field_name_quoted}
     """
     ## get data
@@ -151,6 +152,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src
         category_vals_specs=category_vals_specs,
         category_sort_order=category_sort_order,
         boxplot_type=boxplot_type,
+        decimal_points=decimal_points,
     )
     return result
 
@@ -197,7 +199,7 @@ class BoxplotSeriesCategoryValsSpecs:
         )
         return indiv_chart_spec
 
-def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         field_name: str,
         category_field_name: str,
         series_field_name: str,
@@ -205,13 +207,13 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         category_sort_order: SortOrder = SortOrder.VALUE,
         series_sort_order: SortOrder = SortOrder.VALUE,
         boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
-        tbl_filt_clause: str | None = None) -> BoxplotSeriesCategoryValsSpecs:
+        table_filter_sql: str | None = None) -> BoxplotSeriesCategoryValsSpecs:
     ## prepare items
     field_name_quoted = dbe_spec.entity_quoter(field_name)
     category_field_name_quoted = dbe_spec.entity_quoter(category_field_name)
     series_field_name_quoted = dbe_spec.entity_quoter(series_field_name)
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
@@ -220,11 +222,11 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         {category_field_name_quoted} AS
       category_val,
       {field_name_quoted}
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {series_field_name_quoted} IS NOT NULL
     AND {category_field_name_quoted} IS NOT NULL
     AND {field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     ORDER BY {series_field_name_quoted}, {category_field_name_quoted}, {field_name_quoted}
     """
     ## get data

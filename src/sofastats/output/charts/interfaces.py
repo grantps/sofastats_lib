@@ -11,11 +11,12 @@ JSBool = Literal['false', 'true']
 
 ## the lower-level components are needed by data_extraction e.g. IndivChartSpec
 
-@dataclass
+@dataclass(frozen=False, kw_only=True)
 class ChartingSpec:
     categories: Sequence[Any]
     indiv_chart_specs: Sequence[IndivChartSpec]
     show_n_records: bool
+    decimal_points: int = 3
 
     def __post_init__(self):
         ## Validation
@@ -123,16 +124,6 @@ class DojoSeriesSpec:
     label: str
     vals: Sequence[float | str]  ## str if time series
     options: str  ## e.g. stroke, color, width etc. - things needed in a generic DOJO series
-
-@dataclass(frozen=True)
-class LeftMarginOffsetSpec:
-    """
-    Set the various levers we have to control left margins depending on chart characteristics
-    """
-    initial_offset: int
-    wide_offset: int
-    rotate_offset: int
-    multi_chart_offset: int
 
 
 class LineArea:

@@ -9,8 +9,7 @@ from sofastats.data_extraction.charts.amounts import (
 from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import (
     get_common_charting_spec, get_html, get_indiv_chart_html,get_line_area_misc_spec)
-from sofastats.output.charts.interfaces import (
-    AreaChartingSpec, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec, LineArea, PlotStyle)
+from sofastats.output.charts.interfaces import AreaChartingSpec, DojoSeriesSpec, JSBool, LineArea, PlotStyle
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import StyleSpec
@@ -45,8 +44,6 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
         else 'false')
     is_time_series_js_bool: JSBool = 'true' if charting_spec.is_time_series else 'false'
     series_legend_label = ''
-    left_margin_offset_spec = LeftMarginOffsetSpec(
-        initial_offset=18, wide_offset=25, rotate_offset=5, multi_chart_offset=10)
     colour_spec = CommonColourSpec(
         axis_font=style_specs.chart.axis_font_colour,
         chart_bg=style_specs.chart.chart_bg_colour,
@@ -58,7 +55,7 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
         plot_font_filled=style_specs.chart.plot_font_colour_filled,
         tooltip_border=style_specs.chart.tooltip_border_colour,
     )
-    misc_spec = get_line_area_misc_spec(charting_spec, style_specs, series_legend_label, left_margin_offset_spec)
+    misc_spec = get_line_area_misc_spec(charting_spec, style_specs, series_legend_label)
     options = LineArea.CommonOptions(
         has_micro_ticks_js_bool=has_micro_ticks_js_bool,
         has_minor_ticks_js_bool=has_minor_ticks_js_bool,
@@ -123,8 +120,6 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class AreaChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder | str = SortOrder.VALUE
 
@@ -141,11 +136,11 @@ class AreaChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## chart details
         charting_spec = AreaChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -171,8 +166,6 @@ class AreaChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartAreaChartDesign(CommonDesign):
-    style_name: str = 'default'
-
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder | str = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -191,12 +184,12 @@ class MultiChartAreaChartDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = get_by_chart_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name,
             chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, chart_sort_order=self.category_sort_order,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = AreaChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,

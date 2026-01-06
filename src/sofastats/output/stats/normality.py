@@ -63,21 +63,17 @@ class NormalityDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str | None = None
 
-    style_name: str = 'default'
-
-    decimal_points: int = 3
-
     def to_result(self) -> NormalTestResult:
         ## data
         paired = self.variable_b_name is not None
         if paired:
             sample = get_paired_diffs_sample(
-                cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+                cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
                 variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-                tbl_filt_clause=self.table_filter)
+                table_filter_sql=self.table_filter_sql)
         else:
-            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                measure_field_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
+            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
+                measure_field_name=self.variable_a_name, grouping_filt=None, table_filter_sql=self.table_filter_sql)
         n_vals = len(sample.vals)
         if n_vals < MIN_VALS_FOR_NORMALITY_TEST:
             raise Exception(f"We need at least {MIN_VALS_FOR_NORMALITY_TEST:,} values to test normality.")
@@ -93,13 +89,13 @@ class NormalityDesign(CommonDesign):
         if paired:
             data_label = f'Difference Between "{self.variable_a_name}" and "{self.variable_b_name}"'
             sample = get_paired_diffs_sample(
-                cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+                cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
                 variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-                tbl_filt_clause=self.table_filter)
+                table_filter_sql=self.table_filter_sql)
         else:
             data_label = self.variable_a_name
-            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
-                measure_field_name=self.variable_a_name, grouping_filt=None, tbl_filt_clause=self.table_filter)
+            sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
+                measure_field_name=self.variable_a_name, grouping_filt=None, table_filter_sql=self.table_filter_sql)
         title = f"Normality Tests for {data_label}"
         ## message
         n_vals = len(sample.vals)

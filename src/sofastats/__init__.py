@@ -38,32 +38,32 @@ For example - making a Pie Chart:
                                           |
       ---------------------------------------------------------------
       |                                                              |
-      v                                                              v
+      ▼                                                              ▼
   Chart design                                            Output / style config
   ------------                                            -----------------------------------------------------
-  tbl_name = 'demo_tbl'                                   show_n_records = True     style = 'default'
-  tbl_filt_clause = None                                             |              StyleSpec dc
+  table_name = 'demo_tbl'                                 show_n_records = True     style = 'default'
+  table_filter_sql = None                                            |              StyleSpec dc
   chart_field_name = 'country'                                       |              (defined in conf.style) from
-  category_fld_name = 'Web Browser'                                  |      output.styles.misc.get_style_spec()
+  category_field_name = 'Web Browser'                                |      output.styles.misc.get_style_spec()
   category_sort_order = SortOrder.VALUE                              |                     |
               |                                                      |                     |
-              v                                                      |                     |
+              ▼                                                      |                     |
   Intermediate charting spec (including data)                        |                     |
   -------------------------------------------                        |                     |
-  ChartCategoryFreqSpecs dc                                          |                     |
-  (defined in conf.charts.intermediate.freq_specs)                   |                     |
+  ChartCategoryAmountSpecs dc                                        |                     |
+  (defined in conf.charts.intermediate.amount_specs)                 |                     |
                  from                                                |                     |
-  sql_extraction.charts.freq_specs                                   |                     |
+  sql_extraction.charts.amount_specs                                 |                     |
   e.g. get_by_category_chart_spec()                                  |                     |
   takes all the design args as an input                              |                     |
        |                          |                       -----------                      |
        |                          |                      |                                 |
        |                          |                      |                                 |
-       v                          v                      |                                 |
+       ▼                          ▼                      |                                 |
  [CategorySpec dc, ...]     [IndivChartSpec dc, ...]     |                                 |
             |                 |                          |                                 |
             |                 |                          |                                 |
-            |                 V                          |                                 |
+            |                 ▼                          |                                 |
             ------>  PieChartingSpec dc  <---------------                                  |
                      ------------------                                                    |
                      (defined in conf.charts.output.standard)                              |
@@ -76,18 +76,18 @@ For example, making a Frequency or CrossTab Table:
                                  |
         ----------------------------------------------------------
         |                                                        |
-        v                                                        v
+        ▼                                                        ▼
    Table design                                            Output / style config
    ------------                                            ---------------------
-   tbl_name = 'demo_tbl'                                   style = 'default'
-   tbl_filt_clause = None                                        |
+   table_name = 'demo_tbl'                                 style = 'default'
+   AND_table_filter_sql = None                                   |
    title = 'Age Group'                                           |
    subtitle = 'Gender'                                           |
                                                                  |
    conf.tables.misc.VarTrees dc                                  |
    conf.tables.misc.Measures dc                                  |
               |                                                  |
-              v                                                  |
+              ▼                                                  |
     Intermediate table spec (including data)                     |
     ----------------------------------------                     |
          CrossTabSpec                                            |
@@ -98,7 +98,7 @@ For example, making a Frequency or CrossTab Table:
     e.g. get_cross_tab                                           |
     takes all the design args as an input                        |
               |                                                  |
-              v                                                  |
+              ▼                                                  |
    df made by get_tbl_df()                                       |
    (from conf.tables.output.cross_tab)                           |
               |                                                  |

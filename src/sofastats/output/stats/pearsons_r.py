@@ -36,7 +36,7 @@ def pearsons_r_from_df(df: pd.DataFrame) -> CorrelationCalcResult:
 class Result(CorrelationResult):
     scatterplot_html: str
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <h2>{{ title }}</h2>
 
@@ -61,6 +61,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
       <p><a id='ft{{ loop.index }}'></a><sup>{{ loop.index }}</sup>{{ footnote }}</p>
     {% endfor %}
     """
+    dp = result.decimal_points
     title = ('''Results of Pearson's Test of Linear Correlation for '''
         f'''"{result.variable_a_name}" vs "{result.variable_b_name}"''')
     p_str = get_p_str(result.stats_result.p)
@@ -93,14 +94,11 @@ class PearsonsRDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-    decimal_points: int = 3
-
     def to_result(self) -> CorrelationCalcResult:
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = pearsonsr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals)
         return stats_result
 
@@ -108,9 +106,9 @@ class PearsonsRDesign(CommonDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         coords = [Coord(x=x, y=y) for x, y in zip(paired_data.sample_a.vals, paired_data.sample_b.vals, strict=True)]
         pearsonsr_calc_result = pearsonsr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals)
         regression_result = get_regression_result(xs=paired_data.sample_a.vals,ys=paired_data.sample_b.vals)
@@ -121,6 +119,7 @@ class PearsonsRDesign(CommonDesign):
             coords=coords,
             stats_result=pearsonsr_calc_result,
             regression_result=regression_result,
+            decimal_points=self.decimal_points,
         )
 
         scatterplot_series = ScatterplotSeries(
@@ -154,7 +153,7 @@ class PearsonsRDesign(CommonDesign):
         result = Result(**todict(correlation_result),
             scatterplot_html=scatterplot_html,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

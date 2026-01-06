@@ -107,23 +107,23 @@ class ChartSeriesXYSpecs:
             indiv_chart_specs.append(indiv_chart_spec)
         return indiv_chart_specs
 
-def get_by_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         x_field_name: str, y_field_name: str,
-        tbl_filt_clause: str | None = None) -> XYSpecs:
+        table_filter_sql: str | None = None) -> XYSpecs:
     ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     x_field_name_quoted = dbe_spec.entity_quoter(x_field_name)
     y_field_name_quoted = dbe_spec.entity_quoter(y_field_name)
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
         {x_field_name_quoted} AS x,
         {y_field_name_quoted} AS y
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {x_field_name_quoted} IS NOT NULL
     AND {y_field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     """
     ## get data
     cur.exe(sql)
@@ -136,28 +136,28 @@ def get_by_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_n
     )
     return data_spec
 
-def get_by_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         x_field_name: str, y_field_name: str,
         series_field_name: str,
         sort_orders: SortOrderSpecs,
         series_sort_order: SortOrder,
-        tbl_filt_clause: str | None = None) -> SeriesXYSpecs:
+        table_filter_sql: str | None = None) -> SeriesXYSpecs:
+    ## prepare items
     x_fld_name_quoted = dbe_spec.entity_quoter(x_field_name)
     y_fld_name_quoted = dbe_spec.entity_quoter(y_field_name)
     series_fld_name_quoted = dbe_spec.entity_quoter(series_field_name)
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
-    ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
         {series_fld_name_quoted} AS series_val,
         {x_fld_name_quoted} AS x,
         {y_fld_name_quoted} AS y
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {x_fld_name_quoted} IS NOT NULL
     AND {y_fld_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     """
     ## get data
     cur.exe(sql)
@@ -184,29 +184,29 @@ def get_by_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sr
     )
     return data_spec
 
-def get_by_chart_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_chart_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         x_field_name: str,
         y_field_name: str,
         chart_field_name: str,
         sort_orders: SortOrderSpecs,
         chart_sort_order: SortOrder,
-        tbl_filt_clause: str | None = None) -> ChartXYSpecs:
+        table_filter_sql: str | None = None) -> ChartXYSpecs:
     ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     x_field_name_quoted = dbe_spec.entity_quoter(x_field_name)
     y_field_name_quoted = dbe_spec.entity_quoter(y_field_name)
     chart_field_name_quoted = dbe_spec.entity_quoter(chart_field_name)
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
         {chart_field_name_quoted} AS charts_val,
         {x_field_name_quoted} AS x,
         {y_field_name_quoted} AS y
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {x_field_name_quoted} IS NOT NULL
     AND {y_field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     """
     ## get data
     cur.exe(sql)
@@ -232,19 +232,19 @@ def get_by_chart_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src
     )
     return data_spec
 
-def get_by_chart_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str,
+def get_by_chart_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         x_field_name: str, y_field_name: str,
         series_field_name: str, chart_field_name: str,
         sort_orders: SortOrderSpecs,
         series_sort_order: SortOrder, chart_sort_order: SortOrder,
-        tbl_filt_clause: str | None = None) -> ChartSeriesXYSpecs:
+        table_filter_sql: str | None = None) -> ChartSeriesXYSpecs:
     ## prepare items
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
     x_field_name_quoted = dbe_spec.entity_quoter(x_field_name)
     y_field_name_quoted = dbe_spec.entity_quoter(y_field_name)
     series_field_name_quoted = dbe_spec.entity_quoter(series_field_name)
     chart_field_name_quoted = dbe_spec.entity_quoter(chart_field_name)
-    src_tbl_name_quoted = dbe_spec.entity_quoter(src_tbl_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## assemble SQL
     sql = f"""\
     SELECT
@@ -252,10 +252,10 @@ def get_by_chart_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         {series_field_name_quoted} AS series_val,
         {x_field_name_quoted} AS x,
         {y_field_name_quoted} AS y
-    FROM {src_tbl_name_quoted}
+    FROM {source_table_name_quoted}
     WHERE {x_field_name_quoted} IS NOT NULL
     AND {y_field_name_quoted} IS NOT NULL
-    {and_tbl_filt_clause}
+    {AND_table_filter_sql}
     """
     ## get data
     cur.exe(sql)

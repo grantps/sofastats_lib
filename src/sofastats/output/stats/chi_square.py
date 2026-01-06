@@ -67,6 +67,7 @@ class Result:
     observed_vs_expected_tbl: str
     chi_square_charts: str
     worked_example: str
+    decimal_points: int = 3
 
 def get_observed_vs_expected_tbl(
         variable_a_name: str, variable_b_name: str,
@@ -392,7 +393,7 @@ def get_chi_square_charts(style_spec: StyleSpec,
     html_bits.append(f'<img src="{image_as_data_2}"/>')
     return '\n'.join(html_bits)
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=False) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <style>
         {{generic_unstyled_css}}
@@ -428,6 +429,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=Fa
 
     </div>
     """
+    dp = result.decimal_points
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = (f"Results of Pearson's Chi Square Test of Association "
@@ -472,15 +474,12 @@ class ChiSquareDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-
-    decimal_points: int = 3
     show_workings: bool = False
 
     def to_result(self) -> ChiSquareResult:
         ## data
         chi_square_data = get_chi_square_data(cur=self.cur, dbe_spec=self.dbe_spec,
-            src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+            source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             sort_orders=self.sort_orders)
         ## get results
@@ -495,7 +494,7 @@ class ChiSquareDesign(CommonDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         chi_square_data = get_chi_square_data(cur=self.cur, dbe_spec=self.dbe_spec,
-            src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+            source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
             sort_orders=self.sort_orders)
         ## get results
@@ -535,9 +534,9 @@ class ChiSquareDesign(CommonDesign):
             p=stats_result.p, chi_square=stats_result.chi_square, degrees_of_freedom=chi_square_data.degrees_of_freedom,
             minimum_cell_count=chi_square_data.minimum_cell_count, pct_cells_lt_5=chi_square_data.pct_cells_freq_under_5,
             observed_vs_expected_tbl=observed_vs_expected_tbl, chi_square_charts=chi_square_charts,
-            worked_example=worked_example,
+            worked_example=worked_example, decimal_points=self.decimal_points,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points, show_workings=self.show_workings)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

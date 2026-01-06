@@ -16,6 +16,7 @@ class CorrelationResult:
     stats_result: CorrelationCalcResult
     regression_result: RegressionResult
     worked_result: SpearmansResult | None = None
+    decimal_points: int = 3
 
     @property
     def xs(self):

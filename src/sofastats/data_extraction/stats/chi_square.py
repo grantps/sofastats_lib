@@ -24,7 +24,7 @@ class ChiSquareData:
     degrees_of_freedom: int
 
 def get_fractions_of_total_for_variable(*, cur: ExtendedCursor, dbe_spec: DbeSpec,
-        src_tbl_name: str, tbl_filt_clause: str, variable_name: str, other_variable_name: str,
+        source_table_name: str, table_filter_sql: str, variable_name: str, other_variable_name: str,
         ordered_values: Sequence[Any] | None = None) -> list[float]:
     """
     Looking at the frequencies for each value in the variable, what fractional share does that value have of the total?
@@ -38,12 +38,12 @@ def get_fractions_of_total_for_variable(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     E.g. if the user wants '<20' to come before '20-29' etc then honour that. Simple to get the SQL to do this.
     """
     ## prepare items
-    quoted_src_tbl_name = dbe_spec.entity_quoter(src_tbl_name)
-    quoted_variable_name = dbe_spec.entity_quoter(variable_name)
-    quoted_other_variable_name = dbe_spec.entity_quoter(other_variable_name)
+    variable_name_quoted = dbe_spec.entity_quoter(variable_name)
+    other_variable_name_quoted = dbe_spec.entity_quoter(other_variable_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
     ## handle value order for main variable
     if ordered_values:
-        sorter_clause_bits = [f"CASE {quoted_variable_name}", ]
+        sorter_clause_bits = [f"CASE {variable_name_quoted}", ]
         for n, value in enumerate(ordered_values, 1):
             clause_ready_value = dbe_spec.str_value_quoter(value) if isinstance(value, str) else value
             sorter_clause_bits.append(f"WHEN {clause_ready_value} THEN {n}")
@@ -52,16 +52,16 @@ def get_fractions_of_total_for_variable(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     else:
         sorter_clause = '1'  ## i.e. all given same sort order
     ## get data
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
+    AND_table_filter_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     sql_get_fractions = f"""\
-    SELECT {quoted_variable_name},
+    SELECT {variable_name_quoted},
       {sorter_clause} AS sorter,
       COUNT(*) AS n
-    FROM {quoted_src_tbl_name} 
-    WHERE {quoted_variable_name} IS NOT NULL AND {quoted_other_variable_name} IS NOT NULL
-    {and_tbl_filt_clause}
-    GROUP BY {quoted_variable_name}, sorter
-    ORDER BY sorter, {quoted_variable_name}
+    FROM {source_table_name_quoted} 
+    WHERE {variable_name_quoted} IS NOT NULL AND {other_variable_name_quoted} IS NOT NULL
+    {AND_table_filter_sql}
+    GROUP BY {variable_name_quoted}, sorter
+    ORDER BY sorter, {variable_name_quoted}
     """
     logger.debug(sql_get_fractions)
     cur.exe(sql_get_fractions)
@@ -95,7 +95,7 @@ def get_cleaned_values(*, original_vals: list[str | float], dbe_spec: DbeSpec) -
                 f"({len(val)} > maximum value setting: {MAX_VALUE_LENGTH_IN_SQL_CLAUSE})")
     return original_vals
 
-def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name: str, tbl_filt_clause: str,
+def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str, table_filter_sql: str,
         variable_a_name: str, variable_b_name: str, sort_orders: SortOrderSpecs) -> ChiSquareData:
     """
     The Chi Square statistical calculation relies on having access to the raw counts per intersection between
@@ -124,18 +124,18 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     See output.stats.chi_square.chi_square_from_df (similar logic with pandas base)
     """
     ## prepare items
-    quoted_src_tbl_name = dbe_spec.entity_quoter(src_tbl_name)
-    quoted_variable_a_name = dbe_spec.entity_quoter(variable_a_name)
-    quoted_variable_b_name = dbe_spec.entity_quoter(variable_b_name)
-    and_tbl_filt_clause = f"AND ({tbl_filt_clause})" if tbl_filt_clause else ''
+    variable_a_name_quoted = dbe_spec.entity_quoter(variable_a_name)
+    variable_b_name_quoted = dbe_spec.entity_quoter(variable_b_name)
+    source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
+    table_filter_AND_sql = f"AND ({table_filter_sql})" if table_filter_sql else ''
     ## A) get ROW vals used ***********************
     sql_row_vals_used = f"""\
-    SELECT {quoted_variable_a_name}
-    FROM {quoted_src_tbl_name}
-    WHERE {quoted_variable_a_name} IS NOT NULL AND {quoted_variable_b_name} IS NOT NULL
-    {and_tbl_filt_clause}
-    GROUP BY {quoted_variable_a_name}
-    ORDER BY {quoted_variable_a_name}
+    SELECT {variable_a_name_quoted}
+    FROM {source_table_name_quoted}
+    WHERE {variable_a_name_quoted} IS NOT NULL AND {variable_b_name_quoted} IS NOT NULL
+    {table_filter_AND_sql}
+    GROUP BY {variable_a_name_quoted}
+    ORDER BY {variable_a_name_quoted}
     """
     cur.exe(sql_row_vals_used)
     row_data = cur.fetchall()
@@ -146,18 +146,18 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     n_variable_a_vals = len(variable_a_values)
     if n_variable_a_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_a_vals} vs "
-            f"maximum allowed of {MAX_CHI_SQUARE_VALS_IN_DIM}) in variable '{quoted_variable_a_name}'")
+            f"maximum allowed of {MAX_CHI_SQUARE_VALS_IN_DIM}) in variable '{variable_a_name_quoted}'")
     if n_variable_a_vals < MIN_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Not enough separate values ({n_variable_a_vals} vs "
-            f"minimum allowed of {MIN_CHI_SQUARE_VALS_IN_DIM}) in variable '{quoted_variable_a_name}'")
+            f"minimum allowed of {MIN_CHI_SQUARE_VALS_IN_DIM}) in variable '{variable_a_name_quoted}'")
     ## B) get COL vals used (almost a repeat) ***********************
     sql_col_vals_used = f"""\
-    SELECT {quoted_variable_b_name}
-    FROM {quoted_src_tbl_name}
-    WHERE {quoted_variable_a_name} IS NOT NULL AND {quoted_variable_b_name} IS NOT NULL
-    {and_tbl_filt_clause}
-    GROUP BY {quoted_variable_b_name}
-    ORDER BY {quoted_variable_b_name}
+    SELECT {variable_b_name_quoted}
+    FROM {source_table_name_quoted}
+    WHERE {variable_a_name_quoted} IS NOT NULL AND {variable_b_name_quoted} IS NOT NULL
+    {table_filter_AND_sql}
+    GROUP BY {variable_b_name_quoted}
+    ORDER BY {variable_b_name_quoted}
     """
     cur.exe(sql_col_vals_used)
     col_data = cur.fetchall()
@@ -168,10 +168,10 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     n_variable_b_vals = len(variable_b_values)
     if n_variable_b_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_b_vals} vs "
-            f"maximum allowed of {MAX_CHI_SQUARE_VALS_IN_DIM}) in variable '{quoted_variable_b_name}'")
+            f"maximum allowed of {MAX_CHI_SQUARE_VALS_IN_DIM}) in variable '{variable_b_name_quoted}'")
     if n_variable_b_vals < MIN_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Not enough separate values ({n_variable_b_vals} vs "
-            f"minimum allowed of {MIN_CHI_SQUARE_VALS_IN_DIM}) in variable '{quoted_variable_b_name}'")
+            f"minimum allowed of {MIN_CHI_SQUARE_VALS_IN_DIM}) in variable '{variable_b_name_quoted}'")
     ## C) combine results of A) and B) ***********************
     n_cells = len(variable_a_values) * len(variable_b_values)
     if n_cells > MAX_CHI_SQUARE_CELLS:
@@ -185,17 +185,17 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     freq_per_a_b_intersection_clauses_bits = []
     ## need to filter by vals within SQL so may need quoting observed values etc
     for val_a, val_b in product(variable_a_values, variable_b_values):
-        quoted_val_a = dbe_spec.str_value_quoter(val_a)
-        quoted_val_b = dbe_spec.str_value_quoter(val_b)
+        val_a_quoted = dbe_spec.str_value_quoter(val_a)
+        val_b_quoted = dbe_spec.str_value_quoter(val_b)
         clause = (
-            f"SUM(CASE WHEN {quoted_variable_a_name} = {quoted_val_a} AND {quoted_variable_b_name} = {quoted_val_b} "
+            f"SUM(CASE WHEN {variable_a_name_quoted} = {val_a_quoted} AND {variable_b_name_quoted} = {val_b_quoted} "
             "THEN 1 ELSE 0 END)")
         freq_per_a_b_intersection_clauses_bits.append(clause)
     freq_per_a_b_intersection_clauses = ',\n'.join(freq_per_a_b_intersection_clauses_bits)
     sql_get_observed_freqs_bits.append(freq_per_a_b_intersection_clauses)
-    sql_get_observed_freqs_bits.append(f"FROM {quoted_src_tbl_name}")
-    if tbl_filt_clause:
-        sql_get_observed_freqs_bits.append(f"WHERE {tbl_filt_clause}")
+    sql_get_observed_freqs_bits.append(f"FROM {source_table_name_quoted}")
+    if table_filter_sql:
+        sql_get_observed_freqs_bits.append(f"WHERE {table_filter_sql}")
     sql_get_observed_freqs = '\n'.join(sql_get_observed_freqs_bits)
     logger.debug(f"{sql_get_observed_freqs=}")
     cur.exe(sql_get_observed_freqs)
@@ -207,11 +207,11 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, src_tbl_name:
     total_observed_values = float(sum(observed_values_a_then_b_ordered))
     ## expected values *************************************************************************************************
     fractions_of_total_for_variable_a = get_fractions_of_total_for_variable(
-        cur=cur, dbe_spec=dbe_spec, src_tbl_name=src_tbl_name, tbl_filt_clause=tbl_filt_clause,
+        cur=cur, dbe_spec=dbe_spec, source_table_name=source_table_name, table_filter_sql=table_filter_sql,
         variable_name=variable_a_name, other_variable_name=variable_b_name,
         ordered_values=sort_orders.get(variable_a_name))
     fractions_of_total_for_variable_b = get_fractions_of_total_for_variable(
-        cur=cur, dbe_spec=dbe_spec, src_tbl_name=src_tbl_name, tbl_filt_clause=tbl_filt_clause,
+        cur=cur, dbe_spec=dbe_spec, source_table_name=source_table_name, table_filter_sql=table_filter_sql,
         variable_name=variable_b_name, other_variable_name=variable_a_name,
         ordered_values=sort_orders.get(variable_b_name))
     degrees_of_freedom = (n_variable_a_vals - 1) * (n_variable_b_vals - 1)

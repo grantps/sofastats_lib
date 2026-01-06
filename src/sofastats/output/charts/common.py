@@ -16,9 +16,10 @@ get_html(charting_spec, style_spec)
 from functools import singledispatch
 
 from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED
-from sofastats.output.charts.interfaces import AreaChartingSpec, LeftMarginOffsetSpec, LineArea, LineChartingSpec
-from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_left_margin_offset, get_x_axis_font_size,
-    get_dojo_format_x_axis_numbers_and_labels, get_width_after_left_margin, get_y_axis_title_offset)
+from sofastats.output.charts.interfaces import AreaChartingSpec, LineArea, LineChartingSpec
+from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_x_axis_font_size,
+    get_dojo_format_x_axis_numbers_and_labels, get_intrusion_of_first_x_axis_label_leftwards,
+    get_width_after_left_margin, get_y_axis_title_offset)
 from sofastats.output.styles.interfaces import StyleSpec
 
 ## https://towardsdatascience.com/simplify-your-functions-with-functools-partial-and-singledispatch-b7071f7543bb
@@ -42,7 +43,7 @@ def get_html(charting_spec, style_spec: StyleSpec) -> str:
     return html
 
 def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, style_spec: StyleSpec,
-        series_legend_label: str, left_margin_offset_spec: LeftMarginOffsetSpec) -> LineArea.CommonMiscSpec:
+        series_legend_label: str) -> LineArea.CommonMiscSpec:
     ## calculation
     if isinstance(charting_spec, LineChartingSpec):
         chart_js_fn_name = 'makeLineChart'
@@ -82,14 +83,11 @@ def get_line_area_misc_spec(charting_spec: LineChartingSpec | AreaChartingSpec, 
     y_axis_max = charting_spec.max_y_val * 1.1
     widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
-        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
-        avg_pixels_per_character=10.5,
-    )
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters, avg_pixels_per_y_character=8)
+    intrusion_of_first_x_axis_label_leftwards = get_intrusion_of_first_x_axis_label_leftwards(
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters, avg_pixels_per_x_character=5)
+    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 25
     ## misc sizing
-    left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
-        offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
     width = left_margin_offset + width_after_left_margin
     height = get_height(axis_label_drop=axis_label_drop,
         rotated_x_labels=charting_spec.rotate_x_labels, max_x_axis_label_len=charting_spec.max_x_axis_label_len)

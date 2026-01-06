@@ -36,16 +36,16 @@ class BinSpec:
             self.bin_ranges.append((bin_start, bin_end))
             bin_start = bin_end
 
-    def to_bin_labels(self, *, dp: int = 3):
+    def to_bin_labels(self, *, decimal_points: int = 3):
         rounded_bin_ranges = []
         for raw_bin_start, raw_bin_end in self.bin_ranges:
             ## if ints
-            rounded_start = round(raw_bin_start, dp)
+            rounded_start = round(raw_bin_start, decimal_points)
             if rounded_start == int(rounded_start):
                 bin_start = int(rounded_start)
             else:
                 bin_start = rounded_start
-            rounded_end = round(raw_bin_end, dp)
+            rounded_end = round(raw_bin_end, decimal_points)
             if rounded_end == int(rounded_end):
                 bin_end = int(rounded_end)
             else:

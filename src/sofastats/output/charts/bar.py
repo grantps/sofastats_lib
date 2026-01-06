@@ -9,10 +9,10 @@ from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, ChartMetri
 import sofastats.data_extraction.charts.amounts as from_data
 from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
-from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec, JSBool, LeftMarginOffsetSpec
-from sofastats.output.charts.utils import (get_axis_label_drop, get_left_margin_offset, get_height,
-    get_dojo_format_x_axis_numbers_and_labels, get_width_after_left_margin, get_x_axis_font_size,
-    get_y_axis_title_offset)
+from sofastats.output.charts.interfaces import ChartingSpecAxes, DojoSeriesSpec, JSBool
+from sofastats.output.charts.utils import (get_axis_label_drop, get_height,
+    get_dojo_format_x_axis_numbers_and_labels, get_intrusion_of_first_x_axis_label_leftwards,
+    get_width_after_left_margin, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonBarDesign)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
@@ -43,11 +43,11 @@ class SimpleBarChartDesign(CommonBarDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = from_data.get_by_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name, sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
             metric=self.metric, field_name=self.field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -89,12 +89,12 @@ class MultiBarChartDesign(CommonBarDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = from_data.get_by_chart_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name, chart_field_name=self.chart_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, chart_sort_order=self.chart_sort_order,
             metric=self.metric, field_name=self.field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## charts details
         charting_spec = BarChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -136,12 +136,12 @@ class ClusteredBarChartDesign(CommonBarDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = from_data.get_by_series_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name, series_field_name=self.series_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order, series_sort_order=self.series_sort_order,
             metric=self.metric, field_name=self.field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -185,7 +185,7 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         intermediate_charting_spec = from_data.get_by_chart_series_category_charting_spec(
-            cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+            cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             category_field_name=self.category_field_name,
             series_field_name=self.series_field_name,
             chart_field_name=self.chart_field_name,
@@ -194,7 +194,8 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
             series_sort_order=self.series_sort_order,
             chart_sort_order=self.chart_sort_order,
             metric=self.metric, field_name=self.field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql,
+            decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,
@@ -256,7 +257,7 @@ class CommonMiscSpec:
     x_axis_title: str
     x_gap: int
     y_axis_title: str
-    y_axis_title_offset: int
+    y_axis_title_offset: float
     y_axis_max: int
 
 @dataclass(frozen=True)
@@ -403,10 +404,9 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
     y_axis_max = charting_spec.max_y_val * 1.1
     widest_y_axis_label_n_characters = len(str(int(y_axis_max)))  ## e.g. 1000.5 -> 1000 -> '1000' -> 4
     y_axis_title_offset = get_y_axis_title_offset(
-        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters,
-        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters,
-        avg_pixels_per_character=10.5,
-    )
+        widest_y_axis_label_n_characters=widest_y_axis_label_n_characters, avg_pixels_per_y_character=9)
+    intrusion_of_first_x_axis_label_leftwards = get_intrusion_of_first_x_axis_label_leftwards(
+        widest_x_axis_label_n_characters=widest_x_axis_label_n_characters, avg_pixels_per_x_character=5)
     ## misc sizing
     x_axis_font_size = get_x_axis_font_size(n_x_items=charting_spec.n_x_items, is_multi_chart=charting_spec.is_multi_chart)
     x_gap = get_x_gap(n_x_items=charting_spec.n_x_items, is_multi_chart=charting_spec.is_multi_chart)
@@ -414,11 +414,7 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
         is_multi_chart=charting_spec.is_multi_chart, rotated_x_labels=charting_spec.rotate_x_labels,
         max_x_axis_label_lines=charting_spec.max_x_axis_label_lines)
     axis_label_rotate = -90 if charting_spec.rotate_x_labels else 0
-    left_margin_offset_spec = LeftMarginOffsetSpec(
-        initial_offset=25, wide_offset=35, rotate_offset=15, multi_chart_offset=15)
-    left_margin_offset = get_left_margin_offset(width_after_left_margin=width_after_left_margin,
-        offsets=left_margin_offset_spec, is_multi_chart=charting_spec.is_multi_chart,
-        y_axis_title_offset=y_axis_title_offset, rotated_x_labels=charting_spec.rotate_x_labels)
+    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 20
     width = left_margin_offset + width_after_left_margin
     height = get_height(axis_label_drop=axis_label_drop,
         rotated_x_labels=charting_spec.rotate_x_labels, max_x_axis_label_len=charting_spec.max_x_axis_label_len)

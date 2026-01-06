@@ -166,7 +166,7 @@ def get_worked_example(result: CorrelationResult, style_name_hyphens: str) -> st
         "<p>The only remaining question is the probability of a rho that size occurring for a given N value</p>")
     return '\n'.join(html)
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=False) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <h2>{{ title }}</h2>
 
@@ -193,6 +193,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=Fa
       {{ worked_example }}
     {% endif %}
     """
+    dp = result.decimal_points
     title = ('''Results of Spearman's Test of Linear Correlation for '''
         f'''"{result.variable_a_name}" vs "{result.variable_b_name}"''')
     p_str = get_p_str(result.stats_result.p)
@@ -203,8 +204,6 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int, show_workings=Fa
     look_at_scatterplot_msg = "Always look at the scatter plot when interpreting the linear regression line."
     slope_rounded = round(result.regression_result.slope, dp)
     intercept_rounded = round(result.regression_result.intercept, dp)
-
-
     context = {
         'degrees_of_freedom_msg': degrees_of_freedom_msg,
         'footnotes': [p_full_explanation, look_at_scatterplot_msg],
@@ -227,16 +226,14 @@ class SpearmansRDesign(CommonDesign):
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-    decimal_points: int = 3
     show_workings: bool = False
     high_volume_ok: bool = False
 
     def to_result(self) -> CorrelationCalcResult:
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         stats_result = spearmansr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals)
         return stats_result
 
@@ -244,9 +241,9 @@ class SpearmansRDesign(CommonDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
-        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        paired_data = get_paired_data(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         coords = [Coord(x=x, y=y) for x, y in zip(paired_data.sample_a.vals, paired_data.sample_b.vals, strict=True)]
         pearsonsr_calc_result = spearmansr_stats_calc(paired_data.sample_a.vals, paired_data.sample_b.vals,
             high_volume_ok=self.high_volume_ok)
@@ -267,6 +264,7 @@ class SpearmansRDesign(CommonDesign):
             stats_result=pearsonsr_calc_result,
             regression_result=regression_result,
             worked_result=worked_result,
+            decimal_points=self.decimal_points,
         )
 
         worked_example = (
@@ -304,7 +302,7 @@ class SpearmansRDesign(CommonDesign):
             scatterplot_html=scatterplot_html,
             worked_example=worked_example,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points, show_workings=self.show_workings)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,

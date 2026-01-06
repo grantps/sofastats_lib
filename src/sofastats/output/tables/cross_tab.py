@@ -207,9 +207,6 @@ class CrossTabDesign(CommonDesign):
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     column_variable_designs: list[Column] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-
-    decimal_points: int = 2
     debug: bool = False
     verbose: bool = False
 
@@ -288,7 +285,7 @@ class CrossTabDesign(CommonDesign):
             totalled_variables = row_spec.self_and_descendant_totalled_vars + col_spec.self_and_descendant_totalled_vars
             all_variables = row_vars + col_vars
             data = get_data_from_spec(cur, dbe_spec=self.dbe_spec,
-                src_tbl_name=self.source_table_name, tbl_filt_clause=self.table_filter,
+                source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
                 all_variables=all_variables, totalled_variables=totalled_variables, debug=self.debug)
             df_col = get_all_metrics_df_from_vars(data, row_vars=row_vars, col_vars=col_vars,
                 n_row_fillers=n_row_fillers, n_col_fillers=self.max_col_depth - len(col_vars),
@@ -359,7 +356,7 @@ class CrossTabDesign(CommonDesign):
         df = df_t.T  ## re-transpose back so cols are cols and rows are rows again
         if self.debug: print(f"\nCOMBINED:\n{df}")
         ## Sorting indexes
-        raw_df = get_raw_df(cur, src_tbl_name=self.source_table_name, debug=self.debug)
+        raw_df = get_raw_df(cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name, debug=self.debug)
         order_rules_for_row_multi_index_branches = get_order_rules_for_multi_index_branches(self.row_variable_designs)
         order_rules_for_col_multi_index_branches = get_order_rules_for_multi_index_branches(self.column_variable_designs)
         ## COLS

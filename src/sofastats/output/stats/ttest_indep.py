@@ -41,8 +41,9 @@ class Result(TTestIndepResult):
     grouping_field_name: str
     measure_field_name: str
     histograms2show: Sequence[str]
+    decimal_points: int = 3
 
-def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
+def get_html(result: Result, style_spec: StyleSpec) -> str:
     tpl = """\
     <style>
         {{ generic_unstyled_css }}
@@ -103,6 +104,7 @@ def get_html(result: Result, style_spec: StyleSpec, *, dp: int) -> str:
 
     </div>
     """
+    dp = result.decimal_points
     generic_unstyled_css = get_generic_unstyled_css()
     styled_stats_tbl_css = get_styled_stats_tbl_css(style_spec)
     title = (f'Results of independent samples t-test of average "{result.measure_field_name}" '
@@ -168,22 +170,19 @@ class TTestIndepDesign(CommonDesign):
     group_a_value: Any = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     group_b_value: Any = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
-    style_name: str = 'default'
-    decimal_points: int = 3
-
     def to_result(self) -> TTestIndepResult:
         ## data
         ## build samples ready for ttest_indep function
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
-        sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
-        sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## get result
         stats_result = ttest_indep_stats_calc(sample_a, sample_b)
         return stats_result
@@ -195,14 +194,14 @@ class TTestIndepDesign(CommonDesign):
         ## build samples ready for ttest_indep function
         grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
-        sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
-        sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, src_tbl_name=self.source_table_name,
+        sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
             grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
-            tbl_filt_clause=self.table_filter)
+            table_filter_sql=self.table_filter_sql)
         ## get result
         stats_result = ttest_indep_stats_calc(sample_a, sample_b)
 
@@ -222,8 +221,9 @@ class TTestIndepDesign(CommonDesign):
             grouping_field_name=self.grouping_field_name,
             measure_field_name=self.measure_field_name,
             histograms2show=histograms2show,
+            decimal_points=self.decimal_points,
         )
-        html = get_html(result, style_spec, dp=self.decimal_points)
+        html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
             style_name=self.style_name,
