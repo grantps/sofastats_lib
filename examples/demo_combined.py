@@ -1,4 +1,6 @@
-from pathlib import Path
+## To run the demo examples, install the sofastats_examples package
+## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
+
 from webbrowser import open_new_tab
 
 from sofastats.output.charts.bar import SimpleBarChartDesign
@@ -10,7 +12,7 @@ from sofastats.output.tables.interfaces import Column, Metric, Row, SortOrder
 from sofastats.output.utils import get_report
 from sofastats.stats_calc.interfaces import BoxplotType
 
-from conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path
+from sofastats_examples.scripts.conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path
 
 def get_simple_bar_chart(csv_file_path):
     chart_design = SimpleBarChartDesign(
@@ -94,24 +96,3 @@ def get_anova(csv_file_path):
     )
     return stats_design
 
-def run_report():
-    simple_bar_chart = get_simple_bar_chart(people_csv_file_path)
-    cross_tab_table = get_cross_tab(people_csv_file_path)
-    clustered_boxplot = get_clustered_boxplot(people_csv_file_path)
-    frequency_table = get_simple_freq_tbl(people_csv_file_path)
-    anova = get_anova(people_csv_file_path)
-    html_items = [
-        simple_bar_chart,
-        cross_tab_table,
-        clustered_boxplot,
-        frequency_table,
-        anova,
-    ]
-    report = get_report(html_items, 'Demo Combined Report')
-    fpath = output_folder / 'demo_combined_report.html'
-    report.to_file(fpath)
-    open_new_tab(url=f"file://{fpath}")
-
-if __name__ == '__main__':
-    pass
-    run_report()

@@ -1,3 +1,6 @@
+## To run the demo examples, install the sofastats_examples package
+## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
+
 """
 Force it to look for horrific.yaml in the custom_styles subfolder of the home documents / sofastats folder.
 If you succeed, you'll know why the style is called horrific ;-).
@@ -11,7 +14,8 @@ from sofastats.output.stats.anova import AnovaDesign
 from sofastats.output.tables.freq import FrequencyTableDesign
 from sofastats.output.tables.interfaces import Row, SortOrder
 
-from conf import education_csv_file_path, output_folder, people_csv_file_path, sort_orders_yaml_file_path
+from sofastats_examples.scripts.conf import (
+    education_csv_file_path, output_folder, people_csv_file_path, sort_orders_yaml_file_path)
 
 def simple_bar_chart(csv_file_path):
     chart_design = SimpleBarChartDesign(
@@ -84,9 +88,3 @@ def multi_chart_by_series_scatterplot(csv_file_path):
     )
     chart_design.make_output()
 
-if __name__ == '__main__':
-    pass
-    simple_bar_chart(people_csv_file_path)
-    run_anova(people_csv_file_path)
-    run_simple_freq_tbl(people_csv_file_path)
-    multi_chart_by_series_scatterplot(education_csv_file_path)

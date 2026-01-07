@@ -1,3 +1,6 @@
+## To run the demo examples, install the sofastats_examples package
+## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
+
 import sqlite3 as sqlite
 
 from sofastats.conf.main import ChartMetric, SortOrder
@@ -15,7 +18,7 @@ from sofastats.output.charts.scatter_plot import (BySeriesScatterChartDesign,
     MultiChartBySeriesScatterChartDesign, MultiChartScatterChartDesign, SimpleScatterChartDesign)
 from sofastats.stats_calc.interfaces import BoxplotType
 
-from conf import (education_csv_file_path, output_folder, people_csv_file_path,
+from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
     sort_orders_yaml_file_path, sports_csv_file_path, sqlite_demo_db_file_path)
 
 def simple_bar_chart_from_sqlite_db(sqlite_cur):
@@ -630,48 +633,3 @@ def clustered_boxplot(csv_file_path):
     )
     chart_design.make_output()
 
-if __name__ == '__main__':
-
-    con = sqlite.connect(sqlite_demo_db_file_path)
-    cur = con.cursor()
-
-    simple_bar_chart_from_sqlite_db(cur)
-    simple_bar_chart_from_csv(people_csv_file_path)
-    simple_bar_chart_percents_from_csv(people_csv_file_path)
-    simple_bar_chart_averages_from_csv(people_csv_file_path)
-    simple_bar_chart_sums_from_csv(people_csv_file_path)
-    simple_bar_chart_lots_of_x_vals(people_csv_file_path)
-    multi_bar_chart(people_csv_file_path)
-    clustered_bar_chart(people_csv_file_path)
-    multi_chart_clustered_bar_chart(people_csv_file_path)
-    multi_chart_clustered_percents_bar_chart(people_csv_file_path)
-
-    line_chart(people_csv_file_path)
-    line_chart_time_series(people_csv_file_path)
-    line_chart_time_series_rotated_labels(people_csv_file_path)
-    multi_line_chart(people_csv_file_path)
-    multi_chart_line_chart(people_csv_file_path)
-    multi_chart_multi_line_chart(people_csv_file_path)
-    multi_chart_multi_line_chart_time_series(people_csv_file_path)
-
-    area_chart(people_csv_file_path)
-    multi_chart_area_chart(people_csv_file_path)
-
-    pie_chart(sports_csv_file_path)
-    multi_chart_pie_chart(sports_csv_file_path)
-
-    simple_scatterplot(education_csv_file_path)
-    by_series_scatterplot(education_csv_file_path)
-    multi_chart_scatterplot(education_csv_file_path)
-    multi_chart_by_series_scatterplot(education_csv_file_path)
-
-    histogram_chart(people_csv_file_path)
-    multi_chart_histogram(people_csv_file_path)
-
-    boxplot_chart(people_csv_file_path)
-    boxplot_chart_narrow_labels(people_csv_file_path)
-    boxplot_chart_very_wide(people_csv_file_path)
-    clustered_boxplot(people_csv_file_path)
-
-    cur.close()
-    con.close()

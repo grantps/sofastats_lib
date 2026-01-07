@@ -1,3 +1,6 @@
+## To run the demo examples, install the sofastats_examples package
+## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
+
 import sqlite3 as sqlite
 
 from sofastats.conf.main import DbeName, SortOrder
@@ -5,7 +8,9 @@ from sofastats.output.tables.cross_tab import CrossTabDesign
 from sofastats.output.tables.freq import FrequencyTableDesign
 from sofastats.output.tables.interfaces import Column, Metric, Row
 
-from conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path
+from sofastats_examples.scripts.conf import (
+    output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path)
+
 
 def run_cross_tab_from_sqlite_db_filtered(sqlite_cur):
     """
@@ -139,15 +144,3 @@ def run_simple_freq_tbl(csv_file_path):
     )
     table_design.make_output()
 
-if __name__ == '__main__':
-    con = sqlite.connect(sqlite_demo_db_file_path)
-    cur = con.cursor()
-
-    run_cross_tab_from_sqlite_db_filtered(cur)
-    run_cross_tab_from_sqlite_db(cur)
-    run_cross_tab(people_csv_file_path)
-    run_repeat_level_two_row_var_cross_tab(people_csv_file_path)
-    run_simple_freq_tbl(people_csv_file_path)
-
-    cur.close()
-    con.close()

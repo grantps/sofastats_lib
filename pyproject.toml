@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.12.3"
+version = "0.12.4"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -16,6 +16,23 @@ dependencies = [
 readme = "README.md"
 requires-python = ">= 3.11"
 classifiers = ["Development Status :: 1 - Planning"]
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+    "deptry>=0.23.0",
+    "faker>=37.5.3",
+    "import-linter>=2.3",
+    "mkdocs>=1.5.2",
+    "mkdocstrings-python>=1.5.2",
+    "mkdocs-material>=9.2.4",
+    "pyproject-fmt>=2.6.0",
+    "pytest>=8.4.1",
+    "ruff>=0.12.0",
+]
+test = [
+    "pytest>=8.4.1",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -289,17 +306,3 @@ filterwarnings = ["error"]
 xfail_strict = true
 log_cli_level = "INFO"
 minversion = "7"
-
-[dependency-groups]
-dev = [
-    "codespell>=2.4.1",
-    "deptry>=0.23.0",
-    "faker>=37.5.3",
-    "import-linter>=2.3",
-    "pyproject-fmt>=2.6.0",
-    "pytest>=8.4.1",
-    "ruff>=0.12.0",
-]
-test = [
-    "pytest>=8.4.1",
-]

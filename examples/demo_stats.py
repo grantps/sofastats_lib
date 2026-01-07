@@ -1,4 +1,6 @@
-from pathlib import Path
+## To run the demo examples, install the sofastats_examples package
+## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
+
 import sqlite3 as sqlite
 
 from sofastats.output.stats.anova import AnovaDesign
@@ -12,7 +14,9 @@ from sofastats.output.stats.ttest_indep import TTestIndepDesign
 from sofastats.output.stats.ttest_paired import TTestPairedDesign
 from sofastats.output.stats.wilcoxon_signed_ranks import WilcoxonSignedRanksDesign
 
-from conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path
+from sofastats_examples.scripts.conf import (
+    output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path)
+
 
 def run_anova(csv_file_path):
     stats_design = AnovaDesign(
@@ -164,20 +168,3 @@ def run_wilcoxon_signed_ranks(csv_file_path):
     stats_design.make_output()
     print(stats_design.to_result())
 
-if __name__ == '__main__':
-    con = sqlite.connect(sqlite_demo_db_file_path)
-    cur = con.cursor()
-
-    run_anova(people_csv_file_path)
-    run_chi_square(people_csv_file_path)
-    run_kruskal_wallis_h(people_csv_file_path)
-    run_mann_whitney_u(people_csv_file_path)
-    run_normality(people_csv_file_path)
-    run_pearsons_r(people_csv_file_path)
-    run_spearmans_r(people_csv_file_path)
-    run_ttest_indep(people_csv_file_path)
-    run_t_test_paired(people_csv_file_path)
-    run_wilcoxon_signed_ranks(people_csv_file_path)
-
-    cur.close()
-    con.close()
