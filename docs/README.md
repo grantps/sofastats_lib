@@ -1,1 +1,1 @@
-../README.md
+/home/g/projects/sofastats_lib/README.md

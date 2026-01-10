@@ -1,6 +1,23 @@
 # API Documentation
 
 ## Common Data Types
+
+### Sorting
+
+All Designs allow you to control the sort order of values.
+
+One of the options is CUSTOM sorting.
+This is entirely optional but can be very useful.
+For example, if you have the following values in the `Age Group` variable:
+
+'<20', '20-39', ... '80+'
+
+you don't want the default alphabetical sorting by value. Otherwise '<20' appears at the end.
+
+If you want to supply a CUSTOM sort order,
+all Design objects have `sort_orders` and `sort_orders_yaml_file_path` settings.
+See [`CommonDesign`][sofastats.output.interfaces.CommonDesign] 
+
 ::: sofastats.conf.main.SortOrder
 
 ## Common Parameters
