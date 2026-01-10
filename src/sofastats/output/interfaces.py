@@ -2,7 +2,7 @@
 Note - output.utils.get_report() replies on the template param names here so keep aligned.
 Not worth formally aligning them given how easy to do manually and how static.
 """
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, fields
 import datetime
 from enum import StrEnum
@@ -10,13 +10,12 @@ from pathlib import Path
 import sqlite3 as sqlite
 from typing import Any, Protocol  #, SupportsKeysAndGetItem (from https://github.com/python/typeshed but not worth another dependency)
 from webbrowser import open_new_tab
-
 import jinja2
 import pandas as pd
 
 from sofastats import SQLITE_DB, logger
 from sofastats.conf.main import (
-    INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, ChartMetric, DbeName, SortOrderSpecs)
+    INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName, SortOrderSpecs)
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
@@ -27,24 +26,119 @@ from ruamel.yaml import YAML
 
 DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY = '__default_supplied_but_mandatory_anyway__'  ## enforced through add_post_init_with_mandatory_cols decorator (curried with mandatory col names)
 
+class OutputItemType(StrEnum):
+    CHART = 'chart'
+    MAIN_TABLE = 'main_table'
+    STATS = 'stats'
+
+@dataclass(frozen=True)
+class HTMLItemSpec:
+    html_item_str: str
+    style_name: str
+    output_item_type: OutputItemType
+
+    def to_standalone_html(self, title: str) -> str:
+        style_spec = get_style_spec(self.style_name)
+        tpl_bits = [HTML_AND_SOME_HEAD_TPL, ]
+        if self.output_item_type == OutputItemType.CHART:
+            tpl_bits.append(CHARTING_LINKS_TPL)
+            tpl_bits.append(CHARTING_CSS_TPL)
+            tpl_bits.append(CHARTING_JS_TPL)
+        if self.output_item_type == OutputItemType.MAIN_TABLE:
+            tpl_bits.append(SPACEHOLDER_CSS_TPL)
+        if self.output_item_type == OutputItemType.STATS:
+            tpl_bits.append(STATS_TBL_TPL)
+        tpl_bits.append(HEAD_END_TPL)
+        tpl_bits.append(BODY_START_TPL)
+        tpl_bits.append(self.html_item_str)  ## <======= the actual item content e.g. chart
+        tpl_bits.append(BODY_AND_HTML_END_TPL)
+        tpl = '\n'.join(tpl_bits)
+
+        environment = jinja2.Environment()
+        template = environment.from_string(tpl)
+        context = {
+            'generic_unstyled_css': get_generic_unstyled_css(),
+            'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
+            'title': title,
+        }
+        if self.output_item_type == OutputItemType.CHART:
+            context['styled_dojo_chart_css'] = get_styled_dojo_chart_css(style_spec.dojo)
+            context['dojo_chart_js'] = DOJO_CHART_JS
+        if self.output_item_type == OutputItemType.MAIN_TABLE:
+            context['styled_placeholder_css_for_main_tbls'] = get_styled_placeholder_css_for_main_tbls(self.style_name)
+        if self.output_item_type == OutputItemType.STATS:
+            context['styled_stats_tbl_css'] = get_styled_stats_tbl_css(style_spec)
+        html = template.render(context)
+        return html
+
+    def to_file(self, *, fpath: Path | str, html_title: str):
+        with open(fpath, 'w') as f:
+            f.write(self.to_standalone_html(html_title))
+
+    def __repr_html__(self):
+        return ''
+
+class HasToHTMLItemSpec(Protocol):
+    def to_html_design(self) -> HTMLItemSpec: ...
+
 
 @dataclass(frozen=False)
 class CommonDesign(ABC):
     """
-    Output dataclasses (e.g. MultiSeriesBoxplotChartSpec) inherit from Source.
-    Can't have defaults in Source attributes (which go first) and then missing defaults for the output dataclasses.
+    Output dataclasses (e.g. ClusteredBoxplotChartDesign) inherit from CommonDesign.
+    Can't have defaults in CommonDesign attributes (which go first) and then missing defaults for the output dataclasses.
     Therefore, we are required to supply defaults for everything in the output dataclasses.
     That includes mandatory fields.
     So how do we ensure those mandatory field arguments are supplied.
     We use a decorator (add_post_init_enforcing_mandatory_cols) to add a __post_init__ handler
-    which runs Source.__post_init__ and then enforces the supply of values for every attribute
+    which runs CommonDesign.__post_init__ and then enforces the supply of values for every attribute
     which has DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY.
+
+    Args:
+        csv_file_path: full file path to CSV file (if using CSV as source)
+        csv_separator: CSV separator (if using CSV as source)
+        cur: dpapi2 cursor i.e. an object able to run cur.execute, `cur.fetchall()` etc. (if using a cursor as source)
+        database_engine_name: e.g. `DbeName.SQLITE` or 'sqlite' (if using a cursor as the source)
+        source_table_name: source table name (if using the cursor as a source OR using the internal SOFA SQLite database)
+        table_filter_sql: valid SQL to filter the source table - must be in the appropriate SQL dialect
+            and entities should be quoted appropriately as needed
+            e.g. SQLite requires backticks for field names with spaces such as \`Age Group\`
+        style_name: e.g. 'default'. Either one of the built-in styles under `sofastats.output.styles`
+            or a custom style defined by YAML in the custom_styles subfolder of the sofastats local folder
+            e.g. `~/Documents/sofastats/custom_styles`
+        output_file_path: full path to folder where output HTML will be generated.
+        output_title: the title the HTML output will display in a web browser
+        show_in_web_browser: if `True` will open a tab in your default browser to display the output file generated
+        sort_orders: if supplied, a dictionary that provides the sort orders for any variables given a custom sort order
+            (`SortOrder.CUSTOM`). Multiple sort orders can be defined - with each variable given a custom sort order
+            being a key in the dictionary. Example:
+
+            ```python
+            {
+                Age Group: [
+                    '<20',
+                    '20 to <30', '30 to <40', '40 to <50',
+                    '50 to <60', '60 to <70', '70 to <80',
+                    '80+',
+                ]
+            }
+            ```
+
+            If the sort order applied was `SortOrder.VALUES`, we would see '<20' appearing as the last value
+            by alphabetical order. If a custom order is defined, every value must appear in the list defining the
+            desired sequence.
+            Don't supply both `sort_orders` and `sort_orders_yaml_file_path`.
+        sort_orders_yaml_file_path: file path containing YAML defining custom sort orders. See structure and effect as
+            discussed under `sort_orders`. Don't supply both `sort_orders` and `sort_orders_yaml_file_path`.
+        decimal_points: defines the maximum number of decimal points displayed.
+            If set to 3, for example, 1.23456789 will be displayed as 1.235. 1.320000000 will be displayed as 1.32, and
+            1.60000000 as 1.6.
     """
     ## inputs ***********************************
     csv_file_path: Path | str | None = None
     csv_separator: str = ','
     cur: Any | None = None
-    database_engine_name: str | None = None
+    database_engine_name: DbeName | str | None = None
     source_table_name: str | None = None
     table_filter_sql: str | None = None
     ## outputs **********************************
@@ -56,18 +150,31 @@ class CommonDesign(ABC):
     sort_orders_yaml_file_path: Path | str | None = None
     decimal_points: int = 3
 
-    def handle_inputs(self):
+    @abstractmethod
+    def to_html_design(self) -> HTMLItemSpec:
         """
-        Three main paths:
-          1) CSV - will be ingested into internal pysofa SQLite database (tbl_name optional - later analyses
-             might be referring to that ingested table so nice to let user choose the name)
-          2) cursor, dbe_name, and tbl_name
-          3) or just a tbl_name (assumed to be using internal pysofa SQLite database)
-        Any supplied cursors are "wrapped" inside an ExtendedCursor so we can use .exe() instead of execute
-        so better error messages on query failure.
+        From the design produce the HTML to display as one of the attributes of the HTMLItemSpec.
+        Also return the style name and output item type e.g. whether a chart, table, or statistical output
+        """
+        pass
 
-        Client code supplies dbe_name rather than dbe_spec for simplicity but internally
-        Source supplies all code that inherits from it dbe_spec ready to use.
+    def _handle_inputs(self):
+        """
+        There are three main paths for specific data values to be supplied to the design:
+
+        1. CSV - data will be ingested into internal sofastats SQLite database
+        (`source_table_name` optional - later analyses might be referring to that ingested table
+        so nice to let user choose the name)
+        2. `cur`, `database_engine_name`, and `source_table_name`
+        3. or just a `source_table_name` (assumed to be using internal sofastats SQLite database)
+
+        Any supplied cursors are "wrapped" inside an `ExtendedCursor` so we can use `.exe()` instead of `.execute()`
+        and to provide better error messages on query failure.
+
+        Client code supplies `database_engine_name` rather than dbe_spec for simplicity but internally
+        `CommonDesign` supplies all code that inherits from it a `dbe_spec` attribute ready to use.
+
+        Settings are validated e.g. to prevent client code supplying both CSV settings and database settings.
         """
         if self.csv_file_path:
             if self.cur or self.database_engine_name or self.source_table_name or self.table_filter_sql:
@@ -116,7 +223,10 @@ class CommonDesign(ABC):
                 "a cursor (with dbe_name and tbl_name), "
                 "or a tbl_name (data assumed to be in internal sofastats SQLite database)")
 
-    def handle_outputs(self):
+    def _handle_outputs(self):
+        """
+        Validate configuration and provide sane defaults for `output_title` and `output_file_path` if nothing set.
+        """
         ## output file path and title
         nice_name = '_'.join(self.__module__.split('.')[-2:]) + f"_{self.__class__.__name__}"
         if not self.output_file_path:
@@ -138,8 +248,8 @@ class CommonDesign(ABC):
             self.sort_orders = {}
 
     def __post_init__(self):
-        self.handle_inputs()
-        self.handle_outputs()
+        self._handle_inputs()
+        self._handle_outputs()
         for field in fields(self):
             if self.__getattribute__(field.name) == DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY:
                 ## raise a friendly error for when they didn't supply a mandatory field that technically had a default (DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY), but we want to insist they supply a real value
@@ -151,31 +261,13 @@ class CommonDesign(ABC):
         return self.__str__
 
     def make_output(self):
+        """
+        Produce HTML output, e.g. charts and numerical results, save to `output_file_path`,
+        and open in web browser if `show_in_web_browser=True`.
+        """
         self.to_html_design().to_file(fpath=self.output_file_path, html_title=self.output_title)
         if self.show_in_web_browser:
             open_new_tab(url=f"file://{self.output_file_path}")
-
-
-@dataclass(frozen=False)
-class CommonBarDesign(CommonDesign):
-
-    metric: ChartMetric = ChartMetric.FREQ
-    field_name: str | None = None
-    y_axis_title: str | None = None
-
-    def __post_init__(self):
-        super().__post_init__()
-        if self.y_axis_title is None:
-            if self.metric == ChartMetric.AVG:
-                self.y_axis_title = f"Average {self.field_name}"
-            elif self.metric == ChartMetric.FREQ:
-                self.y_axis_title = 'Frequency'
-            elif self.metric == ChartMetric.PCT:
-                self.y_axis_title = 'Percent'
-            elif self.metric == ChartMetric.SUM:
-                self.y_axis_title = f"Summed {self.field_name}"
-            else:
-                raise ValueError(f'Metric {self.metric} is not supported.')
 
 
 HTML_AND_SOME_HEAD_TPL = """\
@@ -251,61 +343,6 @@ BODY_AND_HTML_END_TPL = """\
 </body>
 </html>
 """
-
-class OutputItemType(StrEnum):
-    CHART = 'chart'
-    MAIN_TABLE = 'main_table'
-    STATS = 'stats'
-
-@dataclass(frozen=True)
-class HTMLItemSpec:
-    html_item_str: str
-    style_name: str
-    output_item_type: OutputItemType
-
-    def to_standalone_html(self, title: str) -> str:
-        style_spec = get_style_spec(self.style_name)
-        tpl_bits = [HTML_AND_SOME_HEAD_TPL, ]
-        if self.output_item_type == OutputItemType.CHART:
-            tpl_bits.append(CHARTING_LINKS_TPL)
-            tpl_bits.append(CHARTING_CSS_TPL)
-            tpl_bits.append(CHARTING_JS_TPL)
-        if self.output_item_type == OutputItemType.MAIN_TABLE:
-            tpl_bits.append(SPACEHOLDER_CSS_TPL)
-        if self.output_item_type == OutputItemType.STATS:
-            tpl_bits.append(STATS_TBL_TPL)
-        tpl_bits.append(HEAD_END_TPL)
-        tpl_bits.append(BODY_START_TPL)
-        tpl_bits.append(self.html_item_str)  ## <======= the actual item content e.g. chart
-        tpl_bits.append(BODY_AND_HTML_END_TPL)
-        tpl = '\n'.join(tpl_bits)
-
-        environment = jinja2.Environment()
-        template = environment.from_string(tpl)
-        context = {
-            'generic_unstyled_css': get_generic_unstyled_css(),
-            'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
-            'title': title,
-        }
-        if self.output_item_type == OutputItemType.CHART:
-            context['styled_dojo_chart_css'] = get_styled_dojo_chart_css(style_spec.dojo)
-            context['dojo_chart_js'] = DOJO_CHART_JS
-        if self.output_item_type == OutputItemType.MAIN_TABLE:
-            context['styled_placeholder_css_for_main_tbls'] = get_styled_placeholder_css_for_main_tbls(self.style_name)
-        if self.output_item_type == OutputItemType.STATS:
-            context['styled_stats_tbl_css'] = get_styled_stats_tbl_css(style_spec)
-        html = template.render(context)
-        return html
-
-    def to_file(self, *, fpath: Path | str, html_title: str):
-        with open(fpath, 'w') as f:
-            f.write(self.to_standalone_html(html_title))
-
-    def __repr_html__(self):
-        return ''
-
-class HasToHTMLItemSpec(Protocol):
-    def to_html_design(self) -> HTMLItemSpec: ...
 
 @dataclass(frozen=True)
 class Report:

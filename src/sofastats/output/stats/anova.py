@@ -8,9 +8,9 @@ import pandas as pd
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
-from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
+from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
 from sofastats.output.stats.common import get_embedded_histogram_html
+from sofastats.output.stats.interfaces import CommonStatsDesign
 from sofastats.output.stats.msgs import (
     CI_EXPLAIN, KURTOSIS_EXPLAIN,
     NORMALITY_MEASURE_EXPLAIN, OBRIEN_EXPLAIN, ONE_TAIL_EXPLAIN,
@@ -198,7 +198,27 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class AnovaDesign(CommonDesign):
+class AnovaDesign(CommonStatsDesign):
+    """
+    Args:
+        measure_field_name: the name of the field aggregated by group - the ANOVA compares the mean value of each group.
+            For example, 'Age'
+        grouping_field_name: the name of the field used to define the groups compared in the ANOVA e.g. 'Country'
+        group_values: the ANOVA will compare the means of the groups defined
+            by the values of the grouping field listed here e.g. ['South Korea', 'NZ', 'USA']
+        high_precision_required: if `True`, the calculation will be high precision
+            and the algorithm used will not be vulnerable to certain edge cases.
+            Why not use it by default? Because it runs much, much, much slower and the edge cases are quite rare.
+            The high precision algorithm uses Python's
+            [decimal](https://docs.python.org/3/library/decimal.html) data type rather than floats.
+            Using floating point math is a pragmatic strategy, but it reduces accuracy.
+            In particular edge cases, it can produce wildly different results from the correct results.
+            High precision is needed to handle difficult datasets e.g. ANOVA test 9 from the NIST website.
+            Search for articles / videos on the topic of floating point math if interested. It is a fascinating topic.
+            If to one decimal point the high precision algorithm also multiplies some values by 10
+            to push from float to integer (to reduce error) and then divides squared values by 100 (10 squared)
+            at the end in key calculations to restore to correct magnitude.
+    """
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     grouping_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     group_values: Collection[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

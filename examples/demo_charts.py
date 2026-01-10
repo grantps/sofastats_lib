@@ -8,7 +8,7 @@ from sofastats.conf.main import ChartMetric, SortOrder
 from sofastats.output.charts import area, bar, box_plot, histogram, line, pie, scatter_plot  ## needed so singledispatch registration can occur
 from sofastats.output.charts.area import AreaChartDesign, MultiChartAreaChartDesign
 from sofastats.output.charts.bar import (
-    ClusteredBarChartDesign, MultiBarChartDesign, MultiChartClusteredBarChartDesign, SimpleBarChartDesign)
+    ClusteredBarChartDesign, MultiChartBarChartDesign, MultiChartClusteredBarChartDesign, SimpleBarChartDesign)
 from sofastats.output.charts.box_plot import BoxplotChartDesign, ClusteredBoxplotChartDesign
 from sofastats.output.charts.histogram import HistogramChartDesign, MultiChartHistogramChartDesign
 from sofastats.output.charts.line import (LineChartDesign,
@@ -132,7 +132,7 @@ def simple_bar_chart_lots_of_x_vals(csv_file_path):
     chart_design.make_output()
 
 def multi_bar_chart(csv_file_path):
-    chart_design = MultiBarChartDesign(
+    chart_design = MultiChartBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_bar_chart.html',
         output_title="Multi Bar Chart",
@@ -559,10 +559,10 @@ def multi_chart_histogram(csv_file_path):
     )
     chart_design.make_output()
 
-def boxplot_chart(csv_file_path):
+def box_plot_chart(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_boxplot.html',
+        output_file_path=output_folder / 'demo_box_plot.html',
         output_title="Boxplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -570,17 +570,17 @@ def boxplot_chart(csv_file_path):
         field_name='Age',
         category_field_name='Handedness',
         category_sort_order=SortOrder.CUSTOM,
-        boxplot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         show_n_records=True,
         x_axis_font_size=12,
         decimal_points=3,
     )
     chart_design.make_output()
 
-def boxplot_chart_narrow_labels(csv_file_path):
+def box_plot_chart_narrow_labels(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_boxplot_narrow_labels.html',
+        output_file_path=output_folder / 'demo_box_plot_narrow_labels.html',
         output_title="Boxplot (narrow)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -588,17 +588,17 @@ def boxplot_chart_narrow_labels(csv_file_path):
         field_name='Age',
         category_field_name='Country',
         category_sort_order=SortOrder.CUSTOM,
-        boxplot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         show_n_records=True,
         x_axis_font_size=12,
         decimal_points=3,
     )
     chart_design.make_output()
 
-def boxplot_chart_very_wide(csv_file_path):
+def box_plot_chart_very_wide(csv_file_path):
     chart_design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_boxplot_very_wide.html',
+        output_file_path=output_folder / 'demo_box_plot_very_wide.html',
         output_title="Boxplot (very wide)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -606,17 +606,17 @@ def boxplot_chart_very_wide(csv_file_path):
         field_name='Age',
         category_field_name='Car',
         category_sort_order=SortOrder.CUSTOM,
-        boxplot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         show_n_records=True,
         x_axis_font_size=12,
         decimal_points=3,
     )
     chart_design.make_output()
 
-def clustered_boxplot(csv_file_path):
+def clustered_box_plot(csv_file_path):
     chart_design = ClusteredBoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_multiseries_boxplot.html',
+        output_file_path=output_folder / 'demo_multiseries_box_plot.html',
         output_title="Multi-Series Boxplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -626,7 +626,7 @@ def clustered_boxplot(csv_file_path):
         series_field_name='Home Location Type',
         series_sort_order=SortOrder.CUSTOM,
         category_sort_order=SortOrder.CUSTOM,
-        boxplot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         show_n_records=True,
         x_axis_font_size=12,
         decimal_points=3,

@@ -139,10 +139,20 @@ class DbeSpec:
 type SortOrderSpecs = dict[str, list[Any]]
 
 class SortOrder(StrEnum):
+    """
+    Sort orders to apply.
+    Note - INCREASING & DECREASING only apply to sorting at the final values level.
+    E.g. If 'Age Group' > 'Handedness' > 'Home Location Type' then only 'Home Location Type'
+    can potentially have sort order by frequency
+    """
     CUSTOM = 'by custom order'
+    "By custom order configured in YAML or dictionary for relevant variable"
     DECREASING = 'by decreasing frequency'
+    "By decreasing frequency"
     INCREASING = 'by increasing frequency'
+    "By increasing frequency"
     VALUE = 'by value'
+    "By value alphabetically sorted"
 
 class ChartMetric(StrEnum):
     AVG = 'avg'

@@ -7,8 +7,8 @@ import pandas as pd
 
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
-from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
+from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
+from sofastats.output.stats.interfaces import CommonStatsDesign
 from sofastats.output.stats.msgs import (
     ONE_TAIL_EXPLAIN, ONE_TAILED_EXPLANATION, P_EXPLAIN_MULTIPLE_GROUPS, P_EXPLANATION_WHEN_MULTIPLE_GROUPS)
 from sofastats.output.styles.interfaces import StyleSpec
@@ -125,7 +125,16 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class KruskalWallisHDesign(CommonDesign):
+class KruskalWallisHDesign(CommonStatsDesign):
+    """
+    Args:
+        measure_field_name: the name of the field aggregated by group - the analysis compares the mean value of each group.
+            For example, 'Age'
+        grouping_field_name: the name of the field used to define the groups compared in the analysis e.g. 'Country'
+        group_values: the analysis will compare the means of the groups defined
+            by the values of the grouping field listed here e.g. ['South Korea', 'NZ', 'USA']
+        show_workings: show the workings so you can see how the final results were derived
+    """
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     grouping_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     group_values: Sequence[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

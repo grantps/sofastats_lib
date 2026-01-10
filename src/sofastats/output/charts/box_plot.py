@@ -356,11 +356,21 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class BoxplotChartDesign(CommonDesign):
+    """
+    Args:
+        field_name: field summarised in each box
+        category_field_name: name of field in the x-axis
+        category_sort_order: define order of categories in each chart e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        box_plot_type: options for what the boxes represent and whether outliers are displayed or not.
+        rotate_x_labels: make x-axis labels vertical
+        show_n_records: show the number of records the chart is based on
+        x_axis_font_size: font size for x-axis labels
+    """
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
-    boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
+    box_plot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
     rotate_x_labels: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
@@ -376,7 +386,7 @@ class BoxplotChartDesign(CommonDesign):
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
             table_filter_sql=self.table_filter_sql,
-            boxplot_type=self.boxplot_type)
+            box_plot_type=self.box_plot_type)
         ## charts details
         categories = [
             category_vals_spec.category_val for category_vals_spec in intermediate_charting_spec.category_vals_specs]
@@ -401,13 +411,19 @@ class BoxplotChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class ClusteredBoxplotChartDesign(CommonDesign):
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might separate generate boxes within each category cluster for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series within each category cluster e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_sort_order: SortOrder = SortOrder.VALUE
 
-    boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
+    box_plot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
     rotate_x_labels: bool = False
     show_n_records: bool = True
     x_axis_font_size: int = 12
@@ -425,7 +441,7 @@ class ClusteredBoxplotChartDesign(CommonDesign):
             category_sort_order=self.category_sort_order,
             series_sort_order=self.series_sort_order,
             table_filter_sql=self.table_filter_sql,
-            boxplot_type=self.boxplot_type)
+            box_plot_type=self.box_plot_type)
         ## charts details
         categories = [category_vals_spec.category_val
             for category_vals_spec in intermediate_charting_spec.series_category_vals_specs[0].category_vals_specs]

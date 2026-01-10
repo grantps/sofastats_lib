@@ -21,8 +21,17 @@ class PctType(StrEnum):
     COL_PCT = 'Col %'
 
 @dataclass(frozen=False)
-class DimSpec:
-    variable: str
+class DimensionSpec:
+    """
+    Args:
+        variable_name: name of variable
+        has_total: if `True` add a total
+        is_col: if `True` is a column
+        pct_metrics: define which metrics to display - options: `Metric.ROW_PCT` and `Metric.COL_PCT`
+        sort_order: sort order of variable
+        child: a child DimensionSpec if nesting underneath
+    """
+    variable_name: str
     has_total: bool = False
     is_col: bool = False
     pct_metrics: Collection[Metric] | None = None
@@ -32,20 +41,20 @@ class DimSpec:
     @property
     def descendant_vars(self) -> list[str]:
         """
-        All variables under, but not including, this Dim.
+        All variables under, but not including, this DimensionSpec.
         Note - only includes chains, not trees, as a deliberate design choice to avoid excessively complicated tables.
         Tables are for computers to make, but for humans to read and understand :-).
         """
         dim_vars = []
         if self.child:
-            dim_vars.append(self.child.variable)
+            dim_vars.append(self.child.variable_name)
             dim_vars.extend(self.child.descendant_vars)
         return dim_vars
 
     @property
     def self_and_descendants(self) -> list[Self]:
         """
-        All Dims under, and including, this Dim.
+        All DimensionSpecs under, and including, this DimensionSpec.
         """
         dims = [self, ]
         if self.child:
@@ -54,17 +63,23 @@ class DimSpec:
 
     @property
     def self_and_descendant_vars(self) -> list[str]:
-        return [dim.variable for dim in self.self_and_descendants]
+        """
+        All variable names under, and including, this DimensionSpec.
+        """
+        return [dim.variable_name for dim in self.self_and_descendants]
 
     @property
     def self_and_descendant_totalled_vars(self) -> list[str]:
         """
-        All variables under, and including, this Dim that are totalled (if any).
+        All variables under, and including, this DimensionSpec that are totalled (if any).
         """
-        return [dim.variable for dim in self.self_and_descendants if dim.has_total]
+        return [dim.variable_name for dim in self.self_and_descendants if dim.has_total]
 
     @property
     def self_or_descendant_pct_metrics(self) -> Collection[Metric] | None:
+        """
+        All percentage metrics (row and/or column percentages) under, or for, this DimensionSpec.
+        """
         if self.pct_metrics:
             return self.pct_metrics
         elif self.child:
@@ -81,13 +96,13 @@ class DimSpec:
         if self.child:
             if not self.is_col == self.child.is_col:
                 raise ValueError(f"This dim has a child that is inconsistent e.g. a col parent having a row child")
-        if self.variable in self.descendant_vars:
+        if self.variable_name in self.descendant_vars:
             raise ValueError("Variables can't be repeated in the same dimension spec "
-                f"e.g. Car > Country > Car. Variable {self.variable}")
+                f"e.g. Car > Country > Car. Variable {self.variable_name}")
 
 
 @dataclass(frozen=False)
-class Row(DimSpec):
+class Row(DimensionSpec):
 
     def __post_init__(self):
         self.is_col = False
@@ -95,7 +110,7 @@ class Row(DimSpec):
 
 
 @dataclass(frozen=False)
-class Column(DimSpec):
+class Column(DimensionSpec):
 
     def __post_init__(self):
         self.is_col = True

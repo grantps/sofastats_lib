@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
@@ -14,7 +15,7 @@ from sofastats.output.charts.utils import (get_axis_label_drop, get_height,
     get_dojo_format_x_axis_numbers_and_labels, get_intrusion_of_first_x_axis_label_leftwards,
     get_width_after_left_margin, get_x_axis_font_size, get_y_axis_title_offset)
 from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonBarDesign)
+    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, CommonDesign, HTMLItemSpec, OutputItemType)
 from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
 from sofastats.utils.maths import format_num
@@ -27,9 +28,56 @@ DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM = 10  ## whatever works. Tested on cluster of
 
 
 @dataclass(frozen=False)
-class SimpleBarChartDesign(CommonBarDesign):
-    style_name: str = 'default'
+class CommonBarDesign(CommonDesign):
+    """
+    Args:
+        metric: defines what bar heights represent - whether ChartMetric.FREQ, ChartMetric.PCT, etc.
+        field_name: the name of the field being aggregated when the metric is an aggregate
+            e.g. ChartMetric.AVG or ChartMetric.SUM
+        y_axis_title: title displayed vertically alongside y-axis
+    """
 
+    metric: ChartMetric = ChartMetric.FREQ
+    field_name: str | None = None
+    y_axis_title: str | None = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.y_axis_title is None:  ##TODO - no field name unless aggregating
+            if self.metric == ChartMetric.AVG:
+                self.y_axis_title = f"Average {self.field_name}"
+            elif self.metric == ChartMetric.FREQ:
+                self.y_axis_title = 'Frequency'
+            elif self.metric == ChartMetric.PCT:
+                self.y_axis_title = 'Percent'
+            elif self.metric == ChartMetric.SUM:
+                self.y_axis_title = f"Summed {self.field_name}"
+            else:
+                raise ValueError(f'Metric {self.metric} is not supported.')
+        if self.field_name is None:
+            if self.metric in (ChartMetric.AVG, ChartMetric.SUM):
+                raise ValueError("A field_name must be set if the metric aggregates "
+                    "e.g. ChartMetric.AVG or ChartMetric.SUM")
+        else:
+            if self.metric not in (ChartMetric.AVG, ChartMetric.SUM):
+                raise ValueError("A field_name should only be supplied if the metric aggregates "
+                    "e.g. ChartMetric.AVG or ChartMetric.SUM")
+
+    @abstractmethod
+    def to_html_design(self) -> HTMLItemSpec:
+        pass
+
+@dataclass(frozen=False)
+class SimpleBarChartDesign(CommonBarDesign):
+    """
+    Args:
+        category_field_name: name of field in the x-axis
+        category_sort_order: define order of categories in each chart e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        rotate_x_labels: make x-axis labels vertical
+        show_borders: show a coloured border around the bars
+        show_n_records: show the number of records the chart is based on
+        x_axis_font_size: font size for x-axis labels
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
@@ -70,9 +118,13 @@ class SimpleBarChartDesign(CommonBarDesign):
 
 
 @dataclass(frozen=False)
-class MultiBarChartDesign(CommonBarDesign):
-    style_name: str = 'default'
-
+class MultiChartBarChartDesign(CommonBarDesign):
+    """
+    Args:
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -118,8 +170,12 @@ class MultiBarChartDesign(CommonBarDesign):
 
 @dataclass(frozen=False)
 class ClusteredBarChartDesign(CommonBarDesign):
-    style_name: str = 'default'
-
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might separate generate bars within each category cluster for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series within each category cluster e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -165,8 +221,15 @@ class ClusteredBarChartDesign(CommonBarDesign):
 
 @dataclass(frozen=False)
 class MultiChartClusteredBarChartDesign(CommonBarDesign):
-    style_name: str = 'default'
-
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might separate generate bars within each category cluster for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series within each category cluster e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

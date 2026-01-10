@@ -73,7 +73,7 @@ class BoxplotCategoryValsSpecs:
     chart_name: str | None
     category_vals_specs: Sequence[BoxplotCategoryItemValsSpec]
     category_sort_order: SortOrder
-    boxplot_type: BoxplotType
+    box_plot_type: BoxplotType
     decimal_points: int = 3
 
     def to_indiv_chart_spec(self) -> BoxplotIndivChartSpec:
@@ -81,7 +81,7 @@ class BoxplotCategoryValsSpecs:
         box_items = []
         for category_vals_spec in self.category_vals_specs:
             n_records += len(category_vals_spec.vals)
-            box_result = BoxResult(category_vals_spec.vals, self.boxplot_type)
+            box_result = BoxResult(category_vals_spec.vals, self.box_plot_type)
             box_item = BoxplotDataItem(
                 box_bottom=box_result.box_bottom,
                 box_bottom_rounded=round(box_result.box_bottom, self.decimal_points),
@@ -111,7 +111,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
         field_name: str, category_field_name: str,
         sort_orders: SortOrderSpecs,
         category_sort_order: SortOrder = SortOrder.VALUE,
-        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         table_filter_sql: str | None = None, decimal_points: int = 3) -> BoxplotCategoryValsSpecs:
     ## prepare items
     field_name_quoted = dbe_spec.entity_quoter(field_name)
@@ -151,7 +151,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
         chart_name=None,
         category_vals_specs=category_vals_specs,
         category_sort_order=category_sort_order,
-        boxplot_type=boxplot_type,
+        box_plot_type=box_plot_type,
         decimal_points=decimal_points,
     )
     return result
@@ -163,7 +163,7 @@ class BoxplotSeriesCategoryValsSpecs:
     series_field: str | None  ## e.g. Gender
     series_category_vals_specs: Sequence[BoxplotSeriesItemCategoryValsSpecs]
     category_sort_order: SortOrder
-    boxplot_type: BoxplotType
+    box_plot_type: BoxplotType
 
     def to_indiv_chart_spec(self, *, dp: int = 3):
         n_records = 0
@@ -172,7 +172,7 @@ class BoxplotSeriesCategoryValsSpecs:
             box_items = []
             for category_vals_spec in series_item_category_vals_specs.category_vals_specs:
                 n_records += len(category_vals_spec.vals)
-                box_result = BoxResult(category_vals_spec.vals, self.boxplot_type)
+                box_result = BoxResult(category_vals_spec.vals, self.box_plot_type)
                 box_item = BoxplotDataItem(
                     box_bottom=box_result.box_bottom,
                     box_bottom_rounded=round(box_result.box_bottom, dp),
@@ -206,7 +206,7 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         sort_orders: SortOrderSpecs,
         category_sort_order: SortOrder = SortOrder.VALUE,
         series_sort_order: SortOrder = SortOrder.VALUE,
-        boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         table_filter_sql: str | None = None) -> BoxplotSeriesCategoryValsSpecs:
     ## prepare items
     field_name_quoted = dbe_spec.entity_quoter(field_name)
@@ -263,7 +263,7 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
         series_field=series_field_name,
         series_category_vals_specs=series_category_vals_specs,
         category_sort_order=category_sort_order,
-        boxplot_type=boxplot_type,
+        box_plot_type=box_plot_type,
     )
     return result
 

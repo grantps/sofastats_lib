@@ -11,7 +11,7 @@ from statistics import median
 from textwrap import dedent
 from typing import Literal
 
-from sofastats.stats_calc.boxplot import get_bottom_whisker, get_top_whisker
+from sofastats.stats_calc.box_plot import get_bottom_whisker, get_top_whisker
 from sofastats.stats_calc.histogram import BinSpec  ## noqa - so available for import from here as the one-stop shop for stats interfaces
 from sofastats.utils.maths import nice_number_if_possible
 from sofastats.utils.stats import get_quartiles
@@ -110,11 +110,14 @@ class PairedSamples:
         if len_a != len_b:
             raise Exception(f"The length of sample A ({len_a:,}) didn't equal the length of sample B ({len_b:,})")
 
+class StatsResult:  ## not a dataclass because must be either frozen or unfrozen and descendants can be either
+    pass
 
 ## other
 ## https://medium.com/@aniscampos/python-dataclass-inheritance-finally-686eaf60fbb5
+
 @dataclass(frozen=True)
-class AnovaResult:
+class AnovaResult(StatsResult):
     p: float | Decimal
     F: float | Decimal
     group_specs: Sequence[NumericSampleSpecExt]
@@ -141,7 +144,7 @@ class AnovaResult:
         """)
 
 @dataclass(frozen=True)
-class ChiSquareResult:
+class ChiSquareResult(StatsResult):
     chi_square: float
     p: float
 
@@ -154,7 +157,7 @@ class ChiSquareResult:
         """)
 
 @dataclass(frozen=True)
-class KruskalWallisHResult:
+class KruskalWallisHResult(StatsResult):
     h: float
     p: float
     group_specs: Sequence[NumericSampleSpecExt]
@@ -193,7 +196,7 @@ class MannWhitneyUGroupSpec:
         """)
 
 @dataclass(frozen=True)
-class MannWhitneyUResult:
+class MannWhitneyUResult(StatsResult):
     """
     From the fast all at once ranks approach
     """
@@ -216,7 +219,7 @@ class MannWhitneyUResult:
         return '\n'.join(bits)
 
 @dataclass(frozen=False)
-class MannWhitneyUVal:
+class MannWhitneyUVal(StatsResult):
     """
     rank and counter get populated after creation as part of Mann Whitney processing
     """
@@ -226,7 +229,7 @@ class MannWhitneyUVal:
     counter: int | None = None
 
 @dataclass(frozen=True)
-class MannWhitneyUIndivComparisonsResult:
+class MannWhitneyUIndivComparisonsResult(StatsResult):
     """
     From the individual comparisons approach.
     Slower but has more obvious workings.
@@ -243,7 +246,7 @@ class MannWhitneyUIndivComparisonsResult:
     sum_rank_1: int
 
 @dataclass(frozen=True)
-class NormalTestResult:
+class NormalTestResult(StatsResult):
     k2: float | None
     p: float | None
     c_skew: float | None
@@ -271,7 +274,7 @@ class NormalTestResult:
         return str_representation
 
 @dataclass(frozen=True)
-class CorrelationCalcResult:
+class CorrelationCalcResult(StatsResult):
     r: float
     p: float
     degrees_of_freedom: int
@@ -286,7 +289,7 @@ class CorrelationCalcResult:
         """)
 
 @dataclass(frozen=True)
-class RegressionResult:
+class RegressionResult(StatsResult):
     slope: float
     intercept: float
     r: float
@@ -305,7 +308,7 @@ class SpearmansInitTbl:
     diff_squared: int
 
 @dataclass(frozen=True)
-class SpearmansResult:
+class SpearmansResult(StatsResult):
     initial_tbl: list
     x_and_rank: list[tuple]
     y_and_rank: list[tuple]
@@ -317,7 +320,7 @@ class SpearmansResult:
     rho: float
 
 @dataclass(frozen=True)
-class TTestIndepResult:
+class TTestIndepResult(StatsResult):
     """
     p is the two-tailed probability
     """
@@ -343,7 +346,7 @@ class TTestIndepResult:
         return '\n'.join(bits)
 
 @dataclass(frozen=True)
-class TTestPairedResult:
+class TTestPairedResult(StatsResult):
     """
     p is the two-tailed probability
     """
@@ -382,7 +385,7 @@ class WilcoxonSignedRanksRankSpec:
     counter: int | None = None
 
 @dataclass(frozen=True)
-class WilcoxonIndivComparisonResult:
+class WilcoxonIndivComparisonResult(StatsResult):
     label_a: str
     label_b: str
     diff_specs: list[WilcoxonSignedRanksDiffSpec]
@@ -412,7 +415,7 @@ class WilcoxonSignedRanksGroupSpec:
         """)
 
 @dataclass(frozen=True)
-class WilcoxonSignedRanksResult:
+class WilcoxonSignedRanksResult(StatsResult):
     t: int  ## based on ranks and addition and subtraction only
     p: float
     group_a_spec: WilcoxonSignedRanksGroupSpec
@@ -435,10 +438,11 @@ class BoxplotType(StrEnum):
     HIDE_OUTLIERS = 'hide outliers'
     INSIDE_1_POINT_5_TIMES_IQR = 'IQR-based'  ## Inside 1.5 x Inter-Quartile Range
 
+
 @dataclass(frozen=False)
-class BoxResult:
+class BoxResult(StatsResult):
     vals: Sequence[float]
-    boxplot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
+    box_plot_type: BoxplotType = BoxplotType.INSIDE_1_POINT_5_TIMES_IQR
 
     def __post_init__(self):
         """
@@ -454,7 +458,7 @@ class BoxResult:
         ## median
         self.median = median(self.vals)
         ## whiskers
-        if self.boxplot_type == BoxplotType.MIN_MAX_WHISKERS:
+        if self.box_plot_type == BoxplotType.MIN_MAX_WHISKERS:
             self.bottom_whisker = min_measure
             self.top_whisker = max_measure
         else:
@@ -464,7 +468,7 @@ class BoxResult:
             self.bottom_whisker = get_bottom_whisker(raw_bottom_whisker, self.box_bottom, self.vals)
             self.top_whisker = get_top_whisker(raw_top_whisker, self.box_top, self.vals)
         ## outliers
-        if self.boxplot_type == BoxplotType.INSIDE_1_POINT_5_TIMES_IQR:
+        if self.box_plot_type == BoxplotType.INSIDE_1_POINT_5_TIMES_IQR:
             self.outliers = [x for x in self.vals
                 if x < self.bottom_whisker or x > self.top_whisker]
         else:

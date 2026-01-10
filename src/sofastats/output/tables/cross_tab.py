@@ -204,6 +204,11 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[st
 
 @dataclass(frozen=False, kw_only=True)
 class CrossTabDesign(CommonDesign):
+    """
+    Args:
+        row_variable_designs: list of Rows
+        column_variable_designs: list of Columns
+    """
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     column_variable_designs: list[Column] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
@@ -249,16 +254,16 @@ class CrossTabDesign(CommonDesign):
 
     def __post_init__(self):
         CommonDesign.__post_init__(self)
-        row_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.row_variable_designs])
+        row_dupes = CrossTabDesign._get_dupes([spec.variable_name for spec in self.row_variable_designs])
         if row_dupes:
             raise ValueError(f"Duplicate top-level variable(s) detected in row dimension - {sorted(row_dupes)}")
-        col_dupes = CrossTabDesign._get_dupes([spec.variable for spec in self.column_variable_designs])
+        col_dupes = CrossTabDesign._get_dupes([spec.variable_name for spec in self.column_variable_designs])
         if col_dupes:
             raise ValueError(f"Duplicate top-level variable(s) detected in column dimension - {sorted(col_dupes)}")
         ## var can't be in both row and col e.g. car vs country > car
         for row_spec, col_spec in product(self.row_variable_designs, self.column_variable_designs):
-            row_spec_vars = set([row_spec.variable] + row_spec.descendant_vars)
-            col_spec_vars = set([col_spec.variable] + col_spec.descendant_vars)
+            row_spec_vars = set([row_spec.variable_name] + row_spec.descendant_vars)
+            col_spec_vars = set([col_spec.variable_name] + col_spec.descendant_vars)
             overlapping_vars = row_spec_vars.intersection(col_spec_vars)
             if overlapping_vars:
                 raise ValueError("Variables can't appear in both rows and columns. "

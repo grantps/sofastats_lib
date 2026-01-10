@@ -281,6 +281,14 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class HistogramChartDesign(CommonDesign):
+    """
+    Args:
+        field_name: field summarised in each box
+        show_borders: show a coloured border around the bars
+        show_n_records: show the number of records the chart is based on
+        show_normal_curve: if `True` display normal curve on the chart
+        x_axis_font_size: font size for x-axis labels
+    """
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     show_borders: bool = False
@@ -320,6 +328,12 @@ class HistogramChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartHistogramChartDesign(CommonDesign):
+    """
+    Args:
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE

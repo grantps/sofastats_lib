@@ -202,14 +202,16 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class PieChartDesign(CommonDesign):
+    """
+    Args:
+        category_field_name: name of field in the x-axis
+        category_sort_order: define order of categories in each chart e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        show_n_records: show the number of records the chart is based on
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
-    rotate_x_labels: bool = False,
-    show_borders: bool = False,
     show_n_records: bool = True,
-    x_axis_font_size: int = 12,
-    y_axis_title: str = 'Freq'
 
     def to_html_design(self) -> HTMLItemSpec:
         # style
@@ -237,16 +239,18 @@ class PieChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartPieChartDesign(CommonDesign):
+    """
+    Args:
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_sort_order: SortOrder = SortOrder.VALUE
 
-    rotate_x_labels: bool = False,
-    show_borders: bool = False,
     show_n_records: bool = True,
-    x_axis_font_size: int = 12,
-    y_axis_title: str = 'Freq'
 
     def to_html_design(self) -> HTMLItemSpec:
         # style

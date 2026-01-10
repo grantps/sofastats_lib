@@ -624,7 +624,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
          });
     var i
     for (i in series){  // each item in series is a box (one per x value per data series)
-        mychart.addSeries('dummy_label_' + i, [], series[i]);  // Dojo expects a label and data but we won't use them  in boxplot so dummy vals used
+        mychart.addSeries('dummy_label_' + i, [], series[i]);  // Dojo expects a label and data but we won't use them in boxplot so dummy vals used
     }
     var anim_a = new dc.action2d.Highlight(mychart, "default", {
         highlight: conf["highlight"],

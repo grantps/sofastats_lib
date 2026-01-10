@@ -1,7 +1,28 @@
+from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Type
 
-from sofastats.stats_calc.interfaces import CorrelationCalcResult, RegressionResult, SpearmansResult
+from sofastats.output.interfaces import CommonDesign
+from sofastats.stats_calc.interfaces import CorrelationCalcResult, RegressionResult, SpearmansResult, StatsResult
+
+class Sausage:
+    """
+    Sausage!!!
+    """
+    pass
+
+class CommonStatsDesign(CommonDesign):
+    """
+    Output dataclasses for statistical tests (e.g. MannWhitneyUDesign) inherit from CommonStatsDesign.
+    """
+
+    @abstractmethod
+    def to_result(self) -> Type[StatsResult]:
+        """
+        Return a dataclass with results as attributes
+        """
+        pass
 
 @dataclass(frozen=True)
 class Coord:

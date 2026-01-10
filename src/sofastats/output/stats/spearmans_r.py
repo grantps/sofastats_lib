@@ -8,8 +8,8 @@ from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.stats.common import get_optimal_min_max
 from sofastats.output.charts.mpl_pngs import get_scatterplot_fig
 from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
-from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
+from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
+from sofastats.output.stats.interfaces import CommonStatsDesign
 from sofastats.output.stats.interfaces import Coord, CorrelationResult
 from sofastats.output.stats.msgs import TWO_TAILED_EXPLANATION
 from sofastats.output.styles.interfaces import StyleSpec
@@ -222,7 +222,21 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class SpearmansRDesign(CommonDesign):
+class SpearmansRDesign(CommonStatsDesign):
+    """
+    Args:
+        variable_a_name: the first variable in each pair we are checking for correlation
+        variable_b_name: the second variable in each pair we are checking for correlation
+        show_workings: show the workings so you can see how the final results were derived
+        high_volume_ok: the algorithm is more expensive than those which can make
+            parametric assumptions so we need to stop people unknowingly starting very slow operations.
+            This setting has no impact if the number of records is less than MAX_RANK_DATA_VALS
+            (currently 50,000 records). If set to `False`, an exception is raised if the code is being asked to operate
+            on an amount of data which will make it run very slowly. If `True`, the operation is allowed to proceed
+             but a message tells the user they can expect the process to take a fairly long time
+             (so they don't terminate early on the assumption that something has gone wrong the analysis
+             is never going to finish).
+    """
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 

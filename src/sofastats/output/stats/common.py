@@ -17,7 +17,7 @@ def get_optimal_min_max(*, axis_min, axis_max) -> tuple[float, float]:
     Generally, we want box and scatter plots to have y-axes starting from just below the minimum point
     (e.g. lowest outlier).
     That is, avoid the common case where we have the y-axis start at 0, and all our values range tightly together.
-    In which case, for boxplots, we will have a series of tiny boxplots up the top,
+    In which case, for box plots, we will have a series of tiny box plots up the top,
     and we won't be able to see the different parts of it e.g. LQ, median etc.
     For scatter plots our data will be too tightly scrunched up to see any spread.
 

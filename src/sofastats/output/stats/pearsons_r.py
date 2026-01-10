@@ -7,8 +7,8 @@ from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.stats.common import get_optimal_min_max
 from sofastats.output.charts.mpl_pngs import get_scatterplot_fig
 from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
-from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
+from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
+from sofastats.output.stats.interfaces import CommonStatsDesign
 from sofastats.output.stats.interfaces import Coord, CorrelationResult
 from sofastats.output.stats.msgs import ONE_TAILED_EXPLANATION
 from sofastats.output.styles.interfaces import StyleSpec
@@ -90,7 +90,12 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class PearsonsRDesign(CommonDesign):
+class PearsonsRDesign(CommonStatsDesign):
+    """
+    Args:
+        variable_a_name: the first variable in each pair we are checking for correlation
+        variable_b_name: the second variable in each pair we are checking for correlation
+    """
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 

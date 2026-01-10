@@ -1,6 +1,6 @@
 [project]
 name = "sofastats_lib"
-version = "0.12.4"
+version = "0.12.5"
 description = "SOFA (Statistics Open For All) the Python library"
 authors = [
     { name = "Grant Paton-Simpson", email = "grant@sofastatistics.com" }
@@ -24,6 +24,7 @@ dev = [
     "faker>=37.5.3",
     "import-linter>=2.3",
     "mkdocs>=1.5.2",
+    "mkdocstrings>=1.0.0",
     "mkdocstrings-python>=1.5.2",
     "mkdocs-material>=9.2.4",
     "pyproject-fmt>=2.6.0",
@@ -133,7 +134,7 @@ name = "stats_calc interfaces"
 type = "layers"
 layers = [
     "interfaces",
-    "boxplot | histogram",
+    "box_plot | histogram",
 ]
 containers = ["sofastats.stats_calc"]
 exhaustive = false
@@ -158,7 +159,7 @@ source_modules = [
 ]
 allow_indirect_imports = false
 forbidden_modules = [  ## everything other than sofastats.stats_calc.interfaces
-    "sofastats.stats_calc.boxplot",
+    "sofastats.stats_calc.box_plot",
     "sofastats.stats_calc.chi_square",
     "sofastats.stats_calc.histogram",
     "sofastats.stats_calc.spearmansr",
@@ -183,7 +184,7 @@ name = "data_extraction charts"
 type = "layers"
 layers = [
     "interfaces_amount_specs | interfaces_xys | interfaces",
-    "boxplot | histogram | scatterplot",
+    "box_plot | histogram | scatter_plot",
 ]
 containers = ["sofastats.data_extraction.charts"]
 exhaustive = false
@@ -224,7 +225,7 @@ ignore_imports = [
 name = "output.charts levels"
 type = "layers"
 layers = [
-    "area | bar | boxplot | histogram | line | pie | scatterplot",
+    "area | bar | box_plot | histogram | line | pie | scatter_plot",
     "common",
     "utils",
     "interfaces",
@@ -238,7 +239,7 @@ name = "mpl_pngs relies on boxplot & scatterplot and not circular"
 type = "layers"
 layers = [
     "mpl_pngs",
-    "boxplot | histogram",
+    "box_plot | histogram",
 ]
 containers = ["sofastats.output.charts"]
 exhaustive = false

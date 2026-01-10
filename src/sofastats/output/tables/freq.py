@@ -105,6 +105,11 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
 
 @dataclass(frozen=False, kw_only=True)
 class FrequencyTableDesign(CommonDesign):
+    """
+    Args:
+        row_variable_designs: list of Rows
+        include_column_percent: if `True` add a column percentage column
+    """
     row_variable_designs: list[Row] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
     include_column_percent: bool = False
@@ -129,7 +134,7 @@ class FrequencyTableDesign(CommonDesign):
 
     def __post_init__(self):
         CommonDesign.__post_init__(self)
-        row_vars = [spec.variable for spec in self.row_variable_designs]
+        row_vars = [spec.variable_name for spec in self.row_variable_designs]
         row_dupes = set()
         seen = set()
         for row_var in row_vars:

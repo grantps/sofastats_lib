@@ -259,7 +259,7 @@ def anova(group_label: str, measure_field_label: str, samples: Sequence[Sample],
     """
     From NIST algorithm used for their ANOVA tests.
 
-    Note - keep anova_lite following same logic as here but without the extras.
+    Note - keep anova_p_only following same logic as here but without the extras.
 
     Args:
         high: high precision but much, much slower. Multiplies each by 10 (and divides by 10 and 100 as appropriate)
@@ -822,8 +822,8 @@ def spearmansr(x, y, *, high_volume_ok=False) -> CorrelationCalcResult:
     if len(x) != len(y):
         raise ValueError("Input values not paired in spearmanr. Aborting.")
     n = len(x)
-    rankx = rankdata(x, high_volume_ok=high_volume_ok)
-    ranky = rankdata(y, high_volume_ok=True)  ## don't ask twice
+    rankx = rankdata(x, high_volume_ok=high_volume_ok)  ## all high_volume_ok does is raise an exception if high volume and not OK OR warn you if OK
+    ranky = rankdata(y, high_volume_ok=True)  ## if you got this far not possible to trigger the exception (or it would have already happened and we wouldn't have got this far OR we have already seen the slow processing warning message
     dsq = sumdiffsquared(rankx, ranky)
     rs = 1 - 6 * dsq / float(n * (n ** 2 - 1))
     try:

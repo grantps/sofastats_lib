@@ -53,7 +53,7 @@ def get_cross_tab(csv_file_path):
     )
     return table_design
 
-def get_clustered_boxplot(csv_file_path):
+def get_clustered_box_plot(csv_file_path):
     chart_design = ClusteredBoxplotChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -63,7 +63,7 @@ def get_clustered_boxplot(csv_file_path):
         series_field_name='Home Location Type',
         series_sort_order=SortOrder.CUSTOM,
         category_sort_order=SortOrder.CUSTOM,
-        boxplot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
         show_n_records=True,
         x_axis_font_size=12,
         decimal_points=3,

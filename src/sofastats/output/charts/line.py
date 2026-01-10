@@ -245,6 +245,20 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class LineChartDesign(CommonDesign):
+    """
+    Args:
+        category_field_name: name of field in the x-axis
+        category_sort_order: define order of categories in each chart e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        is_time_series: space x-axis labels according to time e.g. there might be variable gaps between items
+        show_major_ticks_only: suppress minor ticks
+        show_markers: show markers on the line bounding the area
+        show_smooth_line: if `True` also show smoothed version of line
+        show_trend_line: if `True` also show trend line
+        rotate_x_labels: make x-axis labels vertical
+        show_n_records: show the number of records the chart is based on
+        x_axis_font_size: font size for x-axis labels
+        y_axis_title: title displayed vertically alongside y-axis
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
 
@@ -297,6 +311,12 @@ class LineChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiLineChartDesign(CommonDesign):
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might generate separate lines with different colours for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series in legend e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -351,6 +371,12 @@ class MultiLineChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartLineChartDesign(CommonDesign):
+    """
+    Args:
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -407,6 +433,15 @@ class MultiChartLineChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartMultiLineChartDesign(CommonDesign):
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might generate separate lines with different colours for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series in legend e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     category_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     category_sort_order: SortOrder = SortOrder.VALUE
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

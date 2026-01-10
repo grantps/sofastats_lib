@@ -282,6 +282,15 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
 
 @dataclass(frozen=False)
 class SimpleScatterChartDesign(CommonDesign):
+    """
+    Args:
+        x_field_name: field defining the x value of each x-y pair
+        y_field_name: field defining the y value of each x-y pair
+        show_dot_borders: if `Tue` show borders around individual dots
+        show_n_records: show the number of records the chart is based on
+        show_regression_line: if `True` show regression line of best fit
+        x_axis_font_size: font size for x-axis labels
+    """
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
@@ -321,6 +330,12 @@ class SimpleScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class BySeriesScatterChartDesign(CommonDesign):
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might separate generate different colour dots for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series in the legend e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -365,6 +380,12 @@ class BySeriesScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartScatterChartDesign(CommonDesign):
+    """
+    Args:
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     chart_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
@@ -409,6 +430,15 @@ class MultiChartScatterChartDesign(CommonDesign):
 
 @dataclass(frozen=False)
 class MultiChartBySeriesScatterChartDesign(CommonDesign):
+    """
+    Args:
+        series_field_name: the field name defining the series e.g. a `series_field_name` of 'Country'
+            might separate generate different colour dots for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        series_sort_order: define order of series in the legend e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+        chart_field_name: the field name defining the charts e.g. a `chart_field_name` of 'Country'
+            might separate generate charts for 'USA', 'NZ', 'Denmark', and 'South Korea'.
+        chart_sort_order: define order of charts e.g. `SortOrder.VALUES` or `SortOrder.CUSTOM`
+    """
     x_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     y_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     series_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY

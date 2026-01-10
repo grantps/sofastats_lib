@@ -11,12 +11,12 @@ import pandas as pd
 from sofastats import logger
 from sofastats.data_extraction.stats.chi_square import get_chi_square_data
 from sofastats.output.charts import boomslang
-from sofastats.output.interfaces import (
-    DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
-from sofastats.stats_calc.chi_square import WorkedResult, get_worked_result
+from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
+from sofastats.output.stats.interfaces import CommonStatsDesign
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
 from sofastats.output.utils import format_num, get_p, get_p_explain
+from sofastats.stats_calc.chi_square import WorkedResult, get_worked_result
 from sofastats.stats_calc.engine import chisquare as chi_square_stats_calc
 from sofastats.stats_calc.interfaces import ChiSquareResult
 from sofastats.output.utils import plot2image_as_data
@@ -470,7 +470,13 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class ChiSquareDesign(CommonDesign):
+class ChiSquareDesign(CommonStatsDesign):
+    """
+    Args:
+        variable_a_name: the name of the first variable
+        variable_a_name: the name of the second variable
+        show_workings: show the workings so you can see how the final results were derived
+    """
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
 
