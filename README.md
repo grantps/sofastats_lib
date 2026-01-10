@@ -16,7 +16,7 @@ The `sofastats` distribution package sits on top of `sofastats_lib` distribution
 
 ### Step 0 - Install sofastats_lib
 
-[Installation Instructions][#Installation]
+[Installation Instructions][#installation]
 
 ### Step 1 - Configure Design
 
