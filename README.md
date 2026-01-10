@@ -14,6 +14,10 @@ The `sofastats` distribution package sits on top of `sofastats_lib` distribution
 
 ## Usage Overview
 
+### Step 0 - Install sofastats_lib
+
+[Installation Instructions][#Installation]
+
 ### Step 1 - Configure Design
 
 Configure a Design object e.g. a `CrossTabDesign`, a `SimpleBarChartDesign`, or an `AnovaDesign`.
@@ -125,3 +129,42 @@ so you can see the code in operation for every chart, table, and statistical rep
 ### Full API
 
 [API reference for Charts, Tables, and Statistical Tests](https://grantps.github.io/sofastats_lib/API/)
+
+## Installation
+
+### Step 1 - Create a new project
+
+Create a project. If you’re using `uv`, the commands would be:
+
+cd /my/projects/folder
+
+For example:
+
+```bash
+cd ~/projects
+```
+Then initialise project. Continuing with `uv`:
+
+uv init my_project_name
+
+For example:
+
+![uv initialisation](images/uv_init.png)
+
+We can check what uv has made by looking at contents of the new project folder, in this case using the tree command:
+
+![uv initialisation](images/folders_and_files_made.png)
+
+As you can see, a lot of boilerplate has been set up.
+Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by `uv`.
+
+![Can't climb trees](images/no_trees.png)
+
+### Step 2 - Install sofastats_lib as a project library
+
+Inside the demo folder, add `sofastats_lib` to the demo project. Here’s how you do it with `uv`:
+
+![uv add](images/uv_add.png)
+
+Now `sofastats_lib` is installed as a library ready to use somewhere under demo like
+`demo/.venv/lib/python3.13/site-packages/sofastats_lib/`
