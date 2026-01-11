@@ -829,7 +829,7 @@
 
 
 <h1 id="sofastats_lib">sofastats_lib</h1>
-<p><img src="https://grantps.github.io/sofastats_lib/images/sofa_logo_text_horiz.svg" width="500" /></p>
+<p><img src="https://sofastats.github.io/sofastats_lib/images/sofa_logo_text_horiz.svg" width="500" /></p>
 <h2 id="package-overview">Package Overview</h2>
 <p>Statistics Open For All the Python Library.</p>
 <p><code>sofastats_lib</code> is a Python library for statistical analysis and reporting
@@ -842,14 +842,14 @@ but without any of the original design mistakes.</p>
 See <a href="https://www.youtube.com/watch?v=5DDZa46g3Yc">How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson</a>
 for how we're trying to improve the User Experience (UX) for SOFA users, and for a peek at the GUI.</p>
 <p><a href="https://www.youtube.com/watch?v=5DDZa46g3Yc" target="_blank">
-  <img src="https://grantps.github.io/sofastats_lib/images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
+  <img src="https://sofastats.github.io/sofastats_lib/images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
 </a></p>
 <h2 id="usage-overview">Usage Overview</h2>
 <h3 id="step-0-install-sofastats_lib">Step 0 - Install sofastats_lib</h3>
 <p><a href="./#installation">Installation Instructions</a></p>
 <h3 id="step-1-configure-design">Step 1 - Configure Design</h3>
 <p>Configure a Design object e.g. a <code>CrossTabDesign</code>, a <code>SimpleBarChartDesign</code>, or an <code>AnovaDesign</code>.
-See <a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a>
+See <a href="https://sofastats.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a>
 for the full list.</p>
 <h3 id="step-2-get-output">Step 2 - Get Output</h3>
 <p>Use the Design's <code>make_output()</code> method to make the output as an HTML file.</p>
@@ -863,7 +863,7 @@ which you can extract details from or just print.</p>
 <li><strong>Outputs</strong> - where should the output go and what should it look like?</li>
 <li><strong>Analysis Details</strong> - which variables are involved and is there any special sorting required - 
 for example, so that '&lt;20' is before '20-39' even though it is the other way round in the default alphabetical order
-(see <a href="https://grantps.github.io/sofastats_lib/API/#sorting">Sorting</a>).</li>
+(see <a href="https://sofastats.github.io/sofastats_lib/API/#sorting">Sorting</a>).</li>
 </ol>
 <h4 id="inputs">Inputs</h4>
 <p>There are three alternatives so you need to select one and provide the necessary details:</p>
@@ -874,15 +874,15 @@ so you might as well give it a friendly name)</li>
 <li><code>cur</code>, <code>database_engine_name</code>, and <code>source_table_name</code></li>
 <li>or just a <code>source_table_name</code> (assumed to be using internal sofastats SQLite database)</li>
 </ol>
-<p>Full API here: <a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
+<p>Full API here: <a href="https://sofastats.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
 <h4 id="outputs">Outputs</h4>
 <p>The main setting needed is the specific file location for the HTML output.
 This is optional, but you may want to control where the file goes. </p>
-<p>Full API here: <a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
+<p>Full API here: <a href="https://sofastats.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
 <h4 id="analysis-details">Analysis Details</h4>
 <p>For example, the <code>SimpleBarChartDesign</code> requires <code>variable_name</code> at the minimum.</p>
 <h3 id="step-3-think-about-the-output-results">Step 3 - Think about the Output Results</h3>
-<p><img src="https://grantps.github.io/sofastats_lib/images/bunny_sleepy.svg" width="300" /></p>
+<p><img src="https://sofastats.github.io/sofastats_lib/images/bunny_sleepy.svg" width="300" /></p>
 <p>This is the hardest step, and we've tried really hard to provide useful information in the output
 to make this as easy as possible. If you can think of better ways of providing output or explaining results
 let us know at <code>grant@sofastatistics.com</code>.</p>
@@ -933,7 +933,7 @@ let us know at <code>grant@sofastatistics.com</code>.</p>
 <p>Install the sofastats_examples library and run the demo scripts - fake data and a sort order YAML file are included
 so you can see the code in operation for every chart, table, and statistical report Design type.</p>
 <h3 id="full-api">Full API</h3>
-<p><a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
+<p><a href="https://sofastats.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
 <h2 id="installation">Installation</h2>
 <h3 id="step-1-create-a-new-project">Step 1 - Create a new project</h3>
 <p>Create a project. If you’re using <code>uv</code>, the commands would be:</p>
@@ -944,15 +944,15 @@ so you can see the code in operation for every chart, table, and statistical rep
 Then initialise project. Continuing with <code>uv</code>:</p>
 <p>uv init my_project_name</p>
 <p>For example:</p>
-<p><img alt="uv initialisation" src="https://grantps.github.io/sofastats_lib/images/uv_init.png" /></p>
+<p><img alt="uv initialisation" src="https://sofastats.github.io/sofastats_lib/images/uv_init.png" /></p>
 <p>We can check what uv has made by looking at contents of the new project folder, in this case using the tree command:</p>
-<p><img alt="uv initialisation" src="https://grantps.github.io/sofastats_lib/images/folders_and_files_made.png" /></p>
+<p><img alt="uv initialisation" src="https://sofastats.github.io/sofastats_lib/images/folders_and_files_made.png" /></p>
 <p>As you can see, a lot of boilerplate has been set up.
 Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by <code>uv</code>.</p>
-<p><img src="https://grantps.github.io/sofastats_lib/images/no_trees.png" width="300" /></p>
+<p><img src="https://sofastats.github.io/sofastats_lib/images/no_trees.png" width="300" /></p>
 <h3 id="step-2-install-sofastats_lib-as-a-project-library">Step 2 - Install sofastats_lib as a project library</h3>
 <p>Inside the demo folder, add <code>sofastats_lib</code> to the demo project. Here’s how you do it with <code>uv</code>:</p>
-<p><img src="https://grantps.github.io/sofastats_lib/images/uv_add.png" width="500" /></p>
+<p><img src="https://sofastats.github.io/sofastats_lib/images/uv_add.png" width="500" /></p>
 <p>Now <code>sofastats_lib</code> is installed as a library ready to use somewhere under demo like
 <code>demo/.venv/lib/python3.13/site-packages/sofastats_lib/</code></p>
 
