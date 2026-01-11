@@ -1,5 +1,7 @@
 # API Documentation
 
+<img src="https://sofastats.github.io/sofastats_lib/images/sofa_logo_text_horiz.svg" width="500" />
+
 ## Common Data Types
 
 ### Sorting
