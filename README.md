@@ -7,7 +7,7 @@ Statistics Open For All the Python Library.
 `sofastats_lib` is a Python library for statistical analysis and reporting
 based on the design of the SOFA Statistics package.
 
-<img src="images/sofa_logo_and_cartoon_on_white.svg" width="300" />
+<img src="https://grantps.github.io/sofastats_lib/images/sofa_logo_and_cartoon_on_white.svg" width="300" />
 
 The goal was keep all the tried-and-true elements of the original package
 but without any of the original design mistakes.
@@ -21,7 +21,7 @@ See [How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson
 for how we're trying to improve the User Experience (UX) for SOFA users, and for a peek at the GUI.
 
 <a href="https://www.youtube.com/watch?v=5DDZa46g3Yc" target="_blank">
-  <img src="images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
+  <img src="https://grantps.github.io/sofastats_lib/images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
 </a>
 
 ## Usage Overview
@@ -79,7 +79,7 @@ For example, the `SimpleBarChartDesign` requires `variable_name` at the minimum.
 
 ### Step 3 - Think about the Output Results
 
-<img src="images/bunny_sleepy.svg" width="300" />
+<img src="https://grantps.github.io/sofastats_lib/images/bunny_sleepy.svg" width="300" />
 
 This is the hardest step, and we've tried really hard to provide useful information in the output
 to make this as easy as possible. If you can think of better ways of providing output or explaining results
@@ -165,22 +165,22 @@ uv init my_project_name
 
 For example:
 
-![uv initialisation](images/uv_init.png)
+![uv initialisation](https://grantps.github.io/sofastats_lib/images/uv_init.png)
 
 We can check what uv has made by looking at contents of the new project folder, in this case using the tree command:
 
-![uv initialisation](images/folders_and_files_made.png)
+![uv initialisation](https://grantps.github.io/sofastats_lib/images/folders_and_files_made.png)
 
 As you can see, a lot of boilerplate has been set up.
 Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by `uv`.
 
-<img src="images/no_trees.png" width="300" />
+<img src="https://grantps.github.io/sofastats_lib/images/no_trees.png" width="300" />
 
 ### Step 2 - Install sofastats_lib as a project library
 
 Inside the demo folder, add `sofastats_lib` to the demo project. Here’s how you do it with `uv`:
 
-<img src="images/uv_add.png" width="500" />
+<img src="https://grantps.github.io/sofastats_lib/images/uv_add.png" width="500" />
 
 Now `sofastats_lib` is installed as a library ready to use somewhere under demo like
 `demo/.venv/lib/python3.13/site-packages/sofastats_lib/`
