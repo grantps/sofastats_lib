@@ -48,6 +48,8 @@
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -303,6 +305,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#step-0-install-sofastats_lib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 0 - Install sofastats_lib
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#step-1-configure-design" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -451,6 +464,45 @@
     <span class="md-ellipsis">
       
         Full API
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-create-a-new-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 - Create a new project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-sofastats_lib-as-a-project-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 - Install sofastats_lib as a project library
       
     </span>
   </a>
@@ -547,6 +599,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#step-0-install-sofastats_lib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 0 - Install sofastats_lib
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#step-1-configure-design" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -706,6 +769,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-create-a-new-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 - Create a new project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-sofastats_lib-as-a-project-library" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 - Install sofastats_lib as a project library
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -731,12 +833,24 @@
 <p>Statistics Open For All the Python Library.</p>
 <p><code>sofastats_lib</code> is a Python library for statistical analysis and reporting
 based on the design of the SOFA Statistics package.</p>
+<p><img src="images/sofa_logo_and_cartoon_on_white.svg" width="300" /></p>
 <p>The goal was keep all the tried-and-true elements of the original package
-but without any of the original design mistakes. Let us know if you think we succeeded <code>grant@sofastatistics.com</code>.</p>
-<p>The <code>sofastats</code> distribution package sits on top of <code>sofastats_lib</code> distribution package and adds a web GUI</p>
+but without any of the original design mistakes.</p>
+<p>We also wanted to make SOFA more friendly for beginners.</p>
+<p>Let us know if you think we succeeded <code>grant@sofastatistics.com</code>.</p>
+<p>The <code>sofastats</code> distribution package sits on top of <code>sofastats_lib</code> distribution package and adds a web GUI.
+See <a href="https://www.youtube.com/watch?v=5DDZa46g3Yc">How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson</a>
+for how we're trying to improve the User Experience (UX) for SOFA users, and for a peek at the GUI.</p>
+<p><a href="https://www.youtube.com/watch?v=5DDZa46g3Yc" target="_blank">
+  <img src="images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
+</a></p>
 <h2 id="usage-overview">Usage Overview</h2>
+<h3 id="step-0-install-sofastats_lib">Step 0 - Install sofastats_lib</h3>
+<p><a href="./#installation">Installation Instructions</a></p>
 <h3 id="step-1-configure-design">Step 1 - Configure Design</h3>
-<p>Configure a Design object e.g. a <code>CrossTabDesign</code>, a <code>SimpleBarChartDesign</code>, or an <code>AnovaDesign</code>.</p>
+<p>Configure a Design object e.g. a <code>CrossTabDesign</code>, a <code>SimpleBarChartDesign</code>, or an <code>AnovaDesign</code>.
+See <a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a>
+for the full list.</p>
 <h3 id="step-2-get-output">Step 2 - Get Output</h3>
 <p>Use the Design's <code>make_output()</code> method to make the output as an HTML file.</p>
 <p>If the Design is for a statistical test (vs a chart or table) you can also use the <code>to_result()</code> method
@@ -768,6 +882,7 @@ This is optional, but you may want to control where the file goes. </p>
 <h4 id="analysis-details">Analysis Details</h4>
 <p>For example, the <code>SimpleBarChartDesign</code> requires <code>variable_name</code> at the minimum.</p>
 <h3 id="step-3-think-about-the-output-results">Step 3 - Think about the Output Results</h3>
+<p><img src="images/bunny_sleepy.svg" width="300" /></p>
 <p>This is the hardest step, and we've tried really hard to provide useful information in the output
 to make this as easy as possible. If you can think of better ways of providing output or explaining results
 let us know at <code>grant@sofastatistics.com</code>.</p>
@@ -819,6 +934,27 @@ let us know at <code>grant@sofastatistics.com</code>.</p>
 so you can see the code in operation for every chart, table, and statistical report Design type.</p>
 <h3 id="full-api">Full API</h3>
 <p><a href="https://grantps.github.io/sofastats_lib/API/">API reference for Charts, Tables, and Statistical Tests</a></p>
+<h2 id="installation">Installation</h2>
+<h3 id="step-1-create-a-new-project">Step 1 - Create a new project</h3>
+<p>Create a project. If you’re using <code>uv</code>, the commands would be:</p>
+<p>cd /my/projects/folder</p>
+<p>For example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>~/projects
+</code></pre></div>
+Then initialise project. Continuing with <code>uv</code>:</p>
+<p>uv init my_project_name</p>
+<p>For example:</p>
+<p><img alt="uv initialisation" src="images/uv_init.png" /></p>
+<p>We can check what uv has made by looking at contents of the new project folder, in this case using the tree command:</p>
+<p><img alt="uv initialisation" src="images/folders_and_files_made.png" /></p>
+<p>As you can see, a lot of boilerplate has been set up.
+Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by <code>uv</code>.</p>
+<p><img src="images/no_trees.png" width="300" /></p>
+<h3 id="step-2-install-sofastats_lib-as-a-project-library">Step 2 - Install sofastats_lib as a project library</h3>
+<p>Inside the demo folder, add <code>sofastats_lib</code> to the demo project. Here’s how you do it with <code>uv</code>:</p>
+<p><img src="images/uv_add.png" width="500" /></p>
+<p>Now <code>sofastats_lib</code> is installed as a library ready to use somewhere under demo like
+<code>demo/.venv/lib/python3.13/site-packages/sofastats_lib/</code></p>
 
 
 
