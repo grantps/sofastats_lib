@@ -7,20 +7,34 @@ Statistics Open For All the Python Library.
 `sofastats_lib` is a Python library for statistical analysis and reporting
 based on the design of the SOFA Statistics package.
 
-The goal was keep all the tried-and-true elements of the original package
-but without any of the original design mistakes. Let us know if you think we succeeded `grant@sofastatistics.com`.
+<img src="images/sofa_logo_and_cartoon_on_white.svg" width="300" />
 
-The `sofastats` distribution package sits on top of `sofastats_lib` distribution package and adds a web GUI
+The goal was keep all the tried-and-true elements of the original package
+but without any of the original design mistakes.
+
+We also wanted to make SOFA more friendly for beginners.
+
+Let us know if you think we succeeded `grant@sofastatistics.com`.
+
+The `sofastats` distribution package sits on top of `sofastats_lib` distribution package and adds a web GUI.
+See [How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson](https://www.youtube.com/watch?v=5DDZa46g3Yc)
+for how we're trying to improve the User Experience (UX) for SOFA users, and for a peek at the GUI.
+
+<a href="https://www.youtube.com/watch?v=5DDZa46g3Yc" target="_blank">
+  <img src="images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
+</a>
 
 ## Usage Overview
 
 ### Step 0 - Install sofastats_lib
 
-[Installation Instructions][#installation]
+[Installation Instructions](README.md#installation)
 
 ### Step 1 - Configure Design
 
 Configure a Design object e.g. a `CrossTabDesign`, a `SimpleBarChartDesign`, or an `AnovaDesign`.
+See [API reference for Charts, Tables, and Statistical Tests](https://grantps.github.io/sofastats_lib/API/)
+for the full list.
 
 ### Step 2 - Get Output
 
@@ -64,6 +78,8 @@ Full API here: [API reference for Charts, Tables, and Statistical Tests](https:/
 For example, the `SimpleBarChartDesign` requires `variable_name` at the minimum.
 
 ### Step 3 - Think about the Output Results
+
+<img src="images/bunny_sleepy.svg" width="300" />
 
 This is the hardest step, and we've tried really hard to provide useful information in the output
 to make this as easy as possible. If you can think of better ways of providing output or explaining results
@@ -158,13 +174,13 @@ We can check what uv has made by looking at contents of the new project folder, 
 As you can see, a lot of boilerplate has been set up.
 Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by `uv`.
 
-![Can't climb trees](images/no_trees.png)
+<img src="images/no_trees.png" width="300" />
 
 ### Step 2 - Install sofastats_lib as a project library
 
 Inside the demo folder, add `sofastats_lib` to the demo project. Here’s how you do it with `uv`:
 
-![uv add](images/uv_add.png)
+<img src="images/uv_add.png" width="500" />
 
 Now `sofastats_lib` is installed as a library ready to use somewhere under demo like
 `demo/.venv/lib/python3.13/site-packages/sofastats_lib/`
