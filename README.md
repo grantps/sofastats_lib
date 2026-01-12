@@ -148,6 +148,12 @@ so you can see the code in operation for every chart, table, and statistical rep
 
 ## Installation
 
+### Step 0 - Install a modern Python package manager
+
+The best choice for a modern Python package manager if you don't have an existing preference is `uv`.
+
+Start by installing `uv` as per: [Installing uv](https://docs.astral.sh/uv/getting-started/installation/)
+
 ### Step 1 - Create a new project
 
 Create a project. If you’re using `uv`, the commands would be:
