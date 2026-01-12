@@ -34,10 +34,11 @@ class OutputItemType(StrEnum):
 @dataclass(frozen=True)
 class HTMLItemSpec:
     html_item_str: str
-    style_name: str
     output_item_type: OutputItemType
+    output_title: str | None
+    style_name: str  ## so we know which styles we have to cover in the overall HTML
 
-    def to_standalone_html(self, title: str) -> str:
+    def to_standalone_html(self) -> str:
         style_spec = get_style_spec(self.style_name)
         tpl_bits = [HTML_AND_SOME_HEAD_TPL, ]
         if self.output_item_type == OutputItemType.CHART:
@@ -59,7 +60,7 @@ class HTMLItemSpec:
         context = {
             'generic_unstyled_css': get_generic_unstyled_css(),
             'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
-            'title': title,
+            'title': self.output_title,
         }
         if self.output_item_type == OutputItemType.CHART:
             context['styled_dojo_chart_css'] = get_styled_dojo_chart_css(style_spec.dojo)
@@ -71,9 +72,9 @@ class HTMLItemSpec:
         html = template.render(context)
         return html
 
-    def to_file(self, *, fpath: Path | str, html_title: str):
+    def to_file(self, *, fpath: Path | str):
         with open(fpath, 'w') as f:
-            f.write(self.to_standalone_html(html_title))
+            f.write(self.to_standalone_html())
 
     def __repr_html__(self):
         return ''
@@ -265,7 +266,7 @@ class CommonDesign(ABC):
         Produce HTML output, e.g. charts and numerical results, save to `output_file_path`,
         and open in web browser if `show_in_web_browser=True`.
         """
-        self.to_html_design().to_file(fpath=self.output_file_path, html_title=self.output_title)
+        self.to_html_design().to_file(fpath=self.output_file_path)
         if self.show_in_web_browser:
             open_new_tab(url=f"file://{self.output_file_path}")
 

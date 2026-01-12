@@ -112,8 +112,9 @@ class SimpleBarChartDesign(CommonBarDesign):
         html = get_html(charting_spec, style_spec)  ## see get_indiv_chart_html() below
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -163,8 +164,9 @@ class MultiChartBarChartDesign(CommonBarDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -214,8 +216,9 @@ class ClusteredBarChartDesign(CommonBarDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -275,8 +278,9 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 @dataclass

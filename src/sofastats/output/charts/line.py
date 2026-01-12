@@ -304,8 +304,9 @@ class LineChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -364,8 +365,9 @@ class MultiLineChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -426,8 +428,9 @@ class MultiChartLineChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -495,6 +498,7 @@ class MultiChartMultiLineChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )

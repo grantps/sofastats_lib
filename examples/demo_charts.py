@@ -1,8 +1,6 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 
-import sqlite3 as sqlite
-
 from sofastats.conf.main import ChartMetric, SortOrder
 # noinspection PyUnresolvedReferences
 from sofastats.output.charts import area, bar, box_plot, histogram, line, pie, scatter_plot  ## needed so singledispatch registration can occur
@@ -18,11 +16,10 @@ from sofastats.output.charts.scatter_plot import (BySeriesScatterChartDesign,
     MultiChartBySeriesScatterChartDesign, MultiChartScatterChartDesign, SimpleScatterChartDesign)
 from sofastats.stats_calc.interfaces import BoxplotType
 
-from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
-    sort_orders_yaml_file_path, sports_csv_file_path, sqlite_demo_db_file_path)
+from sofastats_examples.scripts.conf import output_folder, sort_orders_yaml_file_path
 
 def simple_bar_chart_from_sqlite_db(sqlite_cur):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         cur=sqlite_cur,
         database_engine_name='sqlite',
         source_table_name='people',
@@ -39,10 +36,10 @@ def simple_bar_chart_from_sqlite_db(sqlite_cur):
         x_axis_font_size=12,
         y_axis_title='Count',  ## defaults to Frequency if metric is FREQ (the default)
     )
-    chart_design.make_output()
+    design.make_output()
 
 def simple_bar_chart_from_csv(csv_file_path):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_bar_chart_from_csv.html',
         output_title="Simple Bar Chart (Frequencies)",
@@ -56,10 +53,10 @@ def simple_bar_chart_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def simple_bar_chart_percents_from_csv(csv_file_path):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_bar_chart_percents_from_csv.html',
         output_title="Simple Bar Chart (Percents)",
@@ -74,10 +71,10 @@ def simple_bar_chart_percents_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def simple_bar_chart_averages_from_csv(csv_file_path):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_bar_chart_averages_from_csv.html',
         output_title="Simple Bar Chart (Averages)",
@@ -93,10 +90,10 @@ def simple_bar_chart_averages_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def simple_bar_chart_sums_from_csv(csv_file_path):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_bar_chart_sums_from_csv.html',
         output_title="Simple Bar Chart (Sums)",
@@ -112,13 +109,13 @@ def simple_bar_chart_sums_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def simple_bar_chart_lots_of_x_vals(csv_file_path):
-    chart_design = SimpleBarChartDesign(
+    design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_bar_chart_wide.html',
-        output_title="Simple Bar Chart",
+        output_title="Simple Bar Chart (Wide)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='prestige_screen',
@@ -129,13 +126,13 @@ def simple_bar_chart_lots_of_x_vals(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_bar_chart(csv_file_path):
-    chart_design = MultiChartBarChartDesign(
+    design = MultiChartBarChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_multi_bar_chart.html',
-        output_title="Multi Bar Chart",
+        output_file_path=output_folder / 'demo_multi_chart_bar_chart.html',
+        output_title="Multi-Chart Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
@@ -148,10 +145,10 @@ def multi_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def clustered_bar_chart(csv_file_path):
-    chart_design = ClusteredBarChartDesign(
+    design = ClusteredBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_clustered_bar_chart.html',
         output_title="Clustered Bar Chart",
@@ -167,10 +164,10 @@ def clustered_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_clustered_bar_chart(csv_file_path):
-    chart_design = MultiChartClusteredBarChartDesign(
+    design = MultiChartClusteredBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_clustered_bar_chart.html',
         output_title="Multi Chart Clustered Bar Chart",
@@ -188,10 +185,10 @@ def multi_chart_clustered_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_clustered_percents_bar_chart(csv_file_path):
-    chart_design = MultiChartClusteredBarChartDesign(
+    design = MultiChartClusteredBarChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_clustered_percents_bar_chart.html',
         output_title="Multi Chart Clustered Bar Chart (Percents)",
@@ -210,10 +207,10 @@ def multi_chart_clustered_percents_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def line_chart(csv_file_path):
-    chart_design = LineChartDesign(
+    design = LineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_line_chart.html',
         output_title="Line Chart",
@@ -231,10 +228,10 @@ def line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def line_chart_time_series(csv_file_path):
-    chart_design = LineChartDesign(
+    design = LineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_line_chart_time_series.html',
         output_title="Line Chart Time Series",
@@ -252,10 +249,10 @@ def line_chart_time_series(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def line_chart_time_series_rotated_labels(csv_file_path):
-    chart_design = LineChartDesign(
+    design = LineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_line_chart_time_series_rotated_labels.html',
         output_title="Line Chart Time Series (Rotated Labels)",
@@ -273,10 +270,10 @@ def line_chart_time_series_rotated_labels(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_line_chart(csv_file_path):
-    chart_design = MultiLineChartDesign(
+    design = MultiLineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_line_chart.html',
         output_title="Multi-Line Chart",
@@ -296,10 +293,10 @@ def multi_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_line_chart(csv_file_path):
-    chart_design = MultiChartLineChartDesign(
+    design = MultiChartLineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_line_chart.html',
         output_title="Multi Chart Line Chart",
@@ -319,10 +316,10 @@ def multi_chart_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_multi_line_chart(csv_file_path):
-    chart_design = MultiChartMultiLineChartDesign(
+    design = MultiChartMultiLineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_multi_line_chart.html',
         output_title="Multi-Chart Multi-Line Chart",
@@ -344,10 +341,10 @@ def multi_chart_multi_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_multi_line_chart_time_series(csv_file_path):
-    chart_design = MultiChartMultiLineChartDesign(
+    design = MultiChartMultiLineChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_multi_line_chart_time_series.html',
         output_title="Multi-Chart Multi-Line Chart Time Series",
@@ -369,10 +366,10 @@ def multi_chart_multi_line_chart_time_series(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def area_chart(csv_file_path):
-    chart_design = AreaChartDesign(
+    design = AreaChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_area_chart.html',
         output_title="Area Chart",
@@ -388,13 +385,13 @@ def area_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_area_chart(csv_file_path):
-    chart_design = MultiChartAreaChartDesign(
+    design = MultiChartAreaChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_area_chart.html',
-        output_title="Area Chart",
+        output_title="Multi-Chart Area Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
@@ -409,10 +406,10 @@ def multi_chart_area_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def pie_chart(csv_file_path):
-    chart_design = PieChartDesign(
+    design = PieChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_pie_chart.html',
         output_title="Pie Chart",
@@ -421,18 +418,15 @@ def pie_chart(csv_file_path):
         style_name='default',
         category_field_name='Country',
         category_sort_order=SortOrder.CUSTOM,
-        rotate_x_labels=False,
-        show_borders=False,
         show_n_records=True,
-        x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_pie_chart(csv_file_path):
-    chart_design = MultiChartPieChartDesign(
+    design = MultiChartPieChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_pie_chart.html',
-        output_title="Pie Chart",
+        output_title="Multi-Chart Pie Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
@@ -440,15 +434,12 @@ def multi_chart_pie_chart(csv_file_path):
         chart_sort_order=SortOrder.CUSTOM,
         category_field_name='Sport',
         category_sort_order=SortOrder.CUSTOM,
-        rotate_x_labels=False,
-        show_borders=False,
         show_n_records=True,
-        x_axis_font_size=12,
     )
-    chart_design.make_output()
+    design.make_output()
 
-def simple_scatterplot(csv_file_path):
-    chart_design = SimpleScatterChartDesign(
+def simple_scatter_plot(csv_file_path):
+    design = SimpleScatterChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_simple_scatterplot.html',
         output_title="Single Series Scatterplot",
@@ -462,10 +453,10 @@ def simple_scatterplot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    chart_design.make_output()
+    design.make_output()
 
-def by_series_scatterplot(csv_file_path):
-    chart_design = BySeriesScatterChartDesign(
+def by_series_scatter_plot(csv_file_path):
+    design = BySeriesScatterChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_by_series_scatterplot.html',
         output_title="Multi-Series Scatterplot",
@@ -481,10 +472,10 @@ def by_series_scatterplot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    chart_design.make_output()
+    design.make_output()
 
-def multi_chart_scatterplot(csv_file_path):
-    chart_design = MultiChartScatterChartDesign(
+def multi_chart_scatter_plot(csv_file_path):
+    design = MultiChartScatterChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_scatterplot.html',
         output_title="Multi-Chart Scatterplot",
@@ -500,10 +491,10 @@ def multi_chart_scatterplot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    chart_design.make_output()
+    design.make_output()
 
-def multi_chart_by_series_scatterplot(csv_file_path):
-    chart_design = MultiChartBySeriesScatterChartDesign(
+def multi_chart_by_series_scatter_plot(csv_file_path):
+    design = MultiChartBySeriesScatterChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_by_series_scatterplot.html',
         output_title="Multi-Chart Multi-Series Scatterplot",
@@ -521,10 +512,10 @@ def multi_chart_by_series_scatterplot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def histogram_chart(csv_file_path):
-    chart_design = HistogramChartDesign(
+    design = HistogramChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_histogram.html',
         output_title="Histogram Chart",
@@ -538,10 +529,10 @@ def histogram_chart(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def multi_chart_histogram(csv_file_path):
-    chart_design = MultiChartHistogramChartDesign(
+    design = MultiChartHistogramChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multi_chart_histogram.html',
         output_title="Multi Chart Histogram Chart",
@@ -557,10 +548,10 @@ def multi_chart_histogram(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def box_plot_chart(csv_file_path):
-    chart_design = BoxplotChartDesign(
+    design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot.html',
         output_title="Boxplot",
@@ -575,10 +566,10 @@ def box_plot_chart(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def box_plot_chart_narrow_labels(csv_file_path):
-    chart_design = BoxplotChartDesign(
+    design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot_narrow_labels.html',
         output_title="Boxplot (narrow)",
@@ -593,10 +584,10 @@ def box_plot_chart_narrow_labels(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def box_plot_chart_very_wide(csv_file_path):
-    chart_design = BoxplotChartDesign(
+    design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot_very_wide.html',
         output_title="Boxplot (very wide)",
@@ -611,10 +602,10 @@ def box_plot_chart_very_wide(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
+    design.make_output()
 
 def clustered_box_plot(csv_file_path):
-    chart_design = ClusteredBoxplotChartDesign(
+    design = ClusteredBoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_multiseries_box_plot.html',
         output_title="Multi-Series Boxplot",
@@ -631,5 +622,4 @@ def clustered_box_plot(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    chart_design.make_output()
-
+    design.make_output()

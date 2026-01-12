@@ -64,6 +64,7 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     ## actually plot norm ys
     ax.plot(bins, norm_ys, color=chart_conf.line_colour, linewidth=4)
     logger.debug(f"n={n}, bins={bins}, patches={patches}")
+    plt.close(fig)  ## free up the memory
     return fig
 
 def get_scatterplot_fig(vars_series: Sequence[ScatterplotSeries], chart_conf: ScatterplotConf) -> Figure:

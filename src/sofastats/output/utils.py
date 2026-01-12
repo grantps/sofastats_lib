@@ -39,10 +39,10 @@ def plot2image_as_data(plot) -> str:
     image_as_data_str = f'data:image/png;base64,{chart_base64_1}'
     return image_as_data_str
 
-def get_report(html_items: Sequence[HasToHTMLItemSpec], title: str) -> Report:
+def get_report(designs: Sequence[HasToHTMLItemSpec], title: str) -> Report:
     """
     Collectively work out all which unstyled and styled CSS / JS items are needed in HTML.
-    Then, in body, put the html strs in order.
+    Then, in body, put the HTML strs in order.
     Aligning param names exactly with templates from output.interfaces
     """
     tpl_bits = [
@@ -53,7 +53,7 @@ def get_report(html_items: Sequence[HasToHTMLItemSpec], title: str) -> Report:
         'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
         'title': title,
     }
-    html_item_specs = [html_item.to_html_design() for html_item in html_items]
+    html_item_specs = [design.to_html_design() for design in designs]
     ## CHARTS
     includes_charts = False
     for html_item_spec in html_item_specs:
@@ -76,6 +76,24 @@ def get_report(html_items: Sequence[HasToHTMLItemSpec], title: str) -> Report:
                 style_spec = get_style_spec(html_item_spec.style_name)
                 context[styled_css_context_param] = get_styled_dojo_chart_css(style_spec.dojo)
                 chart_styles_done.add(html_item_spec.style_name)
+    ## STATS
+    includes_stats = False
+    for html_item_spec in html_item_specs:
+        if html_item_spec.output_item_type==OutputItemType.STATS:
+            includes_stats = True
+            break
+    if includes_stats:
+        ## styled
+        stats_styles_done = set()
+        for html_item_spec in html_item_specs:
+            if (html_item_spec.output_item_type==OutputItemType.STATS
+                    and html_item_spec.style_name not in stats_styles_done):
+                styled_stats_tbl_context_param = f'{html_item_spec.style_name}_styled_stats_tbl_css'
+                styled_stats_tbl_tpl = STATS_TBL_TPL.replace('styled_stats_tbl_css', styled_stats_tbl_context_param)
+                tpl_bits.append(styled_stats_tbl_tpl)
+                style_spec = get_style_spec(html_item_spec.style_name)
+                context[styled_stats_tbl_context_param] = get_styled_stats_tbl_css(style_spec)
+                stats_styles_done.add(html_item_spec.style_name)
     ## MAIN TABLES
     includes_main_tbls = False
     for html_item_spec in html_item_specs:
@@ -95,28 +113,11 @@ def get_report(html_items: Sequence[HasToHTMLItemSpec], title: str) -> Report:
                 context[styled_spaceholder_context_param] = get_styled_placeholder_css_for_main_tbls(
                     html_item_spec.style_name)
                 tbl_styles_done.add(html_item_spec.style_name)
-    ## STATS
-    includes_stats = False
-    for html_item_spec in html_item_specs:
-        if html_item_spec.output_item_type==OutputItemType.STATS:
-            includes_stats = True
-            break
-    if includes_stats:
-        ## styled
-        stats_styles_done = set()
-        for html_item_spec in html_item_specs:
-            if (html_item_spec.output_item_type==OutputItemType.STATS
-                    and html_item_spec.style_name not in stats_styles_done):
-                styled_stats_tbl_context_param = f'{html_item_spec.style_name}_styled_stats_tbl_css'
-                styled_stats_tbl_tpl = STATS_TBL_TPL.replace('styled_stats_tbl_css', styled_stats_tbl_context_param)
-                tpl_bits.append(styled_stats_tbl_tpl)
-                style_spec = get_style_spec(html_item_spec.style_name)
-                context[styled_stats_tbl_context_param] = get_styled_stats_tbl_css(style_spec)
-                stats_styles_done.add(html_item_spec.style_name)
     ## unstyled & already styled
     tpl_bits.append(HEAD_END_TPL)
     tpl_bits.append(BODY_START_TPL)
-    item_content = '<br><br>'.join(html_item_spec.html_item_str for html_item_spec in html_item_specs)  ## <======= the actual item content e.g. chart
+    item_content = f"<h1>{title}</h1>\n" + """<br><div style="clear: both;"></div><br>""".join(
+        f"<h2>{html_item_spec.output_title}</h2>{html_item_spec.html_item_str}" for html_item_spec in html_item_specs)  ## <======= the actual item content e.g. chart
     tpl_bits.append(item_content)
     tpl_bits.append(BODY_AND_HTML_END_TPL)
     ## assemble
@@ -130,7 +131,7 @@ def to_precision(num, precision):
     """
     Returns a string representation of x formatted with a precision of p.
 
-    Based on the webkit javascript implementation taken from here:
+    Based on the webkit JavaScript implementation taken from here:
     https://code.google.com/p/webkit-mirror/source/browse/JavaScriptCore/kjs/number_object.cpp
 
     http://randlet.com/blog/python-significant-figures-format/

@@ -1,98 +1,111 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 
+import sqlite3 as sqlite
+
 from webbrowser import open_new_tab
 
-from sofastats.output.charts.bar import SimpleBarChartDesign
-from sofastats.output.charts.box_plot import ClusteredBoxplotChartDesign
-from sofastats.output.stats.anova import AnovaDesign
-from sofastats.output.tables.cross_tab import CrossTabDesign
-from sofastats.output.tables.freq import FrequencyTableDesign
-from sofastats.output.tables.interfaces import Column, Metric, Row, SortOrder
 from sofastats.output.utils import get_report
-from sofastats.stats_calc.interfaces import BoxplotType
+from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
+    sports_csv_file_path, sqlite_demo_db_file_path)
+import sofastats_examples.scripts.demo_charts as charts
+import sofastats_examples.scripts.demo_stats as stats
+import sofastats_examples.scripts.demo_tables as tables
 
-from sofastats_examples.scripts.conf import output_folder, people_csv_file_path, sort_orders_yaml_file_path
+def process_designs(*, do_charts=False, do_stats=False, do_tables=False,
+        make_separate_output=False, make_combined_output=False):
+    con = sqlite.connect(sqlite_demo_db_file_path)
+    cur = con.cursor()
 
-def get_simple_bar_chart(csv_file_path):
-    chart_design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
-        category_field_name='Age Group',
-        category_sort_order=SortOrder.CUSTOM,
-        rotate_x_labels=False,
-        show_borders=False,
-        show_n_records=True,
-        x_axis_font_size=12,
-    )
-    return chart_design
+    designs = []
 
-def get_cross_tab(csv_file_path):
-    """
-    Top-level row variables (design settings and any nested variables)
-    Top-level column variables (design settings and any nested variables)
-    """
-    row_variables_design_1 = Row(variable='Country', has_total=True,
-        child=Row(variable='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
-    row_variables_design_2 = Row(variable='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM)
-    row_variables_design_3 = Row(variable='Car')
+    if do_charts:
+        chart_designs = []
 
-    col_variables_design_1 = Column(variable='Sleep Group', has_total=True, sort_order=SortOrder.CUSTOM)
-    col_variables_design_2 = Column(variable='Age Group', has_total=True, sort_order=SortOrder.CUSTOM,
-         child=Column(variable='Handedness', has_total=True, sort_order=SortOrder.CUSTOM, pct_metrics=[Metric.ROW_PCT, Metric.COL_PCT]))
-    col_variables_design_3 = Column(variable='Tertiary Qualifications', has_total=True, sort_order=SortOrder.CUSTOM)
+        chart_designs.append(charts.simple_bar_chart_from_sqlite_db(cur))
+        chart_designs.append(charts.simple_bar_chart_from_csv(people_csv_file_path))
+        chart_designs.append(charts.simple_bar_chart_percents_from_csv(people_csv_file_path))
+        chart_designs.append(charts.simple_bar_chart_averages_from_csv(people_csv_file_path))
+        chart_designs.append(charts.simple_bar_chart_sums_from_csv(people_csv_file_path))
+        chart_designs.append(charts.simple_bar_chart_lots_of_x_vals(people_csv_file_path))
+        chart_designs.append(charts.multi_bar_chart(people_csv_file_path))
+        chart_designs.append(charts.clustered_bar_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_clustered_bar_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_clustered_percents_bar_chart(people_csv_file_path))
 
-    table_design = CrossTabDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        row_variable_designs=[row_variables_design_1, row_variables_design_2, row_variables_design_3],
-        column_variable_designs=[col_variables_design_1, col_variables_design_2, col_variables_design_3],
-        style_name='default',
-        decimal_points=2,
-    )
-    return table_design
+        chart_designs.append(charts.line_chart(people_csv_file_path))
+        chart_designs.append(charts.line_chart_time_series(people_csv_file_path))
+        chart_designs.append(charts.line_chart_time_series_rotated_labels(people_csv_file_path))
+        chart_designs.append(charts.multi_line_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_line_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_multi_line_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_multi_line_chart_time_series(people_csv_file_path))
 
-def get_clustered_box_plot(csv_file_path):
-    chart_design = ClusteredBoxplotChartDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
-        field_name='Age',
-        category_field_name='Country',
-        series_field_name='Home Location Type',
-        series_sort_order=SortOrder.CUSTOM,
-        category_sort_order=SortOrder.CUSTOM,
-        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
-        show_n_records=True,
-        x_axis_font_size=12,
-        decimal_points=3,
-    )
-    return chart_design
+        chart_designs.append(charts.area_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_area_chart(people_csv_file_path))
 
-def get_simple_freq_tbl(csv_file_path):
-    row_variables_design_1 = Row(variable='Country', has_total=True, child=Row(variable='Handedness', has_total=True, sort_order=SortOrder.CUSTOM))
-    row_variables_design_2 = Row(variable='Age Group', has_total=True, sort_order=SortOrder.CUSTOM)
+        chart_designs.append(charts.pie_chart(sports_csv_file_path))
+        chart_designs.append(charts.multi_chart_pie_chart(sports_csv_file_path))
 
-    table_design = FrequencyTableDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        row_variable_designs=[row_variables_design_1, row_variables_design_2, ],
-        include_column_percent=True,
-        decimal_points=3,
-    )
-    return table_design
+        chart_designs.append(charts.simple_scatter_plot(education_csv_file_path))
+        chart_designs.append(charts.by_series_scatter_plot(education_csv_file_path))
+        chart_designs.append(charts.multi_chart_scatter_plot(education_csv_file_path))
+        chart_designs.append(charts.multi_chart_by_series_scatter_plot(education_csv_file_path))
 
-def get_anova(csv_file_path):
-    stats_design = AnovaDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='prestige_screen',
-        grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
-        measure_field_name='Age',
-        high_precision_required=False,
-        decimal_points=3,
-    )
-    return stats_design
+        chart_designs.append(charts.histogram_chart(people_csv_file_path))
+        chart_designs.append(charts.multi_chart_histogram(people_csv_file_path))
 
+        chart_designs.append(charts.box_plot_chart(people_csv_file_path))
+        chart_designs.append(charts.box_plot_chart_narrow_labels(people_csv_file_path))
+        chart_designs.append(charts.box_plot_chart_very_wide(people_csv_file_path))
+        chart_designs.append(charts.clustered_box_plot(people_csv_file_path))
+
+        designs.extend(chart_designs)
+
+    if do_stats:
+        stats_designs = []
+
+        stats_designs.append(stats.run_anova(people_csv_file_path))
+        stats_designs.append(stats.run_chi_square(people_csv_file_path))
+        stats_designs.append(stats.run_kruskal_wallis_h(people_csv_file_path))
+        stats_designs.append(stats.run_mann_whitney_u(people_csv_file_path))
+        stats_designs.append(stats.run_normality(people_csv_file_path))
+        stats_designs.append(stats.run_pearsons_r(people_csv_file_path))
+        stats_designs.append(stats.run_spearmans_r(people_csv_file_path))
+        stats_designs.append(stats.run_ttest_indep(people_csv_file_path))
+        stats_designs.append(stats.run_t_test_paired(people_csv_file_path))
+        stats_designs.append(stats.run_wilcoxon_signed_ranks(people_csv_file_path))
+
+        for stats_design in stats_designs:
+            print(stats_design.to_result())
+
+        designs.extend(stats_designs)
+
+    if do_tables:
+        table_designs = []
+
+        table_designs.append(tables.run_cross_tab_from_sqlite_db_filtered(cur))
+        table_designs.append(tables.run_cross_tab_from_sqlite_db(cur))
+        table_designs.append(tables.run_cross_tab(people_csv_file_path))
+        table_designs.append(tables.run_repeat_level_two_row_var_cross_tab(people_csv_file_path))
+        table_designs.append(tables.run_simple_freq_tbl(people_csv_file_path))
+
+        designs.extend(table_designs)
+
+    if make_separate_output:
+        for design in designs:
+            design.make_output()
+    if make_combined_output:
+        report = get_report(designs, title='Output Gallery')
+        fpath = output_folder / 'demo_combined_report.html'
+        report.to_file(fpath)
+        open_new_tab(url=f"file://{fpath}")
+
+    cur.close()
+    con.close()
+
+def run():
+    process_designs(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=True)
+
+if __name__ == '__main__':
+    run()

@@ -88,3 +88,11 @@ def multi_chart_by_series_scatterplot(csv_file_path):
     )
     chart_design.make_output()
 
+def run():
+    simple_bar_chart(people_csv_file_path)
+    run_anova(people_csv_file_path)
+    run_simple_freq_tbl(people_csv_file_path)
+    multi_chart_by_series_scatterplot(education_csv_file_path)
+
+if __name__ == '__main__':
+    run()

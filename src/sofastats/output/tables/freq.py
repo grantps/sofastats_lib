@@ -209,6 +209,7 @@ class FrequencyTableDesign(CommonDesign):
             print(html)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.MAIN_TABLE,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )

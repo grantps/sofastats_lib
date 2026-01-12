@@ -323,8 +323,9 @@ class SimpleScatterChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -373,8 +374,9 @@ class BySeriesScatterChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -423,8 +425,9 @@ class MultiChartScatterChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 
@@ -478,6 +481,7 @@ class MultiChartBySeriesScatterChartDesign(CommonDesign):
         html = get_html(charting_spec, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.CHART,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )

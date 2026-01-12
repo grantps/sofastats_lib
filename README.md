@@ -180,7 +180,7 @@ We can check what uv has made by looking at contents of the new project folder, 
 As you can see, a lot of boilerplate has been set up.
 Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by `uv`.
 
-<img src="https://sofastats.github.io/sofastats_lib/images/no_trees.png" width="300" />
+<img src="https://sofastats.github.io/sofastats_lib/images/no_trees.svg" width="300" />
 
 ### Step 2 - Install sofastats_lib as a project library
 

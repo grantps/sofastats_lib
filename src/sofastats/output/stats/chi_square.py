@@ -545,8 +545,9 @@ class ChiSquareDesign(CommonStatsDesign):
         html = get_html(result, style_spec)
         return HTMLItemSpec(
             html_item_str=html,
-            style_name=self.style_name,
             output_item_type=OutputItemType.STATS,
+            output_title=self.output_title,
+            style_name=self.style_name,
         )
 
 

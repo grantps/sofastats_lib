@@ -16,13 +16,8 @@ from textwrap import dedent
 
 
 def run_demos():
-    from sofastats_examples.scripts import demo_charts, demo_combined, demo_custom_styles, demo_stats, demo_tables
-
-    demo_charts.run()
-    demo_combined.run_report()
-    demo_custom_styles.run()
-    demo_stats.run()
-    demo_tables.run()
+    from sofastats_examples.scripts import demo_combined
+    demo_combined.run()
 
 def update_sofastats_examples_package():
     copytree(
@@ -52,17 +47,12 @@ def update_examples_folder():
             dest_file_path = dest_examples_folder / file_path.name
             copy(src=file_path, dst=dest_file_path)
             orig = dest_file_path.read_text()
-            try:
-                idx_run = orig.rindex('def run')  ## may have multiple e.g. run_anova() before final run()
-            except ValueError as e:
-                e.add_note(f"Unable to process {dest_file_path}")
-                raise
-            examples_only = orig[:idx_run]
-            new_text = f"{message}\n\n{examples_only}"
+            making_output = orig.replace("return design", "design.make_output()")
+            new_text = f"{message}\n\n{making_output}"
             dest_file_path.write_text(new_text)
 
 if __name__ == '__main__':
     pass
-    # run_demos()
-    # update_sofastats_examples_package()
-    # update_examples_folder()
+    run_demos()
+    update_sofastats_examples_package()
+    update_examples_folder()
