@@ -14980,7 +14980,7 @@ dijit.wai = {
 					+ 'position: absolute;'
 					+ 'height: 5px;'
 					+ 'top: -999px;'
-					+ 'background-image: url("http://www.sofastatistics.com/sofastats_report_extras/blank.gif");'
+					+ 'background-image: url("https://sofastatistics.com/sofastats_report_extras/blank.gif");'
 			}
 		}, dojo.body());
 

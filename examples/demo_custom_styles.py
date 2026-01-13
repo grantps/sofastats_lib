@@ -51,8 +51,8 @@ def run_anova(csv_file_path):
     stats_design.make_output()
 
 def run_simple_freq_tbl(csv_file_path):
-    row_variables_design_1 = Row(variable='Country', has_total=True, child=Row(variable='Handedness', has_total=True, sort_order=SortOrder.CUSTOM))
-    row_variables_design_2 = Row(variable='Age Group', has_total=True, sort_order=SortOrder.CUSTOM)
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, child=Row(variable_name='Handedness', has_total=True, sort_order=SortOrder.CUSTOM))
+    row_variables_design_2 = Row(variable_name='Age Group', has_total=True, sort_order=SortOrder.CUSTOM)
 
     table_design = FrequencyTableDesign(
         csv_file_path=csv_file_path,

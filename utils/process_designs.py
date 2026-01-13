@@ -12,7 +12,7 @@ import sofastats_examples.scripts.demo_charts as charts
 import sofastats_examples.scripts.demo_stats as stats
 import sofastats_examples.scripts.demo_tables as tables
 
-def process_designs(*, do_charts=False, do_stats=False, do_tables=False,
+def run(*, do_charts=False, do_stats=False, do_tables=False,
         make_separate_output=False, make_combined_output=False):
     con = sqlite.connect(sqlite_demo_db_file_path)
     cur = con.cursor()
@@ -104,8 +104,5 @@ def process_designs(*, do_charts=False, do_stats=False, do_tables=False,
     cur.close()
     con.close()
 
-def run():
-    process_designs(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=True)
-
 if __name__ == '__main__':
-    run()
+    run(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=True)
