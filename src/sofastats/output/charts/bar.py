@@ -114,6 +114,7 @@ class SimpleBarChartDesign(CommonBarDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -166,6 +167,7 @@ class MultiChartBarChartDesign(CommonBarDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -218,6 +220,7 @@ class ClusteredBarChartDesign(CommonBarDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -280,6 +283,7 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 

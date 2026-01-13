@@ -12,8 +12,13 @@ import sofastats_examples.scripts.demo_charts as charts
 import sofastats_examples.scripts.demo_stats as stats
 import sofastats_examples.scripts.demo_tables as tables
 
-def run(*, do_charts=False, do_stats=False, do_tables=False,
-        make_separate_output=False, make_combined_output=False):
+def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=False,
+        make_separate_output=False,
+        make_combined_output=False,
+        combined_output_report_name: str | None = None, combined_output_report_title: str | None = None,
+        is_gallery=False):
+    if make_combined_output and (combined_output_report_name is None or combined_output_report_title is None):
+        raise Exception(f"If making a combined report you must supply a file name and (HTML) title")
     con = sqlite.connect(sqlite_demo_db_file_path)
     cur = con.cursor()
 
@@ -76,8 +81,9 @@ def run(*, do_charts=False, do_stats=False, do_tables=False,
         stats_designs.append(stats.run_t_test_paired(people_csv_file_path))
         stats_designs.append(stats.run_wilcoxon_signed_ranks(people_csv_file_path))
 
-        for stats_design in stats_designs:
-            print(stats_design.to_result())
+        if show_stats_results:
+            for stats_design in stats_designs:
+                print(stats_design.to_result())
 
         designs.extend(stats_designs)
 
@@ -96,8 +102,8 @@ def run(*, do_charts=False, do_stats=False, do_tables=False,
         for design in designs:
             design.make_output()
     if make_combined_output:
-        report = get_report(designs, title='Output Gallery')
-        fpath = output_folder / 'demo_combined_report.html'
+        report = get_report(designs, title=combined_output_report_title, is_gallery=is_gallery)
+        fpath = output_folder / f"{combined_output_report_name}.html"
         report.to_file(fpath)
         open_new_tab(url=f"file://{fpath}")
 
@@ -105,4 +111,4 @@ def run(*, do_charts=False, do_stats=False, do_tables=False,
     con.close()
 
 if __name__ == '__main__':
-    run(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=True)
+    run(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=False)

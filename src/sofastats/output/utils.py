@@ -39,7 +39,7 @@ def plot2image_as_data(plot) -> str:
     image_as_data_str = f'data:image/png;base64,{chart_base64_1}'
     return image_as_data_str
 
-def get_report(designs: Sequence[HasToHTMLItemSpec], title: str) -> Report:
+def get_report(designs: Sequence[HasToHTMLItemSpec], title: str, *, is_gallery=False) -> Report:
     """
     Collectively work out all which unstyled and styled CSS / JS items are needed in HTML.
     Then, in body, put the HTML strs in order.
@@ -53,6 +53,53 @@ def get_report(designs: Sequence[HasToHTMLItemSpec], title: str) -> Report:
         'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
         'title': title,
     }
+    if is_gallery:
+        context['gallery_css'] = """
+        h1.toc-heading {
+          font-size: 24px;
+        }
+        h2.toc-heading {
+          font-size: 20px;
+        }
+
+        a.toc-link {
+          font-weight: bold;
+          font-size: 18px;
+        }
+        a.toc-link:link, a.toc-link:visited, a.toc-link:focus {
+          text-decoration: none;
+          color: #3465a4;
+        }
+        a.toc-link:hover {
+          text-decoration: underline;
+          color: #3465a4;
+        }
+        a.toc-link:active {
+          text-decoration: none;
+          color: #3465a4;
+        }
+
+        a#return-to-origin {
+          font-weight: bold;
+          font-size: 22px;
+        }
+        a#return-to-origin:link, a#return-to-origin:visited, a#return-to-origin:focus {
+          text-decoration: none;
+          color: #3465a4;
+        }
+        a#return-to-origin:hover {
+          text-decoration: underline;
+          color: #3465a4;
+        }
+        a#return-to-origin:active {
+          text-decoration: none;
+          color: #3465a4;
+        }
+
+        .item-heading {
+          margin-bottom: 12px;
+        }
+        """
     html_item_specs = [design.to_html_design() for design in designs]
     ## CHARTS
     includes_charts = False
@@ -116,9 +163,33 @@ def get_report(designs: Sequence[HasToHTMLItemSpec], title: str) -> Report:
     ## unstyled & already styled
     tpl_bits.append(HEAD_END_TPL)
     tpl_bits.append(BODY_START_TPL)
-    item_content = f"<h1>{title}</h1>\n" + """<br><div style="clear: both;"></div><br>""".join(
-        f"<h2>{html_item_spec.output_title}</h2>{html_item_spec.html_item_str}" for html_item_spec in html_item_specs)  ## <======= the actual item content e.g. chart
-    tpl_bits.append(item_content)
+    if is_gallery:
+        toc_html = ("<h2 id='__contents__' class='toc-heading'>Contents</h2>"
+            + "<br>".join(
+                    (f"<a class='toc-link' href='#{html_item_spec.output_title}'>"
+                     f"{html_item_spec.output_title} ({html_item_spec.design_name})"
+                     "</a>")
+                for html_item_spec in html_item_specs))
+        toc_or_not = '\n' + toc_html
+    else:
+        toc_or_not = ''
+    items = []
+    for html_item_spec in html_item_specs:
+        if is_gallery:
+            back_to_contents = " <a class='toc-link' href='#__contents__'>Back to Contents</a>"
+        else:
+            back_to_contents = ''
+        item = (f"<hr><div class='item-heading'><h2 class='toc-heading' id='{html_item_spec.output_title}'>"
+            f"{html_item_spec.output_title} ({html_item_spec.design_name})</h2>{back_to_contents}</div>"
+            f"\n{html_item_spec.html_item_str}")
+        items.append(item)  ## <======= the actual item content as HTML e.g. for a bar chart
+    items_html = """"<br><div style="clear: both;"></div><br>""".join(items)
+    if is_gallery:
+        return_html_or_not = (
+            f"<a id='return-to-origin' href='https://sofastats.github.io/sofastats_lib'>Back to sofastats main menu</a>\n")
+    else:
+        return_html_or_not = ""
+    tpl_bits.append(f"<h1 class='toc-heading'>{title}</h1>\n{return_html_or_not}{toc_or_not}" + items_html)
     tpl_bits.append(BODY_AND_HTML_END_TPL)
     ## assemble
     tpl = '\n'.join(tpl_bits)

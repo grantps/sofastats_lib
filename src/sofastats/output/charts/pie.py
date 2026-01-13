@@ -234,6 +234,7 @@ class PieChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -275,5 +276,6 @@ class MultiChartPieChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )

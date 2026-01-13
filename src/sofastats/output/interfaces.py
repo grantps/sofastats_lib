@@ -36,6 +36,7 @@ class HTMLItemSpec:
     html_item_str: str
     output_item_type: OutputItemType
     output_title: str | None
+    design_name: str
     style_name: str  ## so we know which styles we have to cover in the overall HTML
 
     def to_standalone_html(self) -> str:
@@ -278,6 +279,7 @@ HTML_AND_SOME_HEAD_TPL = """\
 <style type="text/css">
 <!--
 {{generic_unstyled_css}}
+{{gallery_css}}
 -->
 </style>
 """

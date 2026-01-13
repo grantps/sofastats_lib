@@ -306,6 +306,7 @@ class LineChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -367,6 +368,7 @@ class MultiLineChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -430,6 +432,7 @@ class MultiChartLineChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
 
@@ -500,5 +503,6 @@ class MultiChartMultiLineChartDesign(CommonDesign):
             html_item_str=html,
             output_item_type=OutputItemType.CHART,
             output_title=self.output_title,
+            design_name=self.__class__.__name__,
             style_name=self.style_name,
         )
