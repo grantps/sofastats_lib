@@ -8,12 +8,13 @@ import jinja2
 from sofastats.conf.main import HISTO_AVG_CHAR_WIDTH_PIXELS, SortOrder
 from sofastats.data_extraction.charts.histogram import (
     HistoIndivChartSpec, get_by_chart_charting_spec, get_by_vals_charting_spec)
-from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
+from sofastats.output.charts.common import (
+    get_common_charting_spec, get_html, get_indiv_chart_html, get_indiv_chart_title_html)
 from sofastats.output.charts.interfaces import JSBool
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
-from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
-from sofastats.output.styles.utils import get_style_spec
+from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
+from sofastats.output.styles.utils import fix_default_single_color_mapping, get_js_highlighting_function, get_style_spec
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
@@ -25,23 +26,23 @@ PADDING_PIXELS = 5
 class HistogramConf:
     var_label: str
     chart_label: str | None
-    inner_bg_colour: str
-    bar_colour: str
-    line_colour: str
+    inner_background_color: str
+    bar_color: str
+    line_color: str
     label_chart_from_var_if_needed: bool = True
 
 @dataclass(frozen=True)
-class CommonColourSpec:
+class CommonColorSpec:
     axis_font: str
-    chart_bg: str
-    colour_cases: Sequence[str]
+    chart_background: str
+    chart_title_font: str
+    color_mappings: Sequence[ColorWithHighlight]
     fill: str
     major_grid_line: str
     normal_curve: str
-    plot_bg: str
+    plot_background: str
     plot_font: str
-    plot_font_filled: str
-    tooltip_border: str
+    tool_tip_border: str
 
 @dataclass(frozen=True)
 class CommonOptions:
@@ -75,25 +76,16 @@ class CommonChartingSpec:
     """
     Ready to combine with individual chart spec and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: CommonMiscSpec
     options: CommonOptions
 
 tpl_chart = """
- <script type="text/javascript">
+<script type="text/javascript">
 
-var highlight_{{chart_uuid}} = function(colour){
-    var hlColour;
-    switch (colour.toHex()){
-        {% for colour_case in colour_cases %}\n            {{colour_case}}; break;{% endfor %}
-        default:
-            hlColour = hl(colour.toHex());
-            break;
-    }
-    return new dojox.color.Color(hlColour);
-}
+{{js_highlighting_function}}
 
- make_chart_{{chart_uuid}} = function(){
+make_chart_{{chart_uuid}} = function(){
 
     var data_spec = new Array();
         data_spec["series_label"] = "{{var_label}}";
@@ -116,22 +108,21 @@ var highlight_{{chart_uuid}} = function(colour){
         };
 
     var conf = new Array();
-        conf["axis_font_colour"] = "{{axis_font}}";
+        conf["axis_font_color"] = "{{axis_font}}";
         conf["blank_x_axis_numbers_and_labels"] = {{blank_x_axis_numbers_and_labels}};
-        conf["chart_bg_colour"] = "{{chart_bg}}";
+        conf["chart_background_color"] = "{{chart_background}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
         conf["left_margin_offset"] = {{left_margin_offset}};
-        conf["major_grid_line_colour"] = "{{major_grid_line}}";
+        conf["major_grid_line_color"] = "{{major_grid_line}}";
         conf["n_records"] = "{{n_records}}";
-        conf["normal_curve_colour"] = "{{normal_curve}}";
-        conf["plot_bg_colour"] = "{{plot_bg}}";
-        conf["plot_font_colour"] = "{{plot_font}}";
-        conf["plot_font_colour_filled"] = "{{plot_font_filled}}";
+        conf["normal_curve_color"] = "{{normal_curve}}";
+        conf["plot_background_color"] = "{{plot_background}}";
+        conf["plot_font_color"] = "{{plot_font}}";
         conf["show_normal_curve"] = {{show_normal_curve_js_bool}};
-        conf["tooltip_border_colour"] = "{{tooltip_border}}";
+        conf["tool_tip_border_color"] = "{{tool_tip_border}}";
         conf["x_axis_font_size"] = {{x_axis_font_size}};
         conf["x_axis_max_val"] = {{x_axis_max_val}};
         conf["x_axis_min_val"] = {{x_axis_min_val}};
@@ -190,16 +181,12 @@ class HistoChartingSpec:
 @get_common_charting_spec.register
 def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     ## colours
-    colour_mappings = style_spec.chart.colour_mappings[:1]  ## only need the first
-    ## This is an important special case because it affects the histograms using the default style
-    first_colour = colour_mappings[0].main
-    if first_colour == '#e95f29':  ## BURNT_ORANGE
-        colour_mappings = [ColourWithHighlight('#e95f29', '#736354'), ]
-    colour_cases = [f'case "{colour_mapping.main}": hlColour = "{colour_mapping.highlight}"'
-        for colour_mapping in colour_mappings]  ## actually only need first one for simple bar charts
+    color_mappings = style_spec.chart.color_mappings[:1]  ## only need the first
+    color_mappings = fix_default_single_color_mapping(color_mappings)
+    first_color = color_mappings[0].main
     ## misc
     blank_dojo_format_x_axis_numbers_and_labels = (
-            '[' + ', '.join(f"{{value: {n}, text: ''}}" for n in range(1, charting_spec.n_bins + 1)) + ']')
+        '[' + ', '.join(f"{{value: {n}, text: ''}}" for n in range(1, charting_spec.n_bins + 1)) + ']')
     height = 300 if charting_spec.is_multi_chart else 350
     y_axis_title_offset = 45
     left_margin_offset = 25
@@ -212,17 +199,17 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
     x_axis_font_size = charting_spec.x_axis_font_size
     if charting_spec.is_multi_chart:
         x_axis_font_size *= 0.8
-    colour_spec = CommonColourSpec(
-        axis_font=style_spec.chart.axis_font_colour,
-        chart_bg=style_spec.chart.chart_bg_colour,
-        colour_cases=colour_cases,
-        fill=first_colour,
-        major_grid_line=style_spec.chart.major_grid_line_colour,
-        normal_curve=style_spec.chart.normal_curve_colour,
-        plot_bg=style_spec.chart.plot_bg_colour,
-        plot_font=style_spec.chart.plot_font_colour,
-        plot_font_filled=style_spec.chart.plot_font_colour_filled,
-        tooltip_border=style_spec.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        axis_font=style_spec.chart.axis_font_color,
+        chart_background=style_spec.chart.chart_background_color,
+        chart_title_font=style_spec.chart.chart_title_font_color,
+        color_mappings=color_mappings,
+        fill=first_color,
+        major_grid_line=style_spec.chart.major_grid_line_color,
+        normal_curve=style_spec.chart.normal_curve_color,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = CommonMiscSpec(
         bin_labels=charting_spec.bin_labels,
@@ -250,7 +237,7 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
         show_normal_curve_js_bool=show_normal_curve_js_bool,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -258,16 +245,22 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: HistoIndivChartSpec,
         *,  chart_counter: int) -> str:
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    title = indiv_chart_spec.label
+    font_color = common_charting_spec.color_spec.chart_title_font
+    indiv_title_html = (get_indiv_chart_title_html(chart_title=title, color=font_color)
+        if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
+    js_highlighting_function = get_js_highlighting_function(
+        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid)
     indiv_context = {
         'chart_uuid': chart_uuid,
         'indiv_title_html': indiv_title_html,
+        'js_highlighting_function': js_highlighting_function,
         'n_records': n_records,
         'norm_y_vals': indiv_chart_spec.norm_y_vals,
         'page_break': page_break,

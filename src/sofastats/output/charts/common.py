@@ -28,6 +28,9 @@ def get_common_charting_spec(charting_spec, style_spec):
     raise NotImplementedError("Unable to find registered get_common_charting_spec function "
         f"for {type(charting_spec)}")
 
+def get_indiv_chart_title_html(*, chart_title: str, color: str) -> str:
+    return f"""<p style='color: {color};'><b>{chart_title}</b></p>"""
+
 @singledispatch
 def get_indiv_chart_html(common_charting_spec, chart_spec, chart_counter):
     raise NotImplementedError("Unable to find registered get_indiv_chart_html function "

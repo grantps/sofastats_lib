@@ -6,8 +6,6 @@ import platform
 from subprocess import Popen, PIPE
 from typing import Any, Literal
 
-SOFASTATS_WEB_RESOURCES_ROOT = 'https://sofastatistics.com/sofastats'  ## e.g. JS that needs to work when the HTML output is shared to other machines and users
-
 MAX_CHI_SQUARE_CELLS = 200  ## was 25
 MAX_CHI_SQUARE_VALS_IN_DIM = 30  ## was 6
 MIN_CHI_SQUARE_VALS_IN_DIM = 2
@@ -29,7 +27,7 @@ PADDING_TO_RIGHT_OF_Y_AXIS_VALUES_PIXELS = 20
 
 JS_BOOL = Literal['true', 'false']
 
-DOJO_COLOURS = ['indigo', 'gold', 'hotpink', 'firebrick', 'indianred',
+DOJO_COLORS = ['indigo', 'gold', 'hotpink', 'firebrick', 'indianred',
     'mistyrose', 'darkolivegreen', 'darkseagreen', 'slategrey', 'tomato',
     'lightcoral', 'orangered', 'navajowhite', 'slategray', 'palegreen',
     'darkslategrey', 'greenyellow', 'burlywood', 'seashell',

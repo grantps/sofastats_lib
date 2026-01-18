@@ -8,12 +8,13 @@ from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.charts.amounts import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
 from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
-from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
+from sofastats.output.charts.common import (
+    get_common_charting_spec, get_html, get_indiv_chart_html, get_indiv_chart_title_html)
 from sofastats.output.charts.interfaces import ChartingSpecNoAxes
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
-from sofastats.output.styles.interfaces import StyleSpec
-from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
+from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
+from sofastats.output.styles.utils import get_js_highlighting_function, get_long_color_list, get_style_spec
 from sofastats.utils.misc import todict
 
 @dataclass
@@ -24,14 +25,13 @@ class PieChartingSpec(ChartingSpecNoAxes):
             raise TypeError("Pie Charts have to have only one data series per chart")
 
 @dataclass(frozen=True)
-class CommonColourSpec:
-    colour_cases: Sequence[str]
-    plot_bg: str
-    plot_bg_filled: str
+class CommonColorSpec:
+    chart_title_font: str
+    color_mappings: Sequence[ColorWithHighlight]
+    plot_background: str
     plot_font: str
-    plot_font_filled: str
-    slice_colours: Sequence[str]
-    tooltip_border: str
+    slice_colors: Sequence[str]
+    tool_tip_border: str
 
 @dataclass(frozen=True)
 class CommonOptions:
@@ -53,25 +53,16 @@ class CommonChartingSpec:
     """
     Ready to combine with individual chart spec and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: CommonMiscSpec
     options: CommonOptions
 
 tpl_chart = """
- <script type="text/javascript">
+<script type="text/javascript">
 
-var highlight_{{chart_uuid}} = function(colour){
-    var hlColour;
-    switch (colour.toHex()){
-        {% for colour_case in colour_cases %}\n            {{colour_case}}; break;{% endfor %}
-        default:
-            hlColour = hl(colour.toHex());
-            break;
-    }
-    return new dojox.color.Color(hlColour);
-}
+{{js_highlighting_function}}
 
- make_chart_{{chart_uuid}} = function(){
+make_chart_{{chart_uuid}} = function(){
 
      slices = [
        {% for slice_str in slice_strs %}\n            {{slice_str}}{% endfor %}
@@ -80,12 +71,12 @@ var highlight_{{chart_uuid}} = function(colour){
      var conf = new Array();
          conf["connector_style"] = "{{connector_style}}";
          conf["n_records"] = "{{n_records}}";
-         conf["plot_bg_colour_filled"] = "{{plot_bg_filled}}";
-         conf["plot_font_colour_filled"] = "{{plot_font_filled}}";
+         conf["plot_font_color"] = "{{plot_font}}";
+         conf["plot_background_color"] = "{{plot_background}}";
          conf["radius"] = {{radius}};
-         conf["slice_colours"] = {{slice_colours_as_displayed}};
+         conf["slice_colors"] = {{slice_colors_as_displayed}};
          conf["slice_font_size"] = {{slice_font_size}};
-         conf["tooltip_border_colour"] = "{{tooltip_border}}";
+         conf["tool_tip_border_color"] = "{{tool_tip_border}}";
          // distinct fields for pie charts
          conf["highlight"] = highlight_{{chart_uuid}};
          conf["label_offset"] = {{label_offset}};
@@ -110,12 +101,10 @@ var highlight_{{chart_uuid}} = function(colour){
  """
 
 @get_common_charting_spec.register
-def get_common_pie_charting_spec(charting_spec: PieChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
+def get_common_charting_spec(charting_spec: PieChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     ## colours
-    colour_mappings = style_spec.chart.colour_mappings
-    colour_cases = [f'case "{colour_mapping.main}": hlColour = "{colour_mapping.highlight}"'
-        for colour_mapping in colour_mappings]
-    slice_colours = get_long_colour_list(colour_mappings)
+    color_mappings = style_spec.chart.color_mappings
+    slice_colors = get_long_color_list(color_mappings)
     ## misc
     height = 370 if charting_spec.is_multi_chart else 420
     label_offset = -20 if charting_spec.is_multi_chart else -30
@@ -124,14 +113,13 @@ def get_common_pie_charting_spec(charting_spec: PieChartingSpec, style_spec: Sty
     slice_vals = charting_spec.indiv_chart_specs[0].data_series_specs[0].amounts
     if charting_spec.is_multi_chart:
         slice_font_size *= 0.8
-    colour_spec = CommonColourSpec(
-        colour_cases=colour_cases,
-        plot_bg=style_spec.chart.plot_bg_colour,
-        plot_bg_filled=style_spec.chart.plot_bg_colour_filled,
-        plot_font=style_spec.chart.plot_font_colour,
-        plot_font_filled=style_spec.chart.plot_font_colour_filled,
-        slice_colours=slice_colours,
-        tooltip_border=style_spec.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        chart_title_font=style_spec.chart.chart_title_font_color,
+        color_mappings=color_mappings,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        slice_colors=slice_colors,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = CommonMiscSpec(
         connector_style=style_spec.dojo.connector_style,
@@ -147,7 +135,7 @@ def get_common_pie_charting_spec(charting_spec: PieChartingSpec, style_spec: Sty
         is_multi_chart=charting_spec.is_multi_chart,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -160,37 +148,43 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     it is important to keep them aligned even if some slices are not displayed
     (because 'y' value is 0).
     """
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    title = indiv_chart_spec.label
+    font_color = common_charting_spec.color_spec.chart_title_font
+    indiv_title_html = (get_indiv_chart_title_html(chart_title=title, color=font_color)
+        if common_charting_spec.options.is_multi_chart else '')
     ## slices
     only_series = indiv_chart_spec.data_series_specs[0]
     slice_labels = common_charting_spec.misc_spec.slice_labels
-    slice_colours = common_charting_spec.colour_spec.slice_colours
-    slice_colours = slice_colours[:len(slice_labels)]
+    slice_colors = common_charting_spec.color_spec.slice_colors
+    slice_colors = slice_colors[:len(slice_labels)]
     slice_details = zip(
         slice_labels,
         only_series.amounts,  ## the actual frequencies e.g. 120 for avg NZ IQ
-        slice_colours,
+        slice_colors,
         only_series.tool_tips,
         strict=True)
     slice_strs = []
-    slice_colours_as_displayed = []
-    for slice_label, slice_val, colour, tool_tip in slice_details:
+    slice_colors_as_displayed = []
+    for slice_label, slice_val, color, tool_tip in slice_details:
         if slice_val == 0:
             continue
-        slice_str = f"""{{"val": {slice_val}, "label": "{slice_label}", "tooltip": "{tool_tip}"}},"""
+        slice_str = f"""{{"val": {slice_val}, "label": "{slice_label}", "tool_tip": "{tool_tip}"}},"""
         slice_strs.append(slice_str)
-        slice_colours_as_displayed.append(colour)
+        slice_colors_as_displayed.append(color)
     slice_strs[-1] = slice_strs[-1].rstrip(',')
+    js_highlighting_function = get_js_highlighting_function(
+        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid)
     indiv_context = {
         'chart_uuid': chart_uuid,
         'indiv_title_html': indiv_title_html,
+        'js_highlighting_function': js_highlighting_function,
         'page_break': page_break,
-        'slice_colours_as_displayed': slice_colours_as_displayed,
+        'slice_colors_as_displayed': slice_colors_as_displayed,
         'slice_strs': slice_strs,
     }
     context.update(indiv_context)

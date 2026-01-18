@@ -153,20 +153,19 @@ class LineArea:
         {% endfor %}
 
         var conf = new Array();
-            conf["axis_font_colour"] = "{{axis_font}}";
+            conf["axis_font_color"] = "{{axis_font}}";
             conf["axis_label_drop"] = {{axis_label_drop}};
             conf["axis_label_rotate"] = {{axis_label_rotate}};
-            conf["chart_bg_colour"] = "{{chart_bg}}";
+            conf["chart_background_color"] = "{{chart_background}}";
             conf["connector_style"] = "{{connector_style}}";
             conf["grid_line_width"] = {{grid_line_width}};
             conf["left_margin_offset"] = {{left_margin_offset}};
-            conf["major_grid_line_colour"] = "{{major_grid_line}}";
+            conf["major_grid_line_color"] = "{{major_grid_line}}";
             conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
             conf["n_records"] = "{{n_records}}";
-            conf["plot_bg_colour"] = "{{plot_bg}}";
-            conf["plot_font_colour"] = "{{plot_font}}";
-            conf["plot_font_colour_filled"] = "{{plot_font_filled}}";
-            conf["tooltip_border_colour"] = "{{tooltip_border}}";
+            conf["plot_background_color"] = "{{plot_background}}";
+            conf["plot_font_color"] = "{{plot_font}}";
+            conf["tool_tip_border_color"] = "{{tool_tip_border}}";
             conf["x_axis_font_size"] = {{x_axis_font_size}};
             conf["x_axis_numbers_and_labels"] = {{x_axis_numbers_and_labels}};
             conf["y_axis_max"] = {{y_axis_max}};
@@ -197,17 +196,14 @@ class LineArea:
     """
 
     @dataclass(frozen=True)
-    class CommonColourSpec:
+    class CommonColorSpec:
         axis_font: str
-        chart_bg: str
-        # colours: Sequence[str]  ## line
-        # fill: str  ## area
-        # line: str  ## are
+        chart_background: str
+        chart_title_font: str
         major_grid_line: str
-        plot_bg: str
+        plot_background: str
         plot_font: str
-        plot_font_filled: str
-        tooltip_border: str
+        tool_tip_border: str
 
     @dataclass(frozen=True)
     class CommonOptions:

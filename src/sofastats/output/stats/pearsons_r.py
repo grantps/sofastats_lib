@@ -58,7 +58,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
     <p>No worked example available for this test</p>
 
     {% for footnote in footnotes %}
-      <p><a id='ft{{ loop.index }}'></a><sup>{{ loop.index }}</sup>{{ footnote }}</p>
+      <p><a id='ft{{ loop.index }}'></a><sup style='color: {{footnote_font_color}};'>{{ loop.index }}</sup>&nbsp;{{ footnote }}</p>
     {% endfor %}
     """
     dp = result.decimal_points
@@ -75,6 +75,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
     context = {
         'degrees_of_freedom_msg': degrees_of_freedom_msg,
+        'footnote_font_color': style_spec.table.footnote_font_color,
         'footnotes': [p_full_explanation, look_at_scatterplot_msg],
         'intercept_rounded': intercept_rounded,
         'p_str': p_str,
@@ -129,8 +130,8 @@ class PearsonsRDesign(CommonStatsDesign):
 
         scatterplot_series = ScatterplotSeries(
             coords=correlation_result.coords,
-            dot_colour=style_spec.chart.colour_mappings[0].main,
-            dot_line_colour=style_spec.chart.major_grid_line_colour,
+            dot_color=style_spec.chart.color_mappings[0].main,
+            dot_line_color=style_spec.chart.major_grid_line_color,
             show_regression_details=True,
         )
         vars_series = [scatterplot_series, ]
@@ -141,8 +142,8 @@ class PearsonsRDesign(CommonStatsDesign):
         chart_conf = ScatterplotConf(
             width_inches=7.5,
             height_inches=4.0,
-            inner_background_colour=style_spec.chart.plot_bg_colour,
-            text_colour=style_spec.chart.axis_font_colour,
+            inner_background_color=style_spec.chart.plot_background_color,
+            text_color=style_spec.chart.axis_font_color,
             x_axis_label=correlation_result.variable_a_name,
             y_axis_label=correlation_result.variable_b_name,
             show_dot_lines=True,

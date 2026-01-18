@@ -14,8 +14,9 @@ from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_
     get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
-from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
-from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
+from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
+from sofastats.output.styles.utils import (
+    fix_default_single_color_mapping, get_js_highlighting_function, get_long_color_list, get_style_spec)
 from sofastats.stats_calc.interfaces import BoxplotType
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
@@ -43,28 +44,19 @@ class DojoBoxSpec:
 @dataclass(frozen=True)
 class BoxplotDojoSeriesSpec:
     """
-    Used for DOJO boxplots (which have series).
-    Scatterplots, and more general charts with series (e.g. bar charts and line charts),
+    Used for DOJO box-plots (which have series).
+    Scatter-plots, and more general charts with series (e.g. bar charts and line charts),
     have different specs of their own for DOJO series.
     """
     box_specs: Sequence[DojoBoxSpec]
     label: str
     series_id: str  ## e.g. 01
-    stroke_colour: str
+    stroke_color: str
 
 tpl_chart = """\
 <script type="text/javascript">
 
-var highlight_{{chart_uuid}} = function(colour){
-    var hlColour;
-    switch (colour.toHex()){
-        {% for colour_case in colour_cases %}\n            {{colour_case}}; break;{% endfor %}
-        default:
-            hlColour = hl(colour.toHex());
-            break;
-    }
-    return new dojox.color.Color(hlColour);
-}
+{{js_highlighting_function}}
 
 make_chart_{{chart_uuid}} = function(){
     // add each box to single multi-series
@@ -90,9 +82,9 @@ make_chart_{{chart_uuid}} = function(){
 
         {% for box_spec in series_spec.box_specs %}
             var box_{{series_spec.series_id}}_{{loop.index0}} = new Array();
-            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = "{{series_spec.stroke_colour}}";
+            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = "{{series_spec.stroke_color}}";
             box_{{series_spec.series_id}}_{{loop.index0}}['center'] = "{{box_spec.center}}";
-            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = getfainthex("{{series_spec.stroke_colour}}");
+            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = getfainthex("{{series_spec.stroke_color}}");
             box_{{series_spec.series_id}}_{{loop.index0}}['width'] = {{bar_width}};
             box_{{series_spec.series_id}}_{{loop.index0}}['indiv_boxlbl'] = "{{box_spec.indiv_box_label}}";
 
@@ -118,19 +110,19 @@ make_chart_{{chart_uuid}} = function(){
     {% endfor %}  // series_spec
 
     var conf = new Array();
-        conf["axis_font_colour"] = "{{axis_font}}";
+        conf["axis_font_color"] = "{{axis_font}}";
         conf["axis_label_drop"] = {{axis_label_drop}};
         conf["axis_label_rotate"] = {{axis_label_rotate}};
-        conf["chart_bg_colour"] = "{{chart_bg}}";
+        conf["chart_background_color"] = "{{chart_background}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
         conf["left_margin_offset"] = {{left_margin_offset}};
         conf["n_records"] = "{{n_records}}";
-        conf["plot_bg_colour"] = "{{plot_bg}}";
-        conf["plot_font_colour"] = "{{plot_font}}";
-        conf["tooltip_border_colour"] = "{{tooltip_border}}";
+        conf["plot_background_color"] = "{{plot_background}}";
+        conf["plot_font_color"] = "{{plot_font}}";
+        conf["tool_tip_border_color"] = "{{tool_tip_border}}";
         conf["x_axis_numbers_and_labels"] = {{x_axis_numbers_and_labels}};
         conf["x_axis_title"] = "{{x_axis_title}}";
         conf["x_axis_font_size"] = {{x_axis_font_size}};
@@ -162,16 +154,19 @@ make_chart_{{chart_uuid}} = function(){
 </div>
 """
 
-@dataclass(frozen=True)
-class CommonColourSpec:
+@dataclass(frozen=False)
+class CommonColorSpec:
     axis_font: str
-    chart_bg: str
-    colours: Sequence[str]
+    chart_background: str
+    color_mappings: Sequence[ColorWithHighlight]
     major_grid_line: str
-    plot_bg: str
+    plot_background: str
     plot_font: str
-    plot_font_filled: str
-    tooltip_border: str
+    tool_tip_border: str
+
+    @property
+    def colors(self):
+        return get_long_color_list(self.color_mappings)
 
 @dataclass(frozen=True)
 class CommonOptions:
@@ -202,19 +197,16 @@ class CommonChartingSpec:
     """
     Ready to combine with individual chart spec and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: CommonMiscSpec
     options: CommonOptions
 
 @get_common_charting_spec.register
 def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
-    colour_mappings = style_spec.chart.colour_mappings
+    color_mappings = style_spec.chart.color_mappings
     if charting_spec.is_single_series:
-        colour_mappings = colour_mappings[:1]  ## only need the first
-        ## This is an important special case because it affects the bar charts using the default style
-        if colour_mappings[0].main == '#e95f29':  ## BURNT_ORANGE
-            colour_mappings = [ColourWithHighlight('#e95f29', '#736354'), ]
-    colours = get_long_colour_list(colour_mappings)
+        color_mappings = fix_default_single_color_mapping(color_mappings)
+    ## misc
     axis_label_drop = get_axis_label_drop(
         is_multi_chart=False, rotated_x_labels=charting_spec.rotate_x_labels,
         max_x_axis_label_lines=charting_spec.max_x_axis_label_lines)
@@ -251,15 +243,14 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
     x_axis_font_size = get_x_axis_font_size(n_x_items=charting_spec.n_x_items, is_multi_chart=False)
     width = left_margin_offset + width_after_left_margin
 
-    colour_spec = CommonColourSpec(
-        axis_font=style_spec.chart.axis_font_colour,
-        chart_bg=style_spec.chart.chart_bg_colour,
-        colours=colours,
-        major_grid_line=style_spec.chart.major_grid_line_colour,
-        plot_bg=style_spec.chart.plot_bg_colour,
-        plot_font=style_spec.chart.plot_font_colour,
-        plot_font_filled=style_spec.chart.plot_font_colour_filled,
-        tooltip_border=style_spec.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        axis_font=style_spec.chart.axis_font_color,
+        chart_background=style_spec.chart.chart_background_color,
+        color_mappings=color_mappings,
+        major_grid_line=style_spec.chart.major_grid_line_color,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = CommonMiscSpec(
         axis_label_drop=axis_label_drop,
@@ -284,7 +275,7 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         show_n_records=charting_spec.show_n_records,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -292,7 +283,7 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: BoxplotIndivChartSpec,
         *,  chart_counter: int) -> str:
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
@@ -304,7 +295,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     dojo_series_specs = []
     for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
         series_id = f"{i:>02}"
-        stroke_colour = common_charting_spec.colour_spec.colours[i]
+        stroke_color = common_charting_spec.color_spec.colors[i]
         box_specs = []
         for box_item in data_series_spec.box_items:
             if not box_item:
@@ -337,13 +328,16 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
             box_specs=box_specs,
             label=data_series_spec.label,
             series_id=series_id,
-            stroke_colour=stroke_colour,
+            stroke_color=stroke_color,
         )
         dojo_series_specs.append(series_spec)
+    js_highlighting_function = get_js_highlighting_function(
+        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid, uses_faint_version=True)
     indiv_context = {
         'bar_width': bar_width,
         'chart_uuid': chart_uuid,
         'dojo_series_specs': dojo_series_specs,
+        'js_highlighting_function': js_highlighting_function,
         'n_records': n_records,
         'page_break': page_break,
     }

@@ -8,7 +8,7 @@ from sofastats.data_extraction.charts.amounts import (
     get_by_category_charting_spec, get_by_chart_category_charting_spec)
 from sofastats.data_extraction.charts.interfaces.common import IndivChartSpec
 from sofastats.output.charts.common import (
-    get_common_charting_spec, get_html, get_indiv_chart_html,get_line_area_misc_spec)
+    get_common_charting_spec, get_html, get_indiv_chart_html, get_indiv_chart_title_html, get_line_area_misc_spec)
 from sofastats.output.charts.interfaces import AreaChartingSpec, DojoSeriesSpec, JSBool, LineArea, PlotStyle
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
@@ -18,7 +18,7 @@ from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
 @dataclass(frozen=True)
-class CommonColourSpec(LineArea.CommonColourSpec):
+class CommonColorSpec(LineArea.CommonColorSpec):
     fill: str
     line: str
 
@@ -28,15 +28,15 @@ class CommonChartingSpec:
     Ready to combine with individual chart specs
     and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: LineArea.CommonMiscSpec
     options: LineArea.CommonOptions
 
 @get_common_charting_spec.register
-def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: StyleSpec) -> CommonChartingSpec:
+def get_common_charting_spec(charting_spec: AreaChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     ## colours
-    first_colour_mapping = style_specs.chart.colour_mappings[0]
-    line_colour, fill_colour = astuple(first_colour_mapping)
+    first_color_mapping = style_spec.chart.color_mappings[0]
+    line_color, fill_color = astuple(first_color_mapping)
     ## misc
     has_minor_ticks_js_bool: JSBool = ('true' if charting_spec.n_x_items >= LineArea.DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM
         else 'false')
@@ -44,18 +44,18 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
         else 'false')
     is_time_series_js_bool: JSBool = 'true' if charting_spec.is_time_series else 'false'
     series_legend_label = ''
-    colour_spec = CommonColourSpec(
-        axis_font=style_specs.chart.axis_font_colour,
-        chart_bg=style_specs.chart.chart_bg_colour,
-        line=line_colour,
-        fill=fill_colour,
-        major_grid_line=style_specs.chart.major_grid_line_colour,
-        plot_bg=style_specs.chart.plot_bg_colour,
-        plot_font=style_specs.chart.plot_font_colour,
-        plot_font_filled=style_specs.chart.plot_font_colour_filled,
-        tooltip_border=style_specs.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        axis_font=style_spec.chart.axis_font_color,
+        chart_background=style_spec.chart.chart_background_color,
+        chart_title_font=style_spec.chart.chart_title_font_color,
+        line=line_color,
+        fill=fill_color,
+        major_grid_line=style_spec.chart.major_grid_line_color,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
-    misc_spec = get_line_area_misc_spec(charting_spec, style_specs, series_legend_label)
+    misc_spec = get_line_area_misc_spec(charting_spec, style_spec, series_legend_label)
     options = LineArea.CommonOptions(
         has_micro_ticks_js_bool=has_micro_ticks_js_bool,
         has_minor_ticks_js_bool=has_minor_ticks_js_bool,
@@ -67,7 +67,7 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
         show_n_records=charting_spec.show_n_records,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -75,14 +75,17 @@ def get_common_charting_spec(charting_spec: AreaChartingSpec, style_specs: Style
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: IndivChartSpec,
         *,  chart_counter: int) -> str:
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     if not common_charting_spec.options.is_single_series:
         raise Exception("Area charts must be single series charts")
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    title = indiv_chart_spec.label
+    font_color = common_charting_spec.color_spec.chart_title_font
+    indiv_title_html = (get_indiv_chart_title_html(chart_title=title, color=font_color)
+        if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     ## the standard series
     dojo_series_specs = []
@@ -97,11 +100,11 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         series_vals = str(only_series.amounts)
     ## options
     ## e.g. {stroke: {color: '#e95f29', width: '6px'}, yLbls: ['x-val: 2016-01-01<br>y-val: 12<br>0.8%', ... ], plot: 'default'};
-    line_colour = common_charting_spec.colour_spec.line
-    fill_colour = common_charting_spec.colour_spec.fill
+    line_color = common_charting_spec.color_spec.line
+    fill_color = common_charting_spec.color_spec.fill
     y_labels_str = str(only_series.tool_tips)
-    options = (f"""{{stroke: {{color: "{line_colour}", width: "6px"}}, """
-        f"""fill: "{fill_colour}", """
+    options = (f"""{{stroke: {{color: "{line_color}", width: "6px"}}, """
+        f"""fill: "{fill_color}", """
         f"""yLbls: {y_labels_str}, plot: "{marker_plot_style}"}}""")
     dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))
     indiv_context = {

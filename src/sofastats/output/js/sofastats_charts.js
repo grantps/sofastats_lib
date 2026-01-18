@@ -3,7 +3,7 @@
 // BAR ***************************************************************************************
 makeBarChart = function(chartname, series, conf){
     nChart = conf["n_records"];
-    nChartFontColour = conf["plot_font_colour"]
+    nChartFontColour = conf["plot_font_color"]
     /*chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals), shape, x, y, chart, plot, hAxis, eventMask, type, event
     val.run has chart, group, htmlElements, dirty, stroke, fill, plot, data, dyn, name
     val.run = val.run.chart.series[0]
@@ -25,12 +25,12 @@ makeBarChart = function(chartname, series, conf){
     var sofa_theme = new dc.Theme({
         chart:{
 	        stroke: null,
-        	fill: conf["chart_bg_colour"],
+        	fill: conf["chart_background_color"],
 	        pageStyle: null // suggested page style as an object suitable for dojo.style()
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill: conf["plot_bg_colour"]
+	        fill: conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -38,14 +38,14 @@ makeBarChart = function(chartname, series, conf){
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf["axis_font_colour"]
+	            fontColor: conf["axis_font_color"]
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf["grid_line_width"],
 	            length: 6,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  0.8,
@@ -96,7 +96,7 @@ makeBarChart = function(chartname, series, conf){
     });
     var anim_b = new dc.action2d.Shake(mychart, "default");
     var anim_c = new dc.action2d.Tooltip(mychart, "default", {text: getTooltip,
-        tooltipBorderColour: conf["tooltip_border_colour"],
+        tooltipBorderColour: conf["tool_tip_border_color"],
         connectorStyle: conf["connector_style"]});
     mychart.render();
     var legend = new dojox.charting.widget.Legend({chart: mychart, horizontal: 6}, "legend_for_" + chartname);
@@ -104,20 +104,20 @@ makeBarChart = function(chartname, series, conf){
 
 // PIE ***************************************************************************************
 makePieChart = function(chartname, slices, conf){
-    nChartFontColour = conf["plot_font_colour_filled"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     var pieStroke = "#8b9b98";
     var dc = dojox.charting;
     var mychart = new dc.Chart2D(chartname);
     var sofa_theme = new dc.Theme({
-		colors: conf["slice_colours"],
+		colors: conf["slice_colors"],
         chart: {
 	        stroke: null,
         	fill: null,
 	        pageStyle: null // suggested page style as an object suitable for dojo.style()
 	    },
 		plotarea: {
-			fill: conf["plot_bg_colour_filled"]
+			fill: conf["plot_background_color"]
 		},
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -130,7 +130,7 @@ makePieChart = function(chartname, slices, conf){
     mychart.addPlot("default", {
             type: "Pie",
             font: "normal normal " + conf["slice_font_size"] + "px Arial",
-            fontColor: conf["plot_font_colour_filled"],
+            fontColor: conf["plot_font_color"],
             labelOffset: conf['label_offset'],
             radius: conf['radius']
         });
@@ -143,7 +143,7 @@ makePieChart = function(chartname, slices, conf){
             y: slices[i]["val"],
             text: slices[i]["label"],
             stroke: pieStroke,
-            tooltip: slices[i]["tooltip"]
+            tooltip: slices[i]["tool_tip"]
         }
     }
     mychart.addSeries("Series A", pieSeries);
@@ -154,7 +154,7 @@ makePieChart = function(chartname, slices, conf){
         easing:   dojo.fx.easing.sineOut
     });
     var anim_c = new dc.action2d.Tooltip(mychart, "default",
-        {tooltipBorderColour: conf['tooltip_border_colour'],
+        {tooltipBorderColour: conf['tool_tip_border_color'],
          connectorStyle: conf['connector_style']});
     mychart.render();
 }
@@ -179,7 +179,7 @@ function labelfTime(o)
 
 // LINE ***************************************************************************************
 makeLineChart = function(chartname, series, conf){
-    nChartFontColour = conf["plot_font_colour"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     var getTooltip = function(val){
         var tip = val.run.yLbls[val.index];
@@ -196,12 +196,12 @@ makeLineChart = function(chartname, series, conf){
     var sofa_theme = new dc.Theme({
         chart:{
 	        stroke: null,
-        	fill: conf["chart_bg_colour"],
+        	fill: conf["chart_background_color"],
 	        pageStyle: null // suggested page style as an object suitable for dojo.style()
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill: conf["plot_bg_colour"]
+	        fill: conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -209,19 +209,19 @@ makeLineChart = function(chartname, series, conf){
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf["axis_font_colour"]
+	            fontColor: conf["axis_font_color"]
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf['grid_line_width'],
 	            length: 6,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  2,
 	            length: 4,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        microTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  1.7,
@@ -262,14 +262,14 @@ makeLineChart = function(chartname, series, conf){
     }
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default", {text: getTooltip,
-        tooltipBorderColour: conf['tooltip_border_colour'], connectorStyle: conf['connector_style']});
+        tooltipBorderColour: conf['tool_tip_border_color'], connectorStyle: conf['connector_style']});
     mychart.render();
     var legend = new dojox.charting.widget.Legend({chart: mychart}, "legend_for_" + chartname);
 }
 
 // AREA ***************************************************************************************
 makeAreaChart = function(chartname, series, conf){
-    nChartFontColour = conf["plot_font_colour"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     var getTooltip = function(val){
         var tip = val.run.yLbls[val.index];
@@ -291,7 +291,7 @@ makeAreaChart = function(chartname, series, conf){
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill: conf["plot_bg_colour"]
+	        fill: conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -299,19 +299,19 @@ makeAreaChart = function(chartname, series, conf){
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf["axis_font_colour"]
+	            fontColor: conf["axis_font_color"]
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf['gridline_width'],
 	            length: 6,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  2,
 	            length: 4,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        microTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  1.7,
@@ -352,14 +352,14 @@ makeAreaChart = function(chartname, series, conf){
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default",
         {text: getTooltip,
-         tooltipBorderColour: conf['tooltip_border_colour'],
+         tooltipBorderColour: conf['tool_tip_border_color'],
          connectorStyle: conf['connector_style']});
     mychart.render();
 }
 
 // HISTOGRAM ***************************************************************************************
 makeHistogram = function(chartname, data_spec, conf){
-    nChartFontColour = conf["plot_font_colour"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     // chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
     var getTooltip = function(val){
@@ -382,7 +382,7 @@ makeHistogram = function(chartname, data_spec, conf){
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill: conf["plot_bg_colour"]
+	        fill: conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -390,14 +390,14 @@ makeHistogram = function(chartname, data_spec, conf){
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf["axis_font_colour"]
+	            fontColor: conf["axis_font_color"]
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf['grid_line_width'],
 	            length: 6,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  0.8,
@@ -444,14 +444,14 @@ makeHistogram = function(chartname, data_spec, conf){
         mychart,
         "default",
         {text: getTooltip,
-         tooltipBorderColour: conf['tooltip_border_colour'],
+         tooltipBorderColour: conf['tool_tip_border_color'],
          connectorStyle: conf['connector_style']});
     mychart.render();
 }
 
 // SCATTERPLOT ***************************************************************************************
 makeScatterplot = function(chartname, series, conf){
-    nChartFontColour = conf["plot_font_colour_filled"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     // chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
     var getTooltip = function(val){
@@ -469,12 +469,12 @@ makeScatterplot = function(chartname, series, conf){
     var sofa_theme = new dc.Theme({
         chart:{
 	        stroke: null,
-        	fill: conf['chart_bg_colour'],
+        	fill: conf['chart_background_color'],
 	        pageStyle: null // suggested page style as an object suitable for dojo.style()
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill: conf["plot_bg_colour"]
+	        fill: conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
@@ -482,14 +482,14 @@ makeScatterplot = function(chartname, series, conf){
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf["axis_font_colour"]
+	            fontColor: conf["axis_font_color"]
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf["grid_line_width"],
 	            length: 6,
-                color: conf["major_grid_line_colour"]
+                color: conf["major_grid_line_color"]
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  0.8,
@@ -531,7 +531,7 @@ makeScatterplot = function(chartname, series, conf){
     var anim_a = new dc.action2d.Magnify(mychart, "default");
     var anim_b = new dc.action2d.Tooltip(mychart, "default",
        {text: getTooltip,
-        tooltipBorderColour: conf['tooltip_border_colour'],
+        tooltipBorderColour: conf['tool_tip_border_color'],
         connectorStyle: conf['connector_style']});
     mychart.render();
     var legend = new dojox.charting.widget.Legend({chart: mychart}, "legend_for_" + chartname);
@@ -542,14 +542,14 @@ makeScatterplot = function(chartname, series, conf){
     });
     var anim_b = new dc.action2d.Shake(mychart, "default");
     var anim_c = new dc.action2d.Tooltip(mychart, "default", {text: getTooltip,
-        tooltipBorderColour: conf['tooltip_border_colour'],
+        tooltipBorderColour: conf['tool_tip_border_color'],
         connectorStyle: conf['connector_style']});
     mychart.render();
 }
 
 // BOX ***************************************************************************************
 makeBoxAndWhisker = function(chartname, series, series_conf, conf){
-    nChartFontColour = conf["plot_font_colour"]
+    nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
     // chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
     var getTooltip = function(val){
@@ -567,27 +567,27 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
     var sofa_theme = new dc.Theme({
         chart:{
 	        stroke:    null,
-        	fill:      conf['chart_bg_colour'],
+        	fill:      conf['chart_background_color'],
 	        pageStyle: null // suggested page style as an object suitable for dojo.style()
 	    },
 	    plotarea:{
 	        stroke: null,
-	        fill:   conf["plot_bg_colour"]
+	        fill:   conf["plot_background_color"]
 	    },
 	    axis:{
 	        stroke:	{ // the axis itself
-	            color: conf['plot_font_colour'],
+	            color: conf['plot_font_color'],
 	            width: null
 	        },
             tick: {	// used as a foundation for all ticks
-	            color:     conf["axis_font_colour"],
+	            color:     conf["axis_font_color"],
 	            position:  "center",
-	            fontColor: conf['axis_font_colour']
+	            fontColor: conf['axis_font_color']
 	        },
 	        majorTick:	{ // major ticks on axis, and used for major gridlines
 	            width:  conf['grid_line_width'],
 	            length: 6,
-                color:  conf['axis_font_colour'] // we have vMajorLines off so we don't need to match grid color e.g. null
+                color:  conf['axis_font_color'] // we have vMajorLines off so we don't need to match grid color e.g. null
 	        },
 	        minorTick:	{ // minor ticks on axis, and used for minor gridlines
 	            width:  0.8,
@@ -635,7 +635,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
         mychart,
         "default",
         {text: getTooltip,
-         tooltipBorderColour: conf['tooltip_border_colour'],
+         tooltipBorderColour: conf['tool_tip_border_color'],
          connectorStyle: conf['connector_style']});
     mychart.render();
     if (series_conf.length > 1) {

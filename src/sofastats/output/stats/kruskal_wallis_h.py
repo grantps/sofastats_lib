@@ -74,7 +74,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
       </tbody>
     </table>
 
-    <p><a id='ft1'></a><sup>1</sup>{{ p_explain_multiple_groups }}<br><br>{{one_tail_explain}}</p>
+    <p><a id='ft1'></a><sup style='color: {{footnote_font_color}};'>1</sup>&nbsp;{{ p_explain_multiple_groups }}<br><br>{{one_tail_explain}}</p>
 
     <p>No worked example available for this test</p>
 
@@ -111,6 +111,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
         'title': title,
 
         'degrees_of_freedom': result.degrees_of_freedom,
+        'footnote_font_color': style_spec.table.footnote_font_color,
         'footnotes': [p_full_explanation, P_EXPLANATION_WHEN_MULTIPLE_GROUPS, ],
         'group_specs': formatted_group_specs,
         'h': round(result.h, dp),

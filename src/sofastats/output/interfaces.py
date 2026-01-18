@@ -14,10 +14,10 @@ import jinja2
 import pandas as pd
 
 from sofastats import SQLITE_DB, logger
-from sofastats.conf.main import (
-    INTERNAL_DATABASE_FPATH, SOFASTATS_WEB_RESOURCES_ROOT, DbeName, SortOrderSpecs)
+from sofastats.conf.main import INTERNAL_DATABASE_FPATH, DbeName, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor, get_dbe_spec
 from sofastats.output.charts.conf import DOJO_CHART_JS
+import sofastats.output.styles as styles
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
     get_styled_placeholder_css_for_main_tbls, get_styled_stats_tbl_css)
 from sofastats.utils.misc import get_safer_name
@@ -25,6 +25,11 @@ from sofastats.utils.misc import get_safer_name
 from ruamel.yaml import YAML
 
 DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY = '__default_supplied_but_mandatory_anyway__'  ## enforced through add_post_init_with_mandatory_cols decorator (curried with mandatory col names)
+
+TUNDRA_CSS = (Path(styles.__file__).parent.parent / 'css' / 'tundra.css').read_text()
+DOJO_XD_JS = (Path(styles.__file__).parent.parent / 'js' / 'dojo.xd.js').read_text()
+SOFASTATS_CHARTS_JS = (Path(styles.__file__).parent.parent / 'js' / 'sofastats_charts.js').read_text()
+SOFASTATS_DOJO_MINIFIED_JS = (Path(styles.__file__).parent.parent / 'js' / 'sofastats_dojo_minified.js').read_text()
 
 class OutputItemType(StrEnum):
     CHART = 'chart'
@@ -40,10 +45,12 @@ class HTMLItemSpec:
     style_name: str  ## so we know which styles we have to cover in the overall HTML
 
     def to_standalone_html(self) -> str:
+        """
+        output.utils.get_report() also handles final HTML output
+        """
         style_spec = get_style_spec(self.style_name)
         tpl_bits = [HTML_AND_SOME_HEAD_TPL, ]
         if self.output_item_type == OutputItemType.CHART:
-            tpl_bits.append(CHARTING_LINKS_TPL)
             tpl_bits.append(CHARTING_CSS_TPL)
             tpl_bits.append(CHARTING_JS_TPL)
         if self.output_item_type == OutputItemType.MAIN_TABLE:
@@ -59,8 +66,11 @@ class HTMLItemSpec:
         environment = jinja2.Environment()
         template = environment.from_string(tpl)
         context = {
+            'tundra_css': TUNDRA_CSS,
+            'dojo_xd_js': DOJO_XD_JS,
+            'sofastats_charts_js': SOFASTATS_CHARTS_JS,
+            'sofastats_dojo_minified_js': SOFASTATS_DOJO_MINIFIED_JS,
             'generic_unstyled_css': get_generic_unstyled_css(),
-            'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
             'title': self.output_title,
         }
         if self.output_item_type == OutputItemType.CHART:
@@ -278,17 +288,20 @@ HTML_AND_SOME_HEAD_TPL = """\
 <title>{{title}}</title>
 <style type="text/css">
 <!--
+{{tundra_css}}
 {{generic_unstyled_css}}
 {{gallery_css}}
 -->
 </style>
-"""
-
-CHARTING_LINKS_TPL = """\
-<link rel='stylesheet' type='text/css' href="{{sofastats_web_resources_root}}/tundra.css" />
-<script src="{{sofastats_web_resources_root}}/dojo.xd.js"></script>
-<script src="{{sofastats_web_resources_root}}/sofastatsdojo_minified.js"></script>
-<script src="{{sofastats_web_resources_root}}/sofastats_charts.js"></script>            
+<script>
+{{dojo_xd_js}}
+</script>
+<script>
+{{sofastats_charts_js}}
+</script>
+<script>
+{{sofastats_dojo_minified_js}}
+</script>
 """
 
 CHARTING_CSS_TPL = """\

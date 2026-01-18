@@ -16,14 +16,17 @@ and using style-specific values.
 """
 from collections.abc import Sequence
 from enum import Enum
-import importlib
+from itertools import count
+from pathlib import Path
+from textwrap import dedent
 
 import jinja2
 from ruamel.yaml import YAML
 
-from sofastats.conf.main import DOJO_COLOURS, CUSTOM_STYLES_FOLDER
+from sofastats.conf.main import DOJO_COLORS, CUSTOM_STYLES_FOLDER
+import sofastats.output.styles as styles
 from sofastats.output.styles.interfaces import (
-    ChartStyleSpec, ColourWithHighlight, DojoStyleSpec, StyleSpec, TableStyleSpec)
+    ChartStyleSpec, ColorWithHighlight, DojoStyleSpec, StyleSpec, TableStyleSpec)
 from sofastats.utils.misc import todict
 
 yaml = YAML(typ='safe')  ## default, if not specified, is 'rt' (round-trip)
@@ -33,47 +36,50 @@ def yaml_to_style_spec(*, style_name: str, yaml_dict: dict) -> StyleSpec:
     try:
         table_spec = TableStyleSpec(
             ## font colours
-            var_font_colour_first_level=y['var_font_colour_first_level'],
-            var_font_colour_not_first_level=y['var_font_colour_not_first_level'],
-            heading_footnote_font_colour=y['heading_footnote_font_colour'],
-            footnote_font_colour=y['footnote_font_colour'],
+            first_level_variable_font_color=y['first_level_variable_font_color'],
+            variable_font_color_other_levels=y['variable_font_color_other_levels'],
+            heading_footnote_font_color=y['heading_footnote_font_color'],
+            footnote_font_color=y['footnote_font_color'],
             ## background colours
-            var_bg_colour_first_level=y['var_bg_colour_first_level'],
-            var_bg_colour_not_first_level=y['var_bg_colour_not_first_level'],
+            first_level_variable_background_color=y['first_level_variable_background_color'],
+            variable_background_color_other_levels=y['variable_background_color_other_levels'],
             ## borders
-            var_border_colour_first_level=y['var_border_colour_first_level'],
-            var_border_colour_not_first_level=y['var_border_colour_not_first_level'],
+            first_level_variable_border_color=y['first_level_variable_border_color'],
+            variable_border_color_other_levels=y['variable_border_color_other_levels'],
             ## space-holders
-            spaceholder_bg_colour=y['spaceholder_bg_colour'],
-            spaceholder_bg_img=y.get('spaceholder_bg_img'),
+            top_left_table_space_holder_background_color=y['top_left_table_space_holder_background_color'],
+            top_left_table_space_holder_background_image=y.get('top_left_table_space_holder_background_image'),
         )
+
+        color_mappings = []
+        for n in count(1):
+            try:
+                main_color = y[f'item_{n}_main_color']
+                hover_color = y[f'item_{n}_hover_color']
+            except KeyError:
+                break
+            else:
+                color_mappings.append(ColorWithHighlight(main_color, hover_color))
         chart_spec = ChartStyleSpec(
-            chart_bg_colour=y['chart_bg_colour'],
-            chart_font_colour=y['chart_font_colour'],
-            plot_bg_colour=y['plot_bg_colour'],
-            plot_font_colour=y['plot_font_colour'],
-            plot_bg_colour_filled=y['plot_bg_colour_filled'],
-            plot_font_colour_filled=y['plot_font_colour_filled'],
-            axis_font_colour=y['axis_font_colour'],
-            major_grid_line_colour=y['major_grid_line_colour'],
+            chart_background_color=y['chart_background_color'],
+            chart_title_font_color=y['chart_title_font_color'],
+            plot_background_color=y['plot_background_color'],
+            plot_font_color=y['plot_font_color'],
+            axis_font_color=y['axis_font_color'],
+            major_grid_line_color=y['major_grid_line_color'],
             grid_line_width=int(y['grid_line_width']),
             stroke_width=int(y['stroke_width']),
-            tooltip_border_colour=y['tooltip_border_colour'],
-            normal_curve_colour=y['normal_curve_colour'],
-            colour_mappings=[
-                ColourWithHighlight(y['colour_mappings_0_a'], y['colour_mappings_0_b']),
-                ColourWithHighlight(y['colour_mappings_1_a'], y['colour_mappings_1_b']),
-                ColourWithHighlight(y['colour_mappings_2_a'], y['colour_mappings_2_b']),
-                ColourWithHighlight(y['colour_mappings_3_a'], y['colour_mappings_3_b']),
-                ColourWithHighlight(y['colour_mappings_4_a'], y['colour_mappings_4_b']),
-            ],
+            tool_tip_border_color=y['tool_tip_border_color'],
+            normal_curve_color=y['normal_curve_color'],
+            color_mappings=color_mappings,
         )
+
         dojo_spec = DojoStyleSpec(
             connector_style=y['connector_style'],
-            tooltip_connector_up=y['tooltip_connector_up'],
-            tooltip_connector_down=y['tooltip_connector_down'],
-            tooltip_connector_left=y['tooltip_connector_left'],
-            tooltip_connector_right=y['tooltip_connector_right'],
+            tool_tip_connector_up=y['tool_tip_connector_up'],
+            tool_tip_connector_down=y['tool_tip_connector_down'],
+            tool_tip_connector_left=y['tool_tip_connector_left'],
+            tool_tip_connector_right=y['tool_tip_connector_right'],
         )
     except KeyError as e:
         e.add_note("Unable to extract all required information from YAML - please check all required keys have values")
@@ -92,35 +98,33 @@ def get_style_spec(style_name: str, *, debug=False) -> StyleSpec:
     style_spec.table_spec.heading_cell_border (DARKER_MID_GREY)
     style_spec.table_spec.first_row_border (None)
     """
-    try:
-        ## try using a built-in style
-        style_module = importlib.import_module(f"sofastats.output.styles.{style_name}")
-    except ModuleNotFoundError:
+    ## try using a built-in style
+    built_in_styles_path = Path(styles.__file__).parent
+    yaml_fpath = built_in_styles_path / f"{style_name}.yaml"
+    if not yaml_fpath.exists():
         ## look for custom YAML file
         yaml_fpath = CUSTOM_STYLES_FOLDER / f"{style_name}.yaml"
-        try:
-            yaml_dict = yaml.load(yaml_fpath)
-        except FileNotFoundError as e:
-            e.add_note(f"Unable to open {yaml_fpath} to extract style specification for '{style_name}'")
-            raise
-        except Exception as e:
-            e.add_note(f"Experienced a problem extracting style information from '{yaml_fpath}'")
-            raise
-        else:
-            if debug: print(yaml_dict)
-            try:
-                style_spec = yaml_to_style_spec(style_name=style_name, yaml_dict=yaml_dict)
-            except KeyError as e:
-                e.add_note(f"Unable to create style spec from '{yaml_fpath}'")
-                raise
+    try:
+        yaml_dict = yaml.load(yaml_fpath)
+    except FileNotFoundError as e:
+        e.add_note(f"Unable to open {yaml_fpath} to extract style specification for '{style_name}'")
+        raise
+    except Exception as e:
+        e.add_note(f"Experienced a problem extracting style information from '{yaml_fpath}'")
+        raise
     else:
-        style_spec = style_module.get_style_spec()
+        if debug: print(yaml_dict)
+        try:
+            style_spec = yaml_to_style_spec(style_name=style_name, yaml_dict=yaml_dict)
+        except KeyError as e:
+            e.add_note(f"Unable to create style spec from '{yaml_fpath}'")
+            raise
     return style_spec
 
 class CSS(Enum):
     """
     CSS can be stored as giant, monolithic blocks of text ready for insertion at the top of HTML files.
-    Or as smaller blocks of css stored in variables.
+    Or as smaller blocks of CSS stored in variables.
     We store CSS as variables when we need to use it for specific parts of tables in the form of inline CSS.
     In such cases, individual blocks of CSS text are supplied to tables via Pandas df styling.
     Note - CSS text pulled out into individual variables can still be used as part of large, monolithic CSS text
@@ -265,14 +269,14 @@ def get_styled_dojo_chart_css(dojo_style_spec: DojoStyleSpec) -> str:
         .tundra .dijitTooltipBelow-{{ connector_style }} .dijitTooltipConnector {
           top: 0px;
           left: 3px;
-          background: url("{{ tooltip_connector_up }}") no-repeat top left !important;
+          background: url("{{ tool_tip_connector_up }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
         .tundra .dijitTooltipAbove-{{ connector_style }} .dijitTooltipConnector {
           bottom: 0px;
           left: 3px;
-          background: url("{{ tooltip_connector_down }}") no-repeat top left !important;
+          background: url("{{ tool_tip_connector_down }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
@@ -282,7 +286,7 @@ def get_styled_dojo_chart_css(dojo_style_spec: DojoStyleSpec) -> str:
         .tundra .dijitTooltipLeft-{{ connector_style }} .dijitTooltipConnector {
           right: 0px;
           bottom: 3px;
-          background: url("{{ tooltip_connector_right }}") no-repeat top left !important;
+          background: url("{{ tool_tip_connector_right }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
@@ -292,7 +296,7 @@ def get_styled_dojo_chart_css(dojo_style_spec: DojoStyleSpec) -> str:
         .tundra .dijitTooltipRight-{{ connector_style }} .dijitTooltipConnector {
           left: 0px;
           bottom: 3px;
-          background: url("{{ tooltip_connector_left }}") no-repeat top left !important;
+          background: url("{{ tool_tip_connector_left }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
@@ -303,16 +307,16 @@ def get_styled_dojo_chart_css(dojo_style_spec: DojoStyleSpec) -> str:
     css = template.render(context)
     return css
 
-def get_long_colour_list(colour_mappings: Sequence[ColourWithHighlight]) -> list[str]:
-    defined_colours = [colour_mapping.main for colour_mapping in colour_mappings]
-    long_colour_list = defined_colours + DOJO_COLOURS
-    return long_colour_list
+def get_long_color_list(color_mappings: Sequence[ColorWithHighlight]) -> list[str]:
+    defined_colors = [color_mapping.main for color_mapping in color_mappings]
+    long_color_list = defined_colors + DOJO_COLORS
+    return long_color_list
 
 def _get_bg_line(style_spec: StyleSpec) -> str:
-    if style_spec.table.spaceholder_bg_img:
-        bg_line = f"background-image: url({style_spec.table.spaceholder_bg_img}) !important;"
-    elif style_spec.table.spaceholder_bg_colour:
-        bg_line = f"background-color: {style_spec.table.spaceholder_bg_colour};"
+    if style_spec.table.top_left_table_space_holder_background_image:
+        bg_line = f"background-image: url({style_spec.table.top_left_table_space_holder_background_image}) !important;"
+    elif style_spec.table.top_left_table_space_holder_background_color:
+        bg_line = f"background-color: {style_spec.table.top_left_table_space_holder_background_color};"
     else:
         bg_line = ''
     return bg_line
@@ -327,30 +331,30 @@ def get_styled_stats_tbl_css(style_spec: StyleSpec) -> str:
             font-family: Ubuntu, Helvetica, Arial, sans-serif;
             font-weight: bold;
             font-size: 14px;
-            color: {{ var_font_colour_first_level }};
+            color: {{ first_level_variable_font_color }};
         }
         .spaceholder-{{ style_name_hyphens }} {
             {{ bg_line }}
         }
         .firstrowvar-{{ style_name_hyphens }} {
-            color: {{ var_font_colour_first_level }};
-            background-color: {{ var_bg_colour_first_level }};
+            color: {{ first_level_variable_font_color }};
+            background-color: {{ first_level_variable_background_color }};
         }
         .firstcolvar-{{ style_name_hyphens }} {
             padding: 9px 6px;
             vertical-align: top;
-            color: {{ var_font_colour_first_level }};
-            background-color: {{ var_bg_colour_first_level }};
+            color: {{ first_level_variable_font_color }};
+            background-color: {{ first_level_variable_background_color }};
         }
         td.lbl-{{ style_name_hyphens }} {
-            color: {{ var_font_colour_not_first_level }};
-            background-color: {{ var_bg_colour_not_first_level }};
+            color: {{ variable_font_color_other_levels }};
+            background-color: {{ variable_background_color_other_levels }};
         }
         td.{{ style_name_hyphens }}, th.{{ style_name_hyphens }}, td.rowval-{{ style_name_hyphens }}, td.datacell-{{ style_name_hyphens }} {
-            border: 1px solid {{ var_border_colour_not_first_level }};
+            border: 1px solid {{ variable_border_color_other_levels }};
         }
         .tbl-heading-footnote-{{ style_name_hyphens }}{
-            color: {{ heading_footnote_font_colour }};
+            color: {{ heading_footnote_font_color }};
         }
     """
     environment = jinja2.Environment()
@@ -376,9 +380,49 @@ def get_styled_placeholder_css_for_main_tbls(style_name: str) -> str:
     """ % {
         'style_name_hyphens': style_spec.style_name_hyphens,
         'bg_line': bg_line,
-        'border': style_spec.table.var_border_colour_first_level,
+        'border': style_spec.table.first_level_variable_border_color,
     }
     return placeholder_css
 
+def fix_default_single_color_mapping(color_mappings: Sequence[ColorWithHighlight]) -> list[ColorWithHighlight]:
+    new_color_mappings = color_mappings[:1]  ## only need the first
+    ## This is an important special case because it affects the bar charts using the default style
+    if new_color_mappings[0].main.lower() == '#e95f29':  ## BURNT_ORANGE
+        new_color_mappings = [ColorWithHighlight('#e95f29', '#736354'), ]
+    return new_color_mappings
+
+def get_js_highlighting_function(*,
+        color_mappings: Sequence[ColorWithHighlight], chart_uuid: str, uses_faint_version=False) -> str:
+    """
+    Used to do this in the jinja template but this is centralised and easier to document etc.
+
+    Args:
+        uses_faint_version: if True, uses JavaScript getfainthex() on the colours before using them to fill the boxes.
+          No point mapping highlight without first converting to the faint versions.
+    """
+    bits = [
+        f"var highlight_{chart_uuid} = function(colour){{",
+        "var hlColour;",
+        "switch (colour.toHex()){",
+    ]
+    bits = []
+    for color_mapping in color_mappings:
+        if uses_faint_version:
+            bits.append(f'        case getfainthex("{color_mapping.main.lower()}").toHex(): hlColour = getfainthex("{color_mapping.highlight.lower()}").toHex(); break;')
+        else:
+            bits.append(f'        case "{color_mapping.main.lower()}": hlColour = "{color_mapping.highlight.lower()}"; break;')
+    cases = '\n'.join(bits)
+    highlighting_function = (dedent(f"""\
+    var highlight_{chart_uuid} = function(colour){{
+        var hlColour;
+        switch (colour.toHex()){{\n""")
+    + cases  ## the default highlighting uses a standard highlight function (usually makes a fainter version of the colour)
+    + (f"""
+        default: hlColour = hl(colour.toHex()); break;
+    }}
+    return new dojox.color.Color(hlColour);\n}}"""))
+    return highlighting_function
+
 if __name__ == '__main__':
-    get_style_spec('horrific')
+    pass
+    # get_style_spec('horrific')

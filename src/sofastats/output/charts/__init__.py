@@ -28,5 +28,5 @@ Will have two children: Axes vs NoAxes (pie) versions
 Axes will have lots of children - bar, line, area etc.
 indiv_chart_specs (often just one) are below charting_spec
 Each indiv_chart_spec has data_series_specs below (often just one)
-Each data_series_item amount, label, and tooltip
+Each data_series_item amount, label, and tool_tip
 """

@@ -6,14 +6,13 @@ from pathlib import Path
 
 import jinja2
 
-from sofastats.conf.main import SOFASTATS_WEB_RESOURCES_ROOT
 from sofastats.output.charts.conf import DOJO_CHART_JS
 from sofastats.output.interfaces import (
-    BODY_AND_HTML_END_TPL, BODY_START_TPL, CHARTING_CSS_TPL, CHARTING_LINKS_TPL, HEAD_END_TPL,
-    HTML_AND_SOME_HEAD_TPL, SPACEHOLDER_CSS_TPL, STATS_TBL_TPL,
+    BODY_AND_HTML_END_TPL, BODY_START_TPL, CHARTING_CSS_TPL, DOJO_XD_JS, HEAD_END_TPL, HTML_AND_SOME_HEAD_TPL,
+    SOFASTATS_CHARTS_JS, SOFASTATS_DOJO_MINIFIED_JS, SPACEHOLDER_CSS_TPL, STATS_TBL_TPL, TUNDRA_CSS,
     HasToHTMLItemSpec, OutputItemType, Report)
 from sofastats.output.styles.utils import (get_generic_unstyled_css, get_style_spec, get_styled_dojo_chart_css,
-                                           get_styled_placeholder_css_for_main_tbls, get_styled_stats_tbl_css)
+    get_styled_placeholder_css_for_main_tbls, get_styled_stats_tbl_css)
 
 def image_as_data(image_file_path: Path) -> str:
     """
@@ -44,13 +43,18 @@ def get_report(designs: Sequence[HasToHTMLItemSpec], title: str, *, is_gallery=F
     Collectively work out all which unstyled and styled CSS / JS items are needed in HTML.
     Then, in body, put the HTML strs in order.
     Aligning param names exactly with templates from output.interfaces
+
+    HTMLItemSpec.to_standalone_html() also handles final HTML output
     """
     tpl_bits = [
         HTML_AND_SOME_HEAD_TPL,  ## unstyled
     ]
     context = {
+        'tundra_css': TUNDRA_CSS,
+        'dojo_xd_js': DOJO_XD_JS,
+        'sofastats_charts_js': SOFASTATS_CHARTS_JS,
+        'sofastats_dojo_minified_js': SOFASTATS_DOJO_MINIFIED_JS,
         'generic_unstyled_css': get_generic_unstyled_css(),
-        'sofastats_web_resources_root': SOFASTATS_WEB_RESOURCES_ROOT,
         'title': title,
     }
     if is_gallery:
@@ -109,7 +113,6 @@ def get_report(designs: Sequence[HasToHTMLItemSpec], title: str, *, is_gallery=F
             break
     if includes_charts:
         ## unstyled
-        tpl_bits.append(CHARTING_LINKS_TPL)
         tpl_bits.append(DOJO_CHART_JS)
         ## styled
         chart_styles_done = set()

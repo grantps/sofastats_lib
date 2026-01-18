@@ -31,7 +31,7 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     """
     fig, ax = plt.subplots()
     rect = ax.patch
-    rect.set_facecolor(chart_conf.inner_bg_colour)
+    rect.set_facecolor(chart_conf.inner_background_color)
     bin_spec, bin_freqs = get_bin_details_from_vals(vals)
     ax.set_xlabel(chart_conf.var_label)
     ax.set_ylabel('P')
@@ -52,7 +52,7 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     ## See also https://matplotlib.org/stable/gallery/statistics/histogram_features.html
     n, bins, patches = ax.hist(vals, bin_spec.n_bins, density=True,
         range=(bin_spec.lower_limit, bin_spec.upper_limit),
-        facecolor=chart_conf.bar_colour, edgecolor=chart_conf.line_colour)
+        facecolor=chart_conf.bar_color, edgecolor=chart_conf.line_color)
     # ensure enough y-axis to show all of normpdf
     y_min, y_max = ax.get_ylim()
     norm_ys = get_normal_ys(vals, bins)
@@ -62,7 +62,7 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     if max(norm_ys) > y_max:
         ax.set_ylim(ymax=1.05 * max(norm_ys))
     ## actually plot norm ys
-    ax.plot(bins, norm_ys, color=chart_conf.line_colour, linewidth=4)
+    ax.plot(bins, norm_ys, color=chart_conf.line_color, linewidth=4)
     logger.debug(f"n={n}, bins={bins}, patches={patches}")
     plt.close(fig)  ## free up the memory
     return fig
@@ -82,17 +82,17 @@ def get_scatterplot_fig(vars_series: Sequence[ScatterplotSeries], chart_conf: Sc
         for coord in var_series.coords:
             xs.append(coord.x)
             ys.append(coord.y)
-        dot_line_colour = (var_series.dot_line_colour if chart_conf.show_dot_lines
-            else var_series.dot_colour)
-        ax.plot(xs, ys, 'o', color=var_series.dot_colour, label=var_series.label, markeredgecolor=dot_line_colour)
+        dot_line_color = (var_series.dot_line_color if chart_conf.show_dot_lines
+            else var_series.dot_color)
+        ax.plot(xs, ys, 'o', color=var_series.dot_color, label=var_series.label, markeredgecolor=dot_line_color)
         if var_series.show_regression_details:
             ## Label can't be identical as the points series so add a space.
             ## Will look like correct and matching label without clashing.
             line_label = f"{var_series.label} " if var_series.label else ''
             regression_result = get_regression_result(xs, ys)
             ax.plot([min(xs), max(ys)], [regression_result.y0, regression_result.y1], '-',
-                color=var_series.dot_colour, linewidth=5, label=line_label)
+                color=var_series.dot_color, linewidth=5, label=line_label)
         ax.annotate(text=f"N={len(xs):,}", xy=(0.02, 0.96), xytext=(0.025, 0.925),
-            textcoords='axes fraction', fontsize=7, color=chart_conf.text_colour)
-    ax.set_facecolor(chart_conf.inner_background_colour)
+            textcoords='axes fraction', fontsize=7, color=chart_conf.text_color)
+    ax.set_facecolor(chart_conf.inner_background_color)
     return fig

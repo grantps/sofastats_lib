@@ -12,18 +12,18 @@ from sofastats.data_extraction.charts.amounts import (
     get_by_series_category_charting_spec)
 from sofastats.data_extraction.charts.interfaces.common import DataSeriesSpec, IndivChartSpec
 from sofastats.output.charts.common import (
-    get_common_charting_spec, get_html, get_indiv_chart_html, get_line_area_misc_spec)
+    get_common_charting_spec, get_html, get_indiv_chart_html, get_indiv_chart_title_html, get_line_area_misc_spec)
 from sofastats.output.charts.interfaces import DojoSeriesSpec, JSBool, LineArea, LineChartingSpec, PlotStyle
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import StyleSpec
-from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
+from sofastats.output.styles.utils import get_long_color_list, get_style_spec
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
 @dataclass(frozen=True)
-class CommonColourSpec(LineArea.CommonColourSpec):
-    colours: Sequence[str]
+class CommonColorSpec(LineArea.CommonColorSpec):
+    colors: Sequence[str]
 
 @dataclass(frozen=True)
 class CommonOptions(LineArea.CommonOptions):
@@ -36,7 +36,7 @@ class CommonChartingSpec:
     Ready to combine with individual chart specs
     and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: LineArea.CommonMiscSpec
     options: CommonOptions
 
@@ -100,7 +100,7 @@ def get_dojo_trend_series_spec(common_charting_spec: CommonChartingSpec,
     trend_y_vals = get_trend_y_vals(orig_y_vals)
     trend_series_id = '01'
     trend_series_label = 'Trend line'
-    trend_line_colour = common_charting_spec.colour_spec.colours[1]  ## obviously don't conflict with main series colour or possible smooth line colour
+    trend_line_color = common_charting_spec.color_spec.colors[1]  ## obviously don't conflict with main series colour or possible smooth line colour
     if common_charting_spec.options.is_time_series:
         trend_series_x_axis_vals = [common_charting_spec.misc_spec.x_axis_categories[0]]
         trend_series_y_vals = [trend_y_vals[0], trend_y_vals[-1]]
@@ -110,7 +110,7 @@ def get_dojo_trend_series_spec(common_charting_spec: CommonChartingSpec,
     else:
         trend_series_vals = trend_y_vals  ## need
         marker_plot_style = PlotStyle.UNMARKED
-    trend_options = (f"""{{stroke: {{color: "{trend_line_colour}", width: "6px"}}, """
+    trend_options = (f"""{{stroke: {{color: "{trend_line_color}", width: "6px"}}, """
         f"""yLbls: {LineArea.DUMMY_TOOL_TIPS}, plot: "{marker_plot_style}"}}""")
     trend_series_spec = DojoSeriesSpec(trend_series_id, trend_series_label, trend_series_vals, trend_options)
     return trend_series_spec
@@ -127,8 +127,8 @@ def get_dojo_smooth_series_spec(common_charting_spec: CommonChartingSpec,
     smooth_y_vals = get_smooth_y_vals(orig_y_vals)
     smooth_series_id = '02'
     smooth_series_label = 'Smooth line'
-    smooth_line_colour = common_charting_spec.colour_spec.colours[2]  ## obviously don't conflict with main series colour or possible trend line colour
-    smooth_options = (f"""{{stroke: {{color: "{smooth_line_colour}", width: "6px"}}, """
+    smooth_line_color = common_charting_spec.color_spec.colors[2]  ## obviously don't conflict with main series colour or possible trend line colour
+    smooth_options = (f"""{{stroke: {{color: "{smooth_line_color}", width: "6px"}}, """
         f"""yLbls: {LineArea.DUMMY_TOOL_TIPS}, plot: "{PlotStyle.CURVED}"}}""")
     if common_charting_spec.options.is_time_series:
         smooth_series_vals = LineArea.get_time_series_vals(
@@ -142,10 +142,10 @@ def get_dojo_smooth_series_spec(common_charting_spec: CommonChartingSpec,
 @get_common_charting_spec.register
 def get_common_charting_spec(charting_spec: LineChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     ## colours
-    colour_mappings = style_spec.chart.colour_mappings
+    color_mappings = style_spec.chart.color_mappings
     if charting_spec.is_single_series:
-        colour_mappings = colour_mappings[:3]  ## only need the first 1-3 depending on whether trend and smoothed lines
-    colours = get_long_colour_list(colour_mappings)
+        color_mappings = color_mappings[:3]  ## only need the first 1-3 depending on whether trend and smoothed lines
+    colors = get_long_color_list(color_mappings)
     ## misc
     has_minor_ticks_js_bool: JSBool = ('true' if charting_spec.n_x_items >= LineArea.DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM
         else 'false')
@@ -156,15 +156,15 @@ def get_common_charting_spec(charting_spec: LineChartingSpec, style_spec: StyleS
         series_legend_label = ''
     else:
         series_legend_label = charting_spec.series_legend_label
-    colour_spec = CommonColourSpec(
-        axis_font=style_spec.chart.axis_font_colour,
-        chart_bg=style_spec.chart.chart_bg_colour,
-        colours=colours,
-        major_grid_line=style_spec.chart.major_grid_line_colour,
-        plot_bg=style_spec.chart.plot_bg_colour,
-        plot_font=style_spec.chart.plot_font_colour,
-        plot_font_filled=style_spec.chart.plot_font_colour_filled,
-        tooltip_border=style_spec.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        axis_font=style_spec.chart.axis_font_color,
+        chart_background=style_spec.chart.chart_background_color,
+        chart_title_font=style_spec.chart.chart_title_font_color,
+        colors=colors,
+        major_grid_line=style_spec.chart.major_grid_line_color,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = get_line_area_misc_spec(charting_spec, style_spec, series_legend_label)
     options = CommonOptions(
@@ -180,7 +180,7 @@ def get_common_charting_spec(charting_spec: LineChartingSpec, style_spec: StyleS
         show_markers=charting_spec.show_markers,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -188,12 +188,15 @@ def get_common_charting_spec(charting_spec: LineChartingSpec, style_spec: StyleS
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: IndivChartSpec,
         *,  chart_counter: int) -> str:
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = (f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else '')
+    title = indiv_chart_spec.label
+    font_color = common_charting_spec.color_spec.chart_title_font
+    indiv_title_html = (get_indiv_chart_title_html(chart_title=title, color=font_color)
+        if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     ## each standard series
     dojo_series_specs = []
@@ -209,9 +212,9 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
             series_vals = str(data_series_spec.amounts)
         ## options
         ## e.g. {stroke: {color: '#e95f29', width: '6px'}, yLbls: ['x-val: 2016-01-01<br>y-val: 12<br>0.8%', ... ], plot: 'default'};
-        line_colour = common_charting_spec.colour_spec.colours[i]
+        line_color = common_charting_spec.color_spec.colors[i]
         y_lbls_str = str(data_series_spec.tool_tips)
-        options = (f"""{{stroke: {{color: "{line_colour}", width: "6px"}}, """
+        options = (f"""{{stroke: {{color: "{line_color}", width: "6px"}}, """
             f"""yLbls: {y_lbls_str}, plot: "{marker_plot_style}"}}""")
         dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))
     ## trend and smooth series (if appropriate)

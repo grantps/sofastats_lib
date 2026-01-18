@@ -78,7 +78,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
     </table>
 
     {% for footnote in footnotes %}
-      <p><a id='ft{{ loop.index }}'></a><sup>{{ loop.index }}</sup>{{ footnote }}</p>
+      <p><a id='ft{{ loop.index }}'></a><sup style='color: {{footnote_font_color}};'>{{ loop.index }}</sup>&nbsp;{{ footnote }}</p>
     {% endfor %}
 
     {{ html_or_msg }}
@@ -127,6 +127,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
         'title': title,
 
         'degrees_of_freedom': result.degrees_of_freedom,
+        'footnote_font_color': style_spec.table.footnote_font_color,
         'footnotes': [p_full_explanation, CI_EXPLAIN, STD_DEV_EXPLAIN, ],
         'group_specs': formatted_group_specs,
         'html_or_msg': result.html_or_msg,

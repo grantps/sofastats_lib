@@ -291,8 +291,8 @@ def config_clustered_barchart(plot, style_spec: StyleSpec, *,
     Var A defines the clusters and B the split within the clusters e.g. gender
     vs country = gender as boomslang bars and country as values within bars.
     """
-    grid_bg = style_spec.chart.chart_bg_colour
-    bar_colours = [colour_with_highlight.main for colour_with_highlight in style_spec.chart.colour_mappings]
+    grid_bg = style_spec.chart.chart_background_color
+    bar_colors = [color_with_highlight.main for color_with_highlight in style_spec.chart.color_mappings]
     clustered_bars = boomslang.ClusteredBars()
     clustered_bars.grid_bg = grid_bg
     labels_n = len(variable_b_val_labels)
@@ -304,8 +304,8 @@ def config_clustered_barchart(plot, style_spec: StyleSpec, *,
         logger.debug(f'x_vals={x_vals}')
         logger.debug(f'y_vals={y_vals}')
         cluster.yValues = y_vals
-        logger.debug(f"i={i}, bar_colours={bar_colours}")
-        cluster.color = bar_colours[i]
+        logger.debug(f"i={i}, bar_colours={bar_colors}")
+        cluster.color = bar_colors[i]
         cluster.edgeColor = 'white'
         max_width = 17 if labels_n < 5 else 10
         cluster.label, _actual_label_width, _n_lines = get_labels_in_lines(orig_txt=val_label_b, max_width=max_width)
@@ -413,7 +413,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
     <p>&#37; cells with expected count < 5: {{ pct_cells_lt_5_rounded }}</p>
 
     {% for footnote in footnotes %}
-      <p><a id='ft{{ loop.index }}'></a><sup>{{ loop.index }}</sup>{{ footnote }}</p>
+      <p><a id='ft{{ loop.index }}'></a><sup style='color: {{footnote_font_color}};'>{{ loop.index }}</sup>&nbsp;{{ footnote }}</p>
     {% endfor %}
 
     {% if worked_example %}
@@ -454,6 +454,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
         'chi_square_charts': result.chi_square_charts,
         'chi_square': chi_square,
         'degrees_of_freedom': result.degrees_of_freedom,
+        'footnote_font_color': style_spec.table.footnote_font_color,
         'footnotes': [p_full_explanation, ],
         'min_count_rounded': min_count_rounded,
         'observed_vs_expected_tbl': result.observed_vs_expected_tbl,

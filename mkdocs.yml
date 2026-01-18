@@ -1,0 +1,35 @@
+site_name: sofastats
+repo_url: https://github.com/grantps/sofastats_lib/
+site_description: Documentation for sofastats_lib
+nav:
+  - README: 'README.md'
+  - Output Gallery: 'output_gallery.html'
+  - API: 'API.md'
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            heading_level: 2
+            docstring_section_style: list
+            members_order: source
+            show_root_heading: true
+            show_signature_annotations: true
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+theme:
+  name: material
+  features:
+    - navigation.tracking
+    - navigation.sections
+  logo: images/bunny_head_small.svg
+extra_css:
+    - stylesheets/extra.css

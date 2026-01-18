@@ -117,7 +117,7 @@ def run_repeat_level_two_row_var_cross_tab(csv_file_path):
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         row_variable_designs=[row_variables_design_1, row_variables_design_2, ],
         column_variable_designs=[col_variables_design_1, ],
-        style_name='grey_spirals',
+        style_name='gray_spirals',
         decimal_points=2,
         debug=False,
         verbose=False,

@@ -7,33 +7,36 @@ import jinja2
 
 from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.charts.scatter_plot import ScatterChartingSpec, ScatterIndivChartSpec
-from sofastats.data_extraction.charts.interfaces.xy import (get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
-                                                            get_by_series_xy_charting_spec, get_by_xy_charting_spec)
-from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
+from sofastats.data_extraction.charts.interfaces.xy import (
+    get_by_chart_series_xy_charting_spec, get_by_chart_xy_charting_spec,
+    get_by_series_xy_charting_spec, get_by_xy_charting_spec)
+from sofastats.output.charts.common import (
+    get_common_charting_spec, get_html, get_indiv_chart_html, get_indiv_chart_title_html)
 from sofastats.output.charts.interfaces import JSBool
 from sofastats.output.charts.utils import  get_intrusion_of_first_x_axis_label_leftwards, get_y_axis_title_offset
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.stats.interfaces import Coord
-from sofastats.output.styles.interfaces import ColourWithHighlight, StyleSpec
-from sofastats.output.styles.utils import get_long_colour_list, get_style_spec
+from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
+from sofastats.output.styles.utils import (
+    fix_default_single_color_mapping, get_js_highlighting_function, get_long_color_list, get_style_spec)
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
 @dataclass(frozen=True)
 class ScatterplotSeries:
     coords: Sequence[Coord]
-    dot_colour: str
+    dot_color: str
     label: str = ''  ## series label - only relevant if showing multiple series
-    dot_line_colour: str | None = None
+    dot_line_color: str | None = None
     show_regression_details: bool = False
 
 @dataclass(frozen=True, kw_only=True)
 class ScatterplotConf:
     width_inches: float
     height_inches: float
-    inner_background_colour: str
-    text_colour: str
+    inner_background_color: str
+    text_color: str
     x_axis_label: str
     y_axis_label: str
     show_dot_lines: bool = False
@@ -55,17 +58,20 @@ class ScatterplotDojoSeriesSpec:
     xy_pairs: str  ## e.g. [(1.2, 2.0), ...]
     options: str  ## e.g. stroke, color, width etc. - things needed in a generic DOJO series
 
-@dataclass(frozen=True)
-class CommonColourSpec:
+@dataclass(frozen=False)
+class CommonColorSpec:
     axis_font: str
-    chart_bg: str
-    colour_cases: Sequence[str]
-    colours: Sequence[str]
+    chart_background: str
+    chart_title_font: str
+    color_mappings: Sequence[ColorWithHighlight]
     major_grid_line: str
-    plot_bg: str
+    plot_background: str
     plot_font: str
-    plot_font_filled: str
-    tooltip_border: str
+    tool_tip_border: str
+
+    @property
+    def colors(self):
+        return get_long_color_list(self.color_mappings)
 
 @dataclass(frozen=True)
 class CommonOptions:
@@ -99,23 +105,14 @@ class CommonChartingSpec:
     """
     Ready to combine with individual chart spec and feed into the Dojo JS engine.
     """
-    colour_spec: CommonColourSpec
+    color_spec: CommonColorSpec
     misc_spec: CommonMiscSpec
     options: CommonOptions
 
 tpl_chart = """\
 <script type="text/javascript">
 
-var highlight_{{chart_uuid}} = function(colour){
-    var hlColour;
-    switch (colour.toHex()){
-        {% for colour_case in colour_cases %}\n            {{colour_case}}; break;{% endfor %}
-        default:
-            hlColour = hl(colour.toHex());
-            break;
-    }
-    return new dojox.color.Color(hlColour);
-}
+{{js_highlighting_function}}
 
 make_chart_{{chart_uuid}} = function(){
 
@@ -130,21 +127,20 @@ make_chart_{{chart_uuid}} = function(){
     {% endfor %}
 
     var conf = new Array();
-        conf["axis_font_colour"] = "{{axis_font}}";
+        conf["axis_font_color"] = "{{axis_font}}";
         conf["axis_label_drop"] = {{axis_label_drop}};
-        conf["chart_bg_colour"] = "{{chart_bg}}";
+        conf["chart_background_color"] = "{{chart_background}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
         conf["left_margin_offset"] = {{left_margin_offset}};
-        conf["major_grid_line_colour"] = "{{major_grid_line}}";
+        conf["major_grid_line_color"] = "{{major_grid_line}}";
         conf["n_records"] = "{{n_records}}";
-        conf["plot_bg_colour"] = "{{plot_bg}}";
-        conf["plot_font_colour"] = "{{plot_font}}";
-        conf["plot_font_colour_filled"] = "{{plot_font_filled}}";
+        conf["plot_background_color"] = "{{plot_background}}";
+        conf["plot_font_color"] = "{{plot_font}}";
         conf["show_regression_line"] = {{show_regression_line_js_bool}};
-        conf["tooltip_border_colour"] = "{{tooltip_border}}";
+        conf["tool_tip_border_color"] = "{{tool_tip_border}}";
         conf["x_axis_font_size"] = {{x_axis_font_size}};
         conf["x_axis_max_val"] = {{x_axis_max_val}};
         conf["x_axis_min_val"] = {{x_axis_min_val}};
@@ -176,14 +172,9 @@ make_chart_{{chart_uuid}} = function(){
 @get_common_charting_spec.register
 def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     ## colours
-    colour_mappings = style_spec.chart.colour_mappings
+    color_mappings = style_spec.chart.color_mappings
     if charting_spec.is_single_series:
-        ## This is an important special case because it affects the scatter plots charts using the default style
-        if colour_mappings[0].main == '#e95f29':  ## BURNT_ORANGE
-            colour_mappings = [ColourWithHighlight('#e95f29', '#736354'), ]
-    colours = get_long_colour_list(colour_mappings)
-    colour_cases = [f'case "{colour_mapping.main}": hlColour = "{colour_mapping.highlight}"'
-        for colour_mapping in colour_mappings]
+        color_mappings = fix_default_single_color_mapping(color_mappings)
     ## misc
     has_minor_ticks_js_bool: JSBool = 'true' if charting_spec.has_minor_ticks else 'false'
     stroke_width = style_spec.chart.stroke_width if charting_spec.show_dot_borders else 0
@@ -203,16 +194,15 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
     left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 25
     ## sizing left margin offset
 
-    colour_spec = CommonColourSpec(
-        axis_font=style_spec.chart.axis_font_colour,
-        chart_bg=style_spec.chart.chart_bg_colour,
-        colour_cases=colour_cases,
-        colours=colours,
-        major_grid_line=style_spec.chart.major_grid_line_colour,
-        plot_bg=style_spec.chart.plot_bg_colour,
-        plot_font=style_spec.chart.plot_font_colour,
-        plot_font_filled=style_spec.chart.plot_font_colour_filled,
-        tooltip_border=style_spec.chart.tooltip_border_colour,
+    color_spec = CommonColorSpec(
+        axis_font=style_spec.chart.axis_font_color,
+        chart_background=style_spec.chart.chart_background_color,
+        chart_title_font=style_spec.chart.chart_title_font_color,
+        color_mappings=color_mappings,
+        major_grid_line=style_spec.chart.major_grid_line_color,
+        plot_background=style_spec.chart.plot_background_color,
+        plot_font=style_spec.chart.plot_font_color,
+        tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = CommonMiscSpec(
         axis_label_drop=10,
@@ -240,7 +230,7 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         show_regression_line_js_bool=show_regression_line_js_bool,
     )
     return CommonChartingSpec(
-        colour_spec=colour_spec,
+        color_spec=color_spec,
         misc_spec=misc_spec,
         options=options,
     )
@@ -248,12 +238,15 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: ScatterIndivChartSpec,
         *,  chart_counter: int) -> str:
-    context = todict(common_charting_spec.colour_spec, shallow=True)
+    context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
-    indiv_title_html = f"<p><b>{indiv_chart_spec.label}</b></p>" if common_charting_spec.options.is_multi_chart else ''
+    title = indiv_chart_spec.label
+    font_color = common_charting_spec.color_spec.chart_title_font
+    indiv_title_html = (get_indiv_chart_title_html(chart_title=title, color=font_color)
+        if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     dojo_series_specs = []
     for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
@@ -261,15 +254,18 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         series_label = data_series_spec.label
         xy_dicts = [f"{{x: {x}, y: {y}}}" for x, y in data_series_spec.xy_pairs]
         series_xy_pairs = '[' + ', '.join(xy_dicts) + ']'
-        fill_colour = common_charting_spec.colour_spec.colours[i]
+        fill_color = common_charting_spec.color_spec.colors[i]
         options = (
             f"""{{stroke: {{color: "white", width: "{common_charting_spec.misc_spec.stroke_width}px"}}, """
-            f"""fill: "{fill_colour}", marker: "m-6,0 c0,-8 12,-8 12,0 m-12,0 c0,8 12,8 12,0"}}""")
+            f"""fill: "{fill_color}", marker: "m-6,0 c0,-8 12,-8 12,0 m-12,0 c0,8 12,8 12,0"}}""")
         dojo_series_specs.append(ScatterplotDojoSeriesSpec(series_id, series_label, series_xy_pairs, options))
+    js_highlighting_function = get_js_highlighting_function(
+        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid)
     indiv_context = {
         'chart_uuid': chart_uuid,
         'dojo_series_specs': dojo_series_specs,
         'indiv_title_html': indiv_title_html,
+        'js_highlighting_function': js_highlighting_function,
         'n_records': n_records,
         'page_break': page_break,
     }

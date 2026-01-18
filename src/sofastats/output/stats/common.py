@@ -119,13 +119,13 @@ def get_embedded_histogram_html(measure_field_label: str, style_spec: ChartStyle
     """
     Make histogram image and return its HTML (with embedded image).
     """
-    first_colour_mapping = style_spec.colour_mappings[0]
+    first_color_mapping = style_spec.color_mappings[0]
     chart_conf = HistogramConf(
         var_label=measure_field_label,
         chart_label=var_label,
-        inner_bg_colour=style_spec.plot_bg_colour,
-        bar_colour=first_colour_mapping.main,
-        line_colour=style_spec.major_grid_line_colour,
+        inner_background_color=style_spec.plot_background_color,
+        bar_color=first_color_mapping.main,
+        line_color=style_spec.major_grid_line_color,
         label_chart_from_var_if_needed=label_chart_from_var_if_needed)
     fig = mpl_pngs.get_histogram_fig(chart_conf, vals)
     fig.set_size_inches((5.4 * width_scalar, 4))  ## see dpi to get image size in pixels

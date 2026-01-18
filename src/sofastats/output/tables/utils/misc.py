@@ -400,17 +400,17 @@ def apply_index_styles(
     ## Style functions to choose from depending on what sort of cell this is
 
     def variable_name_first_level(s: pd.Series) -> list[str]:
-        css_str = (f"background-color: {tbl_style_spec.var_bg_colour_first_level}; "
-            f"color: {tbl_style_spec.var_font_colour_first_level}; "
+        css_str = (f"background-color: {tbl_style_spec.first_level_variable_background_color}; "
+            f"color: {tbl_style_spec.first_level_variable_font_color}; "
             "font-size: 14px; font-weight: bold; "
-            f"border: solid 1px {tbl_style_spec.var_border_colour_first_level};")
+            f"border: solid 1px {tbl_style_spec.first_level_variable_border_color};")
         return get_css_list(s, css_str)
 
     def variable_name_not_first_level(s: pd.Series) -> list[str]:
-        css_str = (f"background-color: {tbl_style_spec.var_bg_colour_not_first_level}; "
-            f"color: {tbl_style_spec.var_font_colour_not_first_level}; "
+        css_str = (f"background-color: {tbl_style_spec.variable_background_color_other_levels}; "
+            f"color: {tbl_style_spec.variable_font_color_other_levels}; "
             "font-size: 14px; font-weight: bold;"
-            f"border: solid 1px {tbl_style_spec.var_border_colour_not_first_level};")
+            f"border: solid 1px {tbl_style_spec.variable_border_color_other_levels};")
         return get_css_list(s, css_str)
 
     def value(s: pd.Series) -> list[str]:

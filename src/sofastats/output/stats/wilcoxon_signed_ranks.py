@@ -162,7 +162,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
     </table>
 
     {% for footnote in footnotes %}
-      <p><a id='ft{{ loop.index }}'></a><sup>{{ loop.index }}</sup>{{ footnote }}</p>
+      <p><a id='ft{{ loop.index }}'></a><sup style='color: {{footnote_font_color}};'>{{ loop.index }}</sup>&nbsp;{{ footnote }}</p>
     {% endfor %}
 
     {% if worked_example %}
@@ -204,6 +204,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
         'styled_stats_tbl_css': styled_stats_tbl_css,
         'title': title,
 
+        'footnote_font_color': style_spec.table.footnote_font_color,
         'footnotes': [p_full_explanation, WILCOXON_VARIANCE_BY_APP_EXPLAIN, ],
         'group_specs': formatted_group_specs,
         'p': get_p_str(result.p),
