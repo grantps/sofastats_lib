@@ -26,18 +26,18 @@ class TableStyleSpec:
 
 @dataclass(frozen=True)
 class ChartStyleSpec:
+    axis_font_color: str
+    border_color: str
+    border_width: int
     chart_background_color: str
     chart_title_font_color: str
+    color_mappings: Sequence[ColorWithHighlight]
+    grid_line_width: int
+    major_grid_line_color: str
+    normal_curve_color: str
     plot_background_color: str
     plot_font_color: str
-    axis_font_color: str
-    major_grid_line_color: str
-    grid_line_width: int
-    border_width: int
-    border_color: str
     tool_tip_border_color: str
-    normal_curve_color: str
-    color_mappings: Sequence[ColorWithHighlight]
 
 @dataclass(frozen=True)
 class DojoStyleSpec:

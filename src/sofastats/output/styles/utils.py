@@ -61,22 +61,22 @@ def yaml_to_style_spec(*, style_name: str, yaml_dict: dict) -> StyleSpec:
             else:
                 color_mappings.append(ColorWithHighlight(main_color, hover_color))
         chart_spec = ChartStyleSpec(
+            axis_font_color=y['axis_font_color'],
+            border_color=y['border_color'],
+            border_width=int(y['border_width']),
             chart_background_color=y['chart_background_color'],
             chart_title_font_color=y['chart_title_font_color'],
-            plot_background_color=y['plot_background_color'],
-            plot_font_color=y['plot_font_color'],
-            axis_font_color=y['axis_font_color'],
-            major_grid_line_color=y['major_grid_line_color'],
-            grid_line_width=int(y['grid_line_width']),
-            border_width=int(y['border_width']),
-            border_color=y['border_color'],
-            tool_tip_border_color=y['tool_tip_border_color'],
-            normal_curve_color=y['normal_curve_color'],
             color_mappings=color_mappings,
+            grid_line_width=int(y['grid_line_width']),
+            normal_curve_color=y['normal_curve_color'],
+            plot_background_color=y['plot_background_color'],
+            major_grid_line_color=y['major_grid_line_color'],
+            plot_font_color=y['plot_font_color'],
+            tool_tip_border_color=y['tool_tip_border_color'],
         )
 
         dojo_spec = DojoStyleSpec(
-            connector_style=y['connector_style'],
+            connector_style=style_name,
             tool_tip_connector_up=y['tool_tip_connector_up'],
             tool_tip_connector_down=y['tool_tip_connector_down'],
             tool_tip_connector_left=y['tool_tip_connector_left'],

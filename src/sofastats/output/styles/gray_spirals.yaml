@@ -60,7 +60,6 @@ item_4_hover_color: *faded_dark_murkey_blue_gray
 item_5_main_color: *murkey_gray_blue
 item_5_hover_color: *murky_gray
 
-connector_style: 'paleblue'
 tool_tip_connector_up: *tool_tip_up
 tool_tip_connector_down: *tool_tip_down
 tool_tip_connector_left: *tool_tip_left
