@@ -5,6 +5,7 @@ nav:
   - README: 'README.md'
   - Output Gallery: 'output_gallery.html'
   - API: 'API.md'
+  - Styles: 'styles.md'
 plugins:
   - search
   - mkdocstrings:

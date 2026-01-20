@@ -48,7 +48,8 @@ axis_font_color: *black_blue
 
 major_grid_line_color: *white
 grid_line_width: '1'
-stroke_width: '3'
+border_width: '1'
+border_color: *white
 
 tool_tip_border_color: *grey_purple
 normal_curve_color: *white
@@ -92,7 +93,7 @@ tool_tip_connector_down: *tool_tip_down
 tool_tip_connector_left: *tool_tip_left
 tool_tip_connector_right: *tool_tip_right
 
-# Tables
+# Report Tables
 
 top_left_table_space_holder_background_color: *gray_blue
 top_left_table_space_holder_background_image: *background_image

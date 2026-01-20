@@ -56,12 +56,12 @@ class CommonOptions:
 class CommonMiscSpec:
     bin_labels: Sequence[str]  ## e.g. ["1 to < 6.0", ... "91.0 to <= 96.0"]
     blank_x_axis_numbers_and_labels: str
+    border_width: int
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: int
-    normal_stroke_width: int
-    stroke_width: int
+    normal_curve_width: int
     var_label: str
     width: float  ## pixels
     x_axis_font_size: float
@@ -94,7 +94,7 @@ make_chart_{{chart_uuid}} = function(){
         data_spec["bin_labels"] = {{bin_labels}};
         data_spec["style"] = {
             stroke: {
-                color: "white", width: "{{stroke_width}}px"
+                color: "{{border_color}}", width: "{{border_width}}px"
             },
             fill: "{{fill}}"
         };
@@ -102,7 +102,7 @@ make_chart_{{chart_uuid}} = function(){
             plot: "normal",
             stroke: {
                 color: "{{normal_curve}}",
-                width: "{{normal_stroke_width}}px"
+                width: "{{normal_curve_width}}px"
             },
             fill: "{{fill}}"
         };
@@ -190,8 +190,8 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
     height = 300 if charting_spec.is_multi_chart else 350
     y_axis_title_offset = 45
     left_margin_offset = 25
-    stroke_width = style_spec.chart.stroke_width if charting_spec.show_borders else 0
-    normal_stroke_width = 4
+    border_width = style_spec.chart.border_width if charting_spec.show_borders else 0
+    normal_curve_width = 4
     show_normal_curve_js_bool: JSBool = 'true' if charting_spec.show_normal_curve else 'false'
     width = get_width(charting_spec.var_label, n_bins=charting_spec.n_bins,
         x_axis_min_val=charting_spec.x_axis_min_val, x_axis_max_val=charting_spec.x_axis_max_val,
@@ -214,13 +214,13 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
     misc_spec = CommonMiscSpec(
         bin_labels=charting_spec.bin_labels,
         blank_x_axis_numbers_and_labels=blank_dojo_format_x_axis_numbers_and_labels,
+        border_width=border_width,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
         x_axis_min_val=charting_spec.x_axis_min_val,
-        normal_stroke_width=normal_stroke_width,
-        stroke_width=stroke_width,
+        normal_curve_width=normal_curve_width,
         var_label=charting_spec.var_label,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,

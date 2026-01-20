@@ -48,10 +48,10 @@ class BoxplotDojoSeriesSpec:
     Scatter-plots, and more general charts with series (e.g. bar charts and line charts),
     have different specs of their own for DOJO series.
     """
+    border_color: str
     box_specs: Sequence[DojoBoxSpec]
     label: str
     series_id: str  ## e.g. 01
-    stroke_color: str
 
 tpl_chart = """\
 <script type="text/javascript">
@@ -70,10 +70,10 @@ make_chart_{{chart_uuid}} = function(){
           seriesLabel: "{{series_spec.label}}",
           seriesStyle: {
               stroke: {
-                  color: "{{series_spec.stroke_colour}}",
-                  width: "1px"
+                  color: "{{series_spec.border_color}}",
+                  width: "{{border_width}}px"
               },
-              fill: getfainthex("{{series_spec.stroke_colour}}")
+              fill: getfainthex("{{series_spec.border_color}}")
           }
         };
         series_conf.push(series_conf_{{series_spec.series_id}});
@@ -82,9 +82,9 @@ make_chart_{{chart_uuid}} = function(){
 
         {% for box_spec in series_spec.box_specs %}
             var box_{{series_spec.series_id}}_{{loop.index0}} = new Array();
-            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = "{{series_spec.stroke_color}}";
+            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = "{{series_spec.border_color}}";
             box_{{series_spec.series_id}}_{{loop.index0}}['center'] = "{{box_spec.center}}";
-            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = getfainthex("{{series_spec.stroke_color}}");
+            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = getfainthex("{{series_spec.border_color}}");
             box_{{series_spec.series_id}}_{{loop.index0}}['width'] = {{bar_width}};
             box_{{series_spec.series_id}}_{{loop.index0}}['indiv_boxlbl'] = "{{box_spec.indiv_box_label}}";
 
@@ -113,6 +113,7 @@ make_chart_{{chart_uuid}} = function(){
         conf["axis_font_color"] = "{{axis_font}}";
         conf["axis_label_drop"] = {{axis_label_drop}};
         conf["axis_label_rotate"] = {{axis_label_rotate}};
+        conf["border_width"] = {{border_width}};
         conf["chart_background_color"] = "{{chart_background}}";
         conf["connector_style"] = "{{connector_style}}";
         conf["grid_line_width"] = {{grid_line_width}};
@@ -177,6 +178,7 @@ class CommonOptions:
 class CommonMiscSpec:
     axis_label_drop: int
     axis_label_rotate: int
+    border_width: int
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
@@ -204,8 +206,6 @@ class CommonChartingSpec:
 @get_common_charting_spec.register
 def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: StyleSpec) -> CommonChartingSpec:
     color_mappings = style_spec.chart.color_mappings
-    if charting_spec.is_single_series:
-        color_mappings = fix_default_single_color_mapping(color_mappings)
     ## misc
     axis_label_drop = get_axis_label_drop(
         is_multi_chart=False, rotated_x_labels=charting_spec.rotate_x_labels,
@@ -255,6 +255,7 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
     misc_spec = CommonMiscSpec(
         axis_label_drop=axis_label_drop,
         axis_label_rotate=axis_label_rotate,
+        border_width=style_spec.chart.border_width,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
@@ -289,13 +290,14 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     chart_uuid = str(uuid.uuid4()).replace('-', '_')  ## needs to work in JS variable names
     page_break = 'page-break-after: always;' if chart_counter % 2 == 0 else ''
 
+    border_width = common_charting_spec.misc_spec.border_width
     bar_width = indiv_chart_spec.bar_width
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
 
     dojo_series_specs = []
     for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
         series_id = f"{i:>02}"
-        stroke_color = common_charting_spec.color_spec.colors[i]
+        border_color = common_charting_spec.color_spec.colors[i]
         box_specs = []
         for box_item in data_series_spec.box_items:
             if not box_item:
@@ -325,16 +327,17 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
             )
             box_specs.append(box_spec)
         series_spec = BoxplotDojoSeriesSpec(
+            border_color=border_color,
             box_specs=box_specs,
             label=data_series_spec.label,
             series_id=series_id,
-            stroke_color=stroke_color,
         )
         dojo_series_specs.append(series_spec)
     js_highlighting_function = get_js_highlighting_function(
         color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid, uses_faint_version=True)
     indiv_context = {
         'bar_width': bar_width,
+        'border_width': border_width,
         'chart_uuid': chart_uuid,
         'dojo_series_specs': dojo_series_specs,
         'js_highlighting_function': js_highlighting_function,

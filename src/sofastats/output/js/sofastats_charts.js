@@ -551,7 +551,8 @@ makeScatterplot = function(chartname, series, conf){
 makeBoxAndWhisker = function(chartname, series, series_conf, conf){
     nChartFontColour = conf["plot_font_color"]
     nChart = conf["n_records"];
-    // chartwide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
+    borderWidth = conf["border_width"]  // borderWidth is now available as such inside sofastats_dojo(_minified).js
+    // chart-wide function setting - have access to val.element (Column), val.index (0), val.run.data (y_vals)
     var getTooltip = function(val){
         return val.y;
     };
@@ -600,7 +601,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
 	    }
     });
     mychart.setTheme(sofa_theme);
-    mychart.addPlot("default", {type: "Boxplot", markers: true});
+    mychart.addPlot("default", {type: "Boxplot", markers: true});  // the link to the sofastats_dojo(_minified).js boxplot definition as exposed by dojo.provide("dojox.charting.plot2d.Boxplot");
     mychart.addPlot("grid", {type: "Grid", vMajorLines: false});
     mychart.addAxis(
         "x",

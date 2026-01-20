@@ -61,6 +61,7 @@ class ScatterplotDojoSeriesSpec:
 @dataclass(frozen=False)
 class CommonColorSpec:
     axis_font: str
+    border_color: str
     chart_background: str
     chart_title_font: str
     color_mappings: Sequence[ColorWithHighlight]
@@ -84,12 +85,12 @@ class CommonOptions:
 @dataclass(frozen=True)
 class CommonMiscSpec:
     axis_label_drop: int
+    border_width: int
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
     series_legend_label: str
-    stroke_width: int
     width: float  ## pixels
     x_axis_font_size: float
     x_axis_max_val: int
@@ -177,7 +178,7 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         color_mappings = fix_default_single_color_mapping(color_mappings)
     ## misc
     has_minor_ticks_js_bool: JSBool = 'true' if charting_spec.has_minor_ticks else 'false'
-    stroke_width = style_spec.chart.stroke_width if charting_spec.show_dot_borders else 0
+    border_width = style_spec.chart.border_width if charting_spec.show_dot_borders else 0
     show_regression_line_js_bool: JSBool = 'true' if charting_spec.show_regression_line else 'false'
     ## sizing
     if charting_spec.is_multi_chart:
@@ -196,6 +197,7 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
 
     color_spec = CommonColorSpec(
         axis_font=style_spec.chart.axis_font_color,
+        border_color=style_spec.chart.border_color,
         chart_background=style_spec.chart.chart_background_color,
         chart_title_font=style_spec.chart.chart_title_font_color,
         color_mappings=color_mappings,
@@ -206,12 +208,12 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
     )
     misc_spec = CommonMiscSpec(
         axis_label_drop=10,
+        border_width=border_width,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
         series_legend_label=charting_spec.series_legend_label,
-        stroke_width=stroke_width,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,
         x_axis_max_val=charting_spec.x_axis_max_val,
@@ -256,7 +258,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         series_xy_pairs = '[' + ', '.join(xy_dicts) + ']'
         fill_color = common_charting_spec.color_spec.colors[i]
         options = (
-            f"""{{stroke: {{color: "white", width: "{common_charting_spec.misc_spec.stroke_width}px"}}, """
+            f"""{{stroke: {{color: "{common_charting_spec.color_spec.border_color}", width: "{common_charting_spec.misc_spec.border_width}px"}}, """
             f"""fill: "{fill_color}", marker: "m-6,0 c0,-8 12,-8 12,0 m-12,0 c0,8 12,8 12,0"}}""")
         dojo_series_specs.append(ScatterplotDojoSeriesSpec(series_id, series_label, series_xy_pairs, options))
     js_highlighting_function = get_js_highlighting_function(

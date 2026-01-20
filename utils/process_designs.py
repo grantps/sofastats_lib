@@ -1,11 +1,13 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
-
+from itertools import chain
 import sqlite3 as sqlite
 
 from webbrowser import open_new_tab
 
-from sofastats.output.utils import get_report
+from sofastats.output.interfaces import CommonDesign, ReportDesignsSpec
+from sofastats.output.utils import get_gallery_report, get_report
+
 from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
     sports_csv_file_path, sqlite_demo_db_file_path)
 import sofastats_examples.scripts.demo_charts as charts
@@ -22,7 +24,7 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
     con = sqlite.connect(sqlite_demo_db_file_path)
     cur = con.cursor()
 
-    designs = []
+    report_designs_specs: list[ReportDesignsSpec] = []
 
     if do_charts:
         chart_designs = []
@@ -63,9 +65,21 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
         chart_designs.append(charts.box_plot_chart(people_csv_file_path))
         chart_designs.append(charts.box_plot_chart_narrow_labels(people_csv_file_path))
         chart_designs.append(charts.box_plot_chart_very_wide(people_csv_file_path))
-        chart_designs.append(charts.clustered_box_plot(people_csv_file_path))
+        chart_designs.append(charts.clustered_box_plot_default_style(people_csv_file_path))
+        chart_designs.append(charts.clustered_box_plot_black_pastel_style(people_csv_file_path))
 
-        designs.extend(chart_designs)
+        report_designs_specs.append(ReportDesignsSpec(title="Charts", designs=chart_designs))
+
+    if do_tables:
+        table_designs = []
+
+        table_designs.append(tables.run_cross_tab_from_sqlite_db_filtered(cur))
+        table_designs.append(tables.run_cross_tab_from_sqlite_db(cur))
+        table_designs.append(tables.cross_tab(people_csv_file_path))
+        table_designs.append(tables.run_repeat_level_two_row_var_cross_tab(people_csv_file_path))
+        table_designs.append(tables.run_simple_freq_tbl(people_csv_file_path))
+
+        report_designs_specs.append(ReportDesignsSpec(title="Report Tables", designs=table_designs))
 
     if do_stats:
         stats_designs = []
@@ -85,24 +99,18 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
             for stats_design in stats_designs:
                 print(stats_design.to_result())
 
-        designs.extend(stats_designs)
-
-    if do_tables:
-        table_designs = []
-
-        table_designs.append(tables.run_cross_tab_from_sqlite_db_filtered(cur))
-        table_designs.append(tables.run_cross_tab_from_sqlite_db(cur))
-        table_designs.append(tables.run_cross_tab(people_csv_file_path))
-        table_designs.append(tables.run_repeat_level_two_row_var_cross_tab(people_csv_file_path))
-        table_designs.append(tables.run_simple_freq_tbl(people_csv_file_path))
-
-        designs.extend(table_designs)
+        report_designs_specs.append(ReportDesignsSpec(title="Statistical Tests", designs=stats_designs))
 
     if make_separate_output:
-        for design in designs:
-            design.make_output()
+        for report_designs_spec in report_designs_specs:
+            for design in report_designs_spec.designs:
+                design.make_output()
     if make_combined_output:
-        report = get_report(designs, title=combined_output_report_title, is_gallery=is_gallery)
+        if is_gallery:
+            report = get_gallery_report(report_designs_specs=report_designs_specs, title=combined_output_report_title)
+        else:
+            designs = list(chain(*[report_designs_spec.designs for report_designs_spec in report_designs_specs]))
+            report = get_report(designs=designs, title=combined_output_report_title)
         fpath = output_folder / f"{combined_output_report_name}.html"
         report.to_file(fpath)
         open_new_tab(url=f"file://{fpath}")

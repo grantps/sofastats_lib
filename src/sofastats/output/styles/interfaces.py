@@ -33,7 +33,8 @@ class ChartStyleSpec:
     axis_font_color: str
     major_grid_line_color: str
     grid_line_width: int
-    stroke_width: int
+    border_width: int
+    border_color: str
     tool_tip_border_color: str
     normal_curve_color: str
     color_mappings: Sequence[ColorWithHighlight]

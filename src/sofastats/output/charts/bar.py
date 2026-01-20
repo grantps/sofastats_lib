@@ -105,6 +105,7 @@ class SimpleBarChartDesign(CommonBarDesign):
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
             show_borders=self.show_borders,
+            border_width=style_spec.chart.border_width,
             show_n_records=self.show_n_records,
             x_axis_font_size=self.x_axis_font_size,
             x_axis_title=intermediate_charting_spec.category_field_name,
@@ -153,6 +154,7 @@ class MultiChartBarChartDesign(CommonBarDesign):
             table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## charts details
         charting_spec = BarChartingSpec(
+            border_width=style_spec.chart.border_width,
             categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=None,
@@ -206,6 +208,7 @@ class ClusteredBarChartDesign(CommonBarDesign):
             table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
+            border_width=style_spec.chart.border_width,
             categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=intermediate_charting_spec.series_field_name,
@@ -269,6 +272,7 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
             decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
+            border_width=style_spec.chart.border_width,
             categories=intermediate_charting_spec.sorted_categories,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=intermediate_charting_spec.series_field_name,
@@ -292,11 +296,13 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
 @dataclass
 class BarChartingSpec(ChartingSpecAxes):
     show_borders: bool
+    border_width: int
     metric: ChartMetric = ChartMetric.FREQ
 
 @dataclass(frozen=False)
 class CommonColorSpec:
     axis_font: str
+    border_color: str
     chart_background: str
     chart_title_font: str
     color_mappings: Sequence[ColorWithHighlight]
@@ -320,13 +326,13 @@ class CommonOptions:
 class CommonMiscSpec:
     axis_label_drop: int
     axis_label_rotate: int
+    border_width: int
     connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
     metric: ChartMetric
     series_legend_label: str
-    stroke_width: int
     width: float  ## pixels
     x_axis_numbers_and_labels: str  ## Format required by Dojo e.g. [{value: 1, text: "Female"}, {value: 2, text: "Male"}]
     x_axis_font_size: float
@@ -445,7 +451,7 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
     dojo_format_x_axis_numbers_and_labels = get_dojo_format_x_axis_numbers_and_labels(charting_spec.categories)
     has_minor_ticks_js_bool: JSBool = 'true' if charting_spec.n_x_items >= DOJO_MINOR_TICKS_NEEDED_PER_X_ITEM else 'false'
     series_legend_label = '' if charting_spec.is_single_series else charting_spec.series_legend_label
-    stroke_width = style_spec.chart.stroke_width if charting_spec.show_borders else 0
+    border_width = style_spec.chart.border_width if charting_spec.show_borders else 0
     ## sizing
     ## width_after_left_margin
     max_x_label_width = (TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED if charting_spec.rotate_x_labels else charting_spec.max_x_axis_label_len)
@@ -481,6 +487,7 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
 
     color_spec = CommonColorSpec(
         axis_font=style_spec.chart.axis_font_color,
+        border_color=style_spec.chart.border_color,
         chart_background=style_spec.chart.chart_background_color,
         chart_title_font=style_spec.chart.chart_title_font_color,
         color_mappings=color_mappings,
@@ -492,13 +499,13 @@ def get_common_charting_spec(charting_spec: BarChartingSpec, style_spec: StyleSp
     misc_spec = CommonMiscSpec(
         axis_label_drop=axis_label_drop,
         axis_label_rotate=axis_label_rotate,
+        border_width=border_width,
         connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
         metric=charting_spec.metric,
         series_legend_label=series_legend_label,
-        stroke_width=stroke_width,
         width=width,
         x_axis_numbers_and_labels=dojo_format_x_axis_numbers_and_labels,
         x_axis_font_size=x_axis_font_size,
@@ -541,7 +548,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         ## options e.g. {stroke: {color: "white", width: "0px"}, fill: "#e95f29", yLbls: ['66.38', ...]}
         fill_color = common_charting_spec.color_spec.colors[i]
         y_lbls_str = str(data_series_spec.tool_tips)
-        options = (f"""{{stroke: {{color: "white", width: "{common_charting_spec.misc_spec.stroke_width}px"}}, """
+        options = (f"""{{stroke: {{color: "{common_charting_spec.color_spec.border_color}", width: "{common_charting_spec.misc_spec.border_width}px"}}, """
             f"""fill: "{fill_color}", yLbls: {y_lbls_str}}}""")
         dojo_series_specs.append(DojoSeriesSpec(series_id, series_label, series_vals, options))
     js_highlighting_function = get_js_highlighting_function(

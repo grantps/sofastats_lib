@@ -3,6 +3,7 @@ Note - output.utils.get_report() replies on the template param names here so kee
 Not worth formally aligning them given how easy to do manually and how static.
 """
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass, fields
 import datetime
 from enum import StrEnum
@@ -280,6 +281,12 @@ class CommonDesign(ABC):
         self.to_html_design().to_file(fpath=self.output_file_path)
         if self.show_in_web_browser:
             open_new_tab(url=f"file://{self.output_file_path}")
+
+
+@dataclass(frozen=True)
+class ReportDesignsSpec:
+    title: str
+    designs: Sequence[CommonDesign]
 
 
 HTML_AND_SOME_HEAD_TPL = """\
