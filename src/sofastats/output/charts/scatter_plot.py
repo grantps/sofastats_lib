@@ -86,11 +86,11 @@ class CommonOptions:
 class CommonMiscSpec:
     axis_label_drop: int
     border_width: int
-    connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
     series_legend_label: str
+    tool_tip_name: str
     width: float  ## pixels
     x_axis_font_size: float
     x_axis_max_val: int
@@ -131,7 +131,7 @@ make_chart_{{chart_uuid}} = function(){
         conf["axis_font_color"] = "{{axis_font}}";
         conf["axis_label_drop"] = {{axis_label_drop}};
         conf["chart_background_color"] = "{{chart_background}}";
-        conf["connector_style"] = "{{connector_style}}";
+        conf["connector_style"] = "{{tool_tip_name}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
@@ -209,11 +209,11 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
     misc_spec = CommonMiscSpec(
         axis_label_drop=10,
         border_width=border_width,
-        connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
         series_legend_label=charting_spec.series_legend_label,
+        tool_tip_name=style_spec.dojo.tool_tip_name,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,
         x_axis_max_val=charting_spec.x_axis_max_val,

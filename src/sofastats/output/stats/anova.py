@@ -107,7 +107,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
       <tbody>
         {% for group_spec in group_specs %}
           <tr>
-            <td class='lbl-{{ style_name_hyphens }}'>{{ group_spec.lbl }}</td>
+            <td class='lbl-{{ style_name_hyphens }}'>{{ group_spec.label }}</td>
             <td class='right'>{{ group_spec.n }}</td>
             <td class='right'>{{ group_spec.mean }}</td>
             <td class='right'>{{ group_spec.ci95 }}</td>

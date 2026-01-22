@@ -121,12 +121,14 @@ def get_embedded_histogram_html(measure_field_label: str, style_spec: ChartStyle
     """
     first_color_mapping = style_spec.color_mappings[0]
     chart_conf = HistogramConf(
-        var_label=measure_field_label,
+        bar_color=first_color_mapping.main,
         chart_label=var_label,
         inner_background_color=style_spec.plot_background_color,
-        bar_color=first_color_mapping.main,
+        label_chart_from_var_if_needed=label_chart_from_var_if_needed,
         line_color=style_spec.major_grid_line_color,
-        label_chart_from_var_if_needed=label_chart_from_var_if_needed)
+        normal_curve_color=style_spec.normal_curve_color,
+        variable_label=measure_field_label,
+    )
     fig = mpl_pngs.get_histogram_fig(chart_conf, vals)
     fig.set_size_inches((5.4 * width_scalar, 4))  ## see dpi to get image size in pixels
     image_as_data = plot2image_as_data(fig)

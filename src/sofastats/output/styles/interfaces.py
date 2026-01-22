@@ -1,11 +1,17 @@
 ## No project dependencies :-)
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import StrEnum
 
 @dataclass(frozen=True)
 class ColorWithHighlight:
     main: str
     highlight: str
+
+class ColorShiftJSFunctionName(StrEnum):
+    FAINT = 'getFaintHex'
+    BRIGHT = 'getBrightHex'
+    HALF_BRIGHT = 'getHalfBrightHex'
 
 @dataclass(frozen=False, kw_only=True)  ## unfrozen so post init possible
 class TableStyleSpec:
@@ -39,13 +45,20 @@ class ChartStyleSpec:
     plot_font_color: str
     tool_tip_border_color: str
 
-@dataclass(frozen=True)
+def _fix_name_for_js(raw_name: str) -> str:
+    return raw_name.replace('_', '-').replace(' ', '-').replace('(', '').replace(')', '')
+
+@dataclass(frozen=False)
 class DojoStyleSpec:
-    connector_style: str
-    tool_tip_connector_up: str
-    tool_tip_connector_down: str
-    tool_tip_connector_left: str
-    tool_tip_connector_right: str
+    style_name: str
+    tool_tip_name: str = field(init=False)
+    tool_tip_pointer_up: str
+    tool_tip_pointer_down: str
+    tool_tip_pointer_left: str
+    tool_tip_pointer_right: str
+
+    def __post_init__(self):
+        self.tool_tip_name = _fix_name_for_js(self.style_name)
 
 @dataclass(frozen=True)
 class StyleSpec:
@@ -56,4 +69,4 @@ class StyleSpec:
 
     @property
     def style_name_hyphens(self):
-        return self.name.replace('_', '-')
+        return _fix_name_for_js( self.name)

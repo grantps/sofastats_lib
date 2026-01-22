@@ -642,7 +642,7 @@ makeBoxAndWhisker = function(chartname, series, series_conf, conf){
     if (series_conf.length > 1) {
         // dummy chart needed for automatic legend creation to work from - will be invisible
         // Needs stroke (text), label (to display), and fill (colour of boxplot)
-        console.log(chartname)
+        //console.log(chartname)
         var dummychart = new dc.Chart2D("dummy_" + chartname);  // must use _this_ exact name as div id so legend can be put there
         dummychart.addPlot("default", {type: "ClusteredColumns"});
         for (i in series_conf){  // Dojo expects data so we supply dummy data [1,2] - the only things we supply are what is required to build legend

@@ -1,0 +1,81 @@
+# Colors must be defined in hex for the highlighting to work e.g. '#FFD000' is good but red is bad
+# Hex colors must be quoted otherwise the unquoted hash will turn your color into a comment
+# https://en.wikipedia.org/wiki/Web_colors has some good options but remember to use the hex value not the name
+
+# VARIABLES - the variable name is arbitrary as long as it's unique
+
+color_variable_1: &pale_pink '#ffb3ba'
+color_variable_2: &less_pale_pink '#d6717b'
+color_variable_3: &pale_orange '#ffdfba'
+color_variable_4: &less_pale_orange '#d1a169'
+color_variable_5: &pale_yellow '#ffffba'
+color_variable_6: &less_pale_yellow '#cdcd67'
+color_variable_7: &pale_green '#baffc9'
+color_variable_8: &less_pale_green '#5bcb74'
+color_variable_9: &pale_blue '#bae1ff'
+color_variable_10: &less_pale_blue '#5f9ac7'
+color_variable_11: &pale_purple '#ebabcf'
+color_variable_12: &darker_mid_gray '#a1a1a1'
+color_variable_13: &light_blue '#6ecadf'
+
+tool_tip_1: &tool_tip_up "data:image/gif;base64,R0lGODlhEAAOAIQPAHXZ3Xza3n/c34zf4p7i5KHj5avm6dXx8eH09d/19er3+O35+fH5+PP5+fj6+f///////////////////////////////////////////////////////////////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEAABAALAAAAAAQAA4AAAU2ICSOZGmeaKqupsCKQuGywzOrAvMo9ykYjyChVxI4go8GcSRIIIOHJSTwRAJai2oQQRRokbMQADs="
+tool_tip_2: &tool_tip_down "data:image/gif;base64,R0lGODlhEAAOAOMLAHXZ3Xza3n/c34zf4p7i5KHj5avm6bXn6cft78zs7uzs7P///////////////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEAAA8ALAAAAAAQAA4AAAQq8D2hqrVCapHuzZoEeFUQboeHgOfksa1AWAYcY+095HFh8xOgcEgsGjURADs="
+tool_tip_3: &tool_tip_left "data:image/gif;base64,R0lGODlhEAAOAIQYAHXZ3Xza3n/c34zf4p7i5KHj5avm6bXn6cft78zs7tvx89/09eb09Or09PP09fX19fb29vf39/T4+Pj4+Pn5+fr6+vv7+/z8/P///////////////////////////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEAAB8ALAAAAAAQAA4AAAU+4CeOZGmenyCgpBAsF5sKiGXFqGBIVV+dggGDQiyaBIWJcqkEChTMZo7QiFgjMtXBAYHIRAJA4vEdqcpoVAgAOw=="
+tool_tip_4: &tool_tip_right "data:image/gif;base64,R0lGODlhEAAOAIQYAHXZ3Xza3n/c34zf4p7i5KHj5avm6bXn6cft78zs7tvx89/09eb09Or09PP09fX19fb29vf39/T4+Pj4+Pn5+fr6+vv7+/z8/P///////////////////////////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEAAB8ALAAAAAAQAA4AAAU+4CeOZCkKgql+1xKk63hZFoLGX6VXkgGrlKCQMfiRJsgksmAUKZGKmylCjTQITRIE4jhIV48EIGv64s7oWAgAOw=="
+
+background_image_variable: &background_image ''
+
+
+# SETTINGS (applying variables)
+
+# Charts
+
+chart_background_color: 'white'
+chart_title_font_color: '#4c547c'
+
+plot_background_color: 'black'
+plot_font_color: 'white'
+
+axis_font_color: 'black'
+
+major_grid_line_color: '#a6a6a6'
+grid_line_width: '1'
+border_width: '3'
+border_color: '#a0a0a0'
+
+normal_curve_color: 'white'
+
+item_1_main_color: *pale_blue
+item_1_hover_color: *less_pale_blue
+item_2_main_color: *pale_pink
+item_2_hover_color: *less_pale_pink
+item_3_main_color: *pale_green
+item_3_hover_color: *less_pale_green
+item_4_main_color: *pale_yellow
+item_4_hover_color: *less_pale_yellow
+item_5_main_color: *pale_orange
+item_5_hover_color: *less_pale_orange
+
+tool_tip_border_color: *light_blue
+tool_tip_pointer_up: *tool_tip_up
+tool_tip_pointer_down: *tool_tip_down
+tool_tip_pointer_left: *tool_tip_left
+tool_tip_pointer_right: *tool_tip_right
+
+# Report Tables
+
+top_left_table_space_holder_background_color: 'black'
+top_left_table_space_holder_background_image: *background_image
+
+first_level_variable_font_color: 'white'
+first_level_variable_background_color: 'black'
+first_level_variable_border_color: *darker_mid_gray
+
+variable_font_color_other_levels: 'black'
+variable_background_color_other_levels: *pale_blue
+variable_border_color_other_levels: *less_pale_blue
+
+# Statistical Test Tables
+
+heading_footnote_font_color: 'white'
+footnote_font_color: 'black'

@@ -157,7 +157,7 @@ class LineArea:
             conf["axis_label_drop"] = {{axis_label_drop}};
             conf["axis_label_rotate"] = {{axis_label_rotate}};
             conf["chart_background_color"] = "{{chart_background}}";
-            conf["connector_style"] = "{{connector_style}}";
+            conf["connector_style"] = "{{tool_tip_name}}";
             conf["grid_line_width"] = {{grid_line_width}};
             conf["left_margin_offset"] = {{left_margin_offset}};
             conf["major_grid_line_color"] = "{{major_grid_line}}";
@@ -223,11 +223,11 @@ class LineArea:
         chart_js_fn_name: str
         axis_label_drop: int
         axis_label_rotate: int
-        connector_style: str
         grid_line_width: int
         height: float  ## pixels
         left_margin_offset: float
         series_legend_label: str
+        tool_tip_name: str
         x_axis_font_size: float
         x_axis_numbers_and_labels: str  ## Format required by Dojo e.g. [{value: 1, text: "Female"}, {value: 2, text: "Male"}]
         x_axis_categories: Sequence[Any] | None

@@ -14,9 +14,9 @@ from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_
     get_y_axis_title_offset)
 from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
-from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
+from sofastats.output.styles.interfaces import ColorWithHighlight, ColorShiftJSFunctionName, StyleSpec
 from sofastats.output.styles.utils import (
-    fix_default_single_color_mapping, get_js_highlighting_function, get_long_color_list, get_style_spec)
+    get_js_highlighting_function, get_long_color_list, get_style_spec)
 from sofastats.stats_calc.interfaces import BoxplotType
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
@@ -70,10 +70,10 @@ make_chart_{{chart_uuid}} = function(){
           seriesLabel: "{{series_spec.label}}",
           seriesStyle: {
               stroke: {
-                  color: "{{series_spec.border_color}}",
+                  color: getBrightHex("{{series_spec.border_color}}"),
                   width: "{{border_width}}px"
               },
-              fill: getfainthex("{{series_spec.border_color}}")
+              fill: "{{series_spec.border_color}}"
           }
         };
         series_conf.push(series_conf_{{series_spec.series_id}});
@@ -82,9 +82,9 @@ make_chart_{{chart_uuid}} = function(){
 
         {% for box_spec in series_spec.box_specs %}
             var box_{{series_spec.series_id}}_{{loop.index0}} = new Array();
-            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = "{{series_spec.border_color}}";
+            box_{{series_spec.series_id}}_{{loop.index0}}['stroke'] = getBrightHex("{{series_spec.border_color}}");
             box_{{series_spec.series_id}}_{{loop.index0}}['center'] = "{{box_spec.center}}";
-            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = getfainthex("{{series_spec.border_color}}");
+            box_{{series_spec.series_id}}_{{loop.index0}}['fill'] = "{{series_spec.border_color}}";
             box_{{series_spec.series_id}}_{{loop.index0}}['width'] = {{bar_width}};
             box_{{series_spec.series_id}}_{{loop.index0}}['indiv_boxlbl'] = "{{box_spec.indiv_box_label}}";
 
@@ -115,7 +115,7 @@ make_chart_{{chart_uuid}} = function(){
         conf["axis_label_rotate"] = {{axis_label_rotate}};
         conf["border_width"] = {{border_width}};
         conf["chart_background_color"] = "{{chart_background}}";
-        conf["connector_style"] = "{{connector_style}}";
+        conf["connector_style"] = "{{tool_tip_name}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
@@ -179,11 +179,11 @@ class CommonMiscSpec:
     axis_label_drop: int
     axis_label_rotate: int
     border_width: int
-    connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: float
     series_legend_label: str
+    tool_tip_name: str
     width: float  ## pixels
     x_axis_numbers_and_labels: str  ## Format required by Dojo e.g. [{value: 1, text: "Female"}, {value: 2, text: "Male"}]
     x_axis_font_size: float
@@ -238,7 +238,7 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         widest_y_axis_label_n_characters=widest_y_axis_label_n_characters, avg_pixels_per_y_character=8)
     intrusion_of_first_x_axis_label_leftwards = get_intrusion_of_first_x_axis_label_leftwards(
         widest_x_axis_label_n_characters=widest_x_axis_label_n_characters, avg_pixels_per_x_character=5)
-    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 45
+    left_margin_offset = max(y_axis_title_offset, intrusion_of_first_x_axis_label_leftwards) - 35
     ## other sizing
     x_axis_font_size = get_x_axis_font_size(n_x_items=charting_spec.n_x_items, is_multi_chart=False)
     width = left_margin_offset + width_after_left_margin
@@ -256,11 +256,11 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         axis_label_drop=axis_label_drop,
         axis_label_rotate=axis_label_rotate,
         border_width=style_spec.chart.border_width,
-        connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
         series_legend_label=series_legend_label,
+        tool_tip_name=style_spec.dojo.tool_tip_name,
         width=width,
         x_axis_numbers_and_labels=dojo_format_x_axis_numbers_and_labels,
         x_axis_font_size=x_axis_font_size,
@@ -297,7 +297,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     dojo_series_specs = []
     for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
         series_id = f"{i:>02}"
-        border_color = common_charting_spec.color_spec.colors[i]
+        border_color = common_charting_spec.color_spec.colors[i]  ## the border drives the colour of box plots - the fill is slightly paler, and the hover fill is in between
         box_specs = []
         for box_item in data_series_spec.box_items:
             if not box_item:
@@ -334,7 +334,9 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         )
         dojo_series_specs.append(series_spec)
     js_highlighting_function = get_js_highlighting_function(
-        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid, uses_faint_version=True)
+        color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid,
+        fn_used_to_make_fill=None, fn_desired_on_highlight_color=ColorShiftJSFunctionName.HALF_BRIGHT,
+    )
     indiv_context = {
         'bar_width': bar_width,
         'border_width': border_width,

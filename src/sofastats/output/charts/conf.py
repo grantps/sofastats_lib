@@ -50,7 +50,7 @@ hl = function(colour){
     return c.fromHsl(x);
 }
 
-getfainthex = function(hexcolour){
+getFaintHex = function(hexcolour){
     var a = new c.Color(hexcolour)
     x = a.toHsl();
     x.s = x.s * 1.5;
@@ -58,9 +58,20 @@ getfainthex = function(hexcolour){
     return c.fromHsl(x);
 }
 
-makefaint = function(colour){
-    var fainthex = getfainthex(colour.toHex());
-    return new dojox.color.Color(fainthex);
+getBrightHex = function(hexcolour){
+    var a = new c.Color(hexcolour)
+    x = a.toHsl();
+    x.s = x.s * 0.67;
+    x.l = x.l * 0.8;
+    return c.fromHsl(x);
+}
+
+getHalfBrightHex = function(hexcolour){
+    var a = new c.Color(hexcolour)
+    x = a.toHsl();
+    x.s = x.s * 0.84;
+    x.l = x.l * 0.9;
+    return c.fromHsl(x);
 }
 
 </script>

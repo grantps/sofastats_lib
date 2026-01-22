@@ -33,14 +33,14 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     rect = ax.patch
     rect.set_facecolor(chart_conf.inner_background_color)
     bin_spec, bin_freqs = get_bin_details_from_vals(vals)
-    ax.set_xlabel(chart_conf.var_label)
+    ax.set_xlabel(chart_conf.variable_label)
     ax.set_ylabel('P')
 
     if chart_conf.chart_label:
         chart_label = chart_conf.chart_label
     else:
         if chart_conf.label_chart_from_var_if_needed:
-            chart_label = f"Histogram for {chart_conf.var_label}"
+            chart_label = f"Histogram for {chart_conf.variable_label}"
         else:
             chart_label = None
     if chart_label:
@@ -62,7 +62,7 @@ def get_histogram_fig(chart_conf: HistogramConf, vals: Sequence[float]) -> Figur
     if max(norm_ys) > y_max:
         ax.set_ylim(ymax=1.05 * max(norm_ys))
     ## actually plot norm ys
-    ax.plot(bins, norm_ys, color=chart_conf.line_color, linewidth=4)
+    ax.plot(bins, norm_ys, color=chart_conf.normal_curve_color, linewidth=4)
     logger.debug(f"n={n}, bins={bins}, patches={patches}")
     plt.close(fig)  ## free up the memory
     return fig

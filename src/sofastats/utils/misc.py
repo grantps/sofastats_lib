@@ -63,6 +63,10 @@ def todict(dc: dataclass, *, shallow=True) -> dict:
     e.g. anova_results_extended = AnovaResultsExtended(**todict(anova_results), ...)
     where the goal is to make a new dataclass that has everything in the parent class
     plus new items in the child class.
+
+    Note - if you add an attribute using __post_init__ (or possibly @property) it will only appear in list of fields
+    if declared as below:
+    tool_tip_name: str = field(init=False)
     """
     if shallow:
         dict2use = dict((field.name, getattr(dc, field.name)) for field in fields(dc))

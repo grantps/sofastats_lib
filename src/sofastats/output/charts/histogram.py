@@ -24,12 +24,13 @@ PADDING_PIXELS = 5
 
 @dataclass(frozen=True, kw_only=True)
 class HistogramConf:
-    var_label: str
+    bar_color: str
     chart_label: str | None
     inner_background_color: str
-    bar_color: str
-    line_color: str
     label_chart_from_var_if_needed: bool = True
+    line_color: str
+    normal_curve_color: str
+    variable_label: str
 
 @dataclass(frozen=True)
 class CommonColorSpec:
@@ -57,11 +58,11 @@ class CommonMiscSpec:
     bin_labels: Sequence[str]  ## e.g. ["1 to < 6.0", ... "91.0 to <= 96.0"]
     blank_x_axis_numbers_and_labels: str
     border_width: int
-    connector_style: str
     grid_line_width: int
     height: float  ## pixels
     left_margin_offset: int
     normal_curve_width: int
+    tool_tip_name: str
     var_label: str
     width: float  ## pixels
     x_axis_font_size: float
@@ -111,7 +112,7 @@ make_chart_{{chart_uuid}} = function(){
         conf["axis_font_color"] = "{{axis_font}}";
         conf["blank_x_axis_numbers_and_labels"] = {{blank_x_axis_numbers_and_labels}};
         conf["chart_background_color"] = "{{chart_background}}";
-        conf["connector_style"] = "{{connector_style}}";
+        conf["connector_style"] = "{{tool_tip_name}}";
         conf["grid_line_width"] = {{grid_line_width}};
         conf["has_minor_ticks"] = {{has_minor_ticks_js_bool}};
         conf["highlight"] = highlight_{{chart_uuid}};
@@ -215,17 +216,17 @@ def get_common_charting_spec(charting_spec: HistoChartingSpec, style_spec: Style
         bin_labels=charting_spec.bin_labels,
         blank_x_axis_numbers_and_labels=blank_dojo_format_x_axis_numbers_and_labels,
         border_width=border_width,
-        connector_style=style_spec.dojo.connector_style,
         grid_line_width=style_spec.chart.grid_line_width,
         height=height,
         left_margin_offset=left_margin_offset,
-        x_axis_min_val=charting_spec.x_axis_min_val,
         normal_curve_width=normal_curve_width,
+        tool_tip_name=style_spec.dojo.tool_tip_name,
         var_label=charting_spec.var_label,
         width=width,
         x_axis_font_size=charting_spec.x_axis_font_size,
         x_axis_max_val=charting_spec.x_axis_max_val,
         y_axis_max_val=charting_spec.y_axis_max_val,
+        x_axis_min_val=charting_spec.x_axis_min_val,
         y_axis_title='Frequency',
         y_axis_title_offset=y_axis_title_offset,
     )

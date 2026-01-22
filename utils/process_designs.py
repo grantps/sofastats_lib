@@ -5,7 +5,7 @@ import sqlite3 as sqlite
 
 from webbrowser import open_new_tab
 
-from sofastats.output.interfaces import CommonDesign, ReportDesignsSpec
+from sofastats.output.interfaces import ReportDesignsSpec
 from sofastats.output.utils import get_gallery_report, get_report
 
 from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
@@ -84,7 +84,8 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
     if do_stats:
         stats_designs = []
 
-        stats_designs.append(stats.run_anova(people_csv_file_path))
+        stats_designs.append(stats.run_anova_black_pastel_style(people_csv_file_path))
+        stats_designs.append(stats.run_anova_red_spirals_style(people_csv_file_path))
         stats_designs.append(stats.run_chi_square(people_csv_file_path))
         stats_designs.append(stats.run_kruskal_wallis_h(people_csv_file_path))
         stats_designs.append(stats.run_mann_whitney_u(people_csv_file_path))

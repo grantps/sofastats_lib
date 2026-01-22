@@ -51,7 +51,6 @@ grid_line_width: '1'
 border_width: '1'
 border_color: *white
 
-tool_tip_border_color: *grey_purple
 normal_curve_color: *white
 
 item_1_main_color: *red_brown
@@ -87,10 +86,11 @@ item_15_hover_color: *brown_red
 item_16_main_color: *gray_mustard
 item_16_hover_color: *dark_mustard_gray
 
-tool_tip_connector_up: *tool_tip_up
-tool_tip_connector_down: *tool_tip_down
-tool_tip_connector_left: *tool_tip_left
-tool_tip_connector_right: *tool_tip_right
+tool_tip_border_color: *grey_purple
+tool_tip_pointer_up: *tool_tip_up
+tool_tip_pointer_down: *tool_tip_down
+tool_tip_pointer_left: *tool_tip_left
+tool_tip_pointer_right: *tool_tip_right
 
 # Report Tables
 

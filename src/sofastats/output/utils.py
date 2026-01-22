@@ -262,7 +262,11 @@ def _get_report(*, design_specs: Sequence[ReportDesignsSpec] | Sequence[HasToHTM
             f"<a id='return-to-origin' href='https://sofastats.github.io/sofastats_lib'>⮪ Back to sofastats main menu</a>\n")
     else:
         return_html_or_not = ""
-    tpl_bits.append(f"<h1 class='gallery'>{title}</h1>\n{return_html_or_not}{toc_or_not}" + items_html)
+    tpl_bits.append(f"<h1 class='gallery'>{title}</h1>\n{return_html_or_not}"
+        f"\n<p>Note - custom styles can be applied to your output. For example, you could make a retro80s style. "
+        f'How-To Guide here: <a target="_blank" href="https://sofastats.github.io/sofastats_lib/styles/">Making Custom Styles</a>'
+        f"</p>{toc_or_not}"
+        + items_html)
     tpl_bits.append(BODY_AND_HTML_END_TPL)
 
     ## Assemble template ***********************************************************************************************

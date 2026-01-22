@@ -39,13 +39,13 @@ class CommonOptions:
 
 @dataclass(frozen=True)
 class CommonMiscSpec:
-    connector_style: str
     height: float  ## pixels
     label_offset: int
     radius: float
     slice_font_size: int
     slice_labels: Sequence[str]
     slice_vals: Sequence[float]
+    tool_tip_name: str
     width: float  ## pixels
 
 @dataclass(frozen=True)
@@ -69,7 +69,7 @@ make_chart_{{chart_uuid}} = function(){
      ];
 
      var conf = new Array();
-         conf["connector_style"] = "{{connector_style}}";
+         conf["connector_style"] = "{{tool_tip_name}}";
          conf["n_records"] = "{{n_records}}";
          conf["plot_font_color"] = "{{plot_font}}";
          conf["plot_background_color"] = "{{plot_background}}";
@@ -122,13 +122,13 @@ def get_common_charting_spec(charting_spec: PieChartingSpec, style_spec: StyleSp
         tool_tip_border=style_spec.chart.tool_tip_border_color,
     )
     misc_spec = CommonMiscSpec(
-        connector_style=style_spec.dojo.connector_style,
         height=height,
         label_offset=label_offset,
         radius=radius,
         slice_font_size=slice_font_size,
         slice_labels=charting_spec.categories,
         slice_vals=slice_vals,
+        tool_tip_name=style_spec.dojo.tool_tip_name,
         width=450,
     )
     options = CommonOptions(

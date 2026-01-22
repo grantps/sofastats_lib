@@ -67,12 +67,12 @@ class HTMLItemSpec:
         environment = jinja2.Environment()
         template = environment.from_string(tpl)
         context = {
-            'tundra_css': TUNDRA_CSS,
             'dojo_xd_js': DOJO_XD_JS,
+            'generic_unstyled_css': get_generic_unstyled_css(),
             'sofastats_charts_js': SOFASTATS_CHARTS_JS,
             'sofastats_dojo_minified_js': SOFASTATS_DOJO_MINIFIED_JS,
-            'generic_unstyled_css': get_generic_unstyled_css(),
             'title': self.output_title,
+            'tundra_css': TUNDRA_CSS,
         }
         if self.output_item_type == OutputItemType.CHART:
             context['styled_dojo_chart_css'] = get_styled_dojo_chart_css(style_spec.dojo)

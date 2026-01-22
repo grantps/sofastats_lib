@@ -26,7 +26,7 @@ from ruamel.yaml import YAML
 from sofastats.conf.main import DOJO_COLORS, CUSTOM_STYLES_FOLDER
 import sofastats.output.styles as styles
 from sofastats.output.styles.interfaces import (
-    ChartStyleSpec, ColorWithHighlight, DojoStyleSpec, StyleSpec, TableStyleSpec)
+    ChartStyleSpec, ColorShiftJSFunctionName, ColorWithHighlight, DojoStyleSpec, StyleSpec, TableStyleSpec)
 from sofastats.utils.misc import todict
 
 yaml = YAML(typ='safe')  ## default, if not specified, is 'rt' (round-trip)
@@ -55,7 +55,7 @@ def yaml_to_style_spec(*, style_name: str, yaml_dict: dict) -> StyleSpec:
         for n in count(1):
             try:
                 main_color = y[f'item_{n}_main_color']
-                hover_color = y[f'item_{n}_hover_color']
+                hover_color = y.get(f'item_{n}_hover_color')  ## OK to leave hover colour undefined and allow default behaviour
             except KeyError:
                 break
             else:
@@ -76,11 +76,11 @@ def yaml_to_style_spec(*, style_name: str, yaml_dict: dict) -> StyleSpec:
         )
 
         dojo_spec = DojoStyleSpec(
-            connector_style=style_name,
-            tool_tip_connector_up=y['tool_tip_connector_up'],
-            tool_tip_connector_down=y['tool_tip_connector_down'],
-            tool_tip_connector_left=y['tool_tip_connector_left'],
-            tool_tip_connector_right=y['tool_tip_connector_right'],
+            style_name=style_name,
+            tool_tip_pointer_up=y['tool_tip_pointer_up'],
+            tool_tip_pointer_down=y['tool_tip_pointer_down'],
+            tool_tip_pointer_left=y['tool_tip_pointer_left'],
+            tool_tip_pointer_right=y['tool_tip_pointer_right'],
         )
     except KeyError as e:
         e.add_note("Unable to extract all required information from YAML - please check all required keys have values")
@@ -261,43 +261,43 @@ def get_styled_dojo_chart_css(dojo_style_spec: DojoStyleSpec) -> str:
     """
     tpl = """\
         /* Tool tip connector arrows */
-        .dijitTooltipBelow-{{ connector_style }} {
+        .dijitTooltipBelow-{{ tool_tip_name }} {
           padding-top: 13px;
         }
-        .dijitTooltipAbove-{{ connector_style }} {
+        .dijitTooltipAbove-{{ tool_tip_name }} {
           padding-bottom: 13px;
         }
-        .tundra .dijitTooltipBelow-{{ connector_style }} .dijitTooltipConnector {
+        .tundra .dijitTooltipBelow-{{ tool_tip_name }} .dijitTooltipConnector {
           top: 0px;
           left: 3px;
-          background: url("{{ tool_tip_connector_up }}") no-repeat top left !important;
+          background: url("{{ tool_tip_pointer_up }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
-        .tundra .dijitTooltipAbove-{{ connector_style }} .dijitTooltipConnector {
+        .tundra .dijitTooltipAbove-{{ tool_tip_name }} .dijitTooltipConnector {
           bottom: 0px;
           left: 3px;
-          background: url("{{ tool_tip_connector_down }}") no-repeat top left !important;
+          background: url("{{ tool_tip_pointer_down }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
-        .tundra .dijitTooltipLeft-{{ connector_style }} {
+        .tundra .dijitTooltipLeft-{{ tool_tip_name }} {
           padding-right: 14px;
         }
-        .tundra .dijitTooltipLeft-{{ connector_style }} .dijitTooltipConnector {
+        .tundra .dijitTooltipLeft-{{ tool_tip_name }} .dijitTooltipConnector {
           right: 0px;
           bottom: 3px;
-          background: url("{{ tool_tip_connector_right }}") no-repeat top left !important;
+          background: url("{{ tool_tip_pointer_right }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
-        .tundra .dijitTooltipRight-{{ connector_style }} {
+        .tundra .dijitTooltipRight-{{ tool_tip_name }} {
           padding-left: 14px;
         }
-        .tundra .dijitTooltipRight-{{ connector_style }} .dijitTooltipConnector {
+        .tundra .dijitTooltipRight-{{ tool_tip_name }} .dijitTooltipConnector {
           left: 0px;
           bottom: 3px;
-          background: url("{{ tool_tip_connector_left }}") no-repeat top left !important;
+          background: url("{{ tool_tip_pointer_left }}") no-repeat top left !important;
           width: 16px;
           height: 14px;
         }
@@ -393,13 +393,20 @@ def fix_default_single_color_mapping(color_mappings: Sequence[ColorWithHighlight
     return new_color_mappings
 
 def get_js_highlighting_function(*,
-        color_mappings: Sequence[ColorWithHighlight], chart_uuid: str, uses_faint_version=False) -> str:
+        color_mappings: Sequence[ColorWithHighlight], chart_uuid: str,
+        fn_used_to_make_fill: ColorShiftJSFunctionName | None = None,
+        fn_desired_on_highlight_color: ColorShiftJSFunctionName | None = None) -> str:
     """
     Used to do this in the jinja template but this is centralised and easier to document etc.
 
+    If a highlight colour is not supplied, do not make a highlight mapping but rely on default behaviour of hl().
+
     Args:
-        uses_faint_version: if True, uses JavaScript getfainthex() on the colours before using them to fill the boxes.
-          No point mapping highlight without first converting to the faint versions.
+        fn_used_to_make_fill: we need to use that function on the main colour to get the colour actually used as the fill
+          e.g. in the box plot. We need to match the fill so the highlight will honour our mapping
+          rather than falling back to the default.
+        fn_desired_on_highlight_color: if None, use the highlight colour supplied,
+          but we might want to make the highlight colour brighter or fainter for this particular type of chart.
     """
     bits = [
         f"var highlight_{chart_uuid} = function(colour){{",
@@ -408,10 +415,17 @@ def get_js_highlighting_function(*,
     ]
     bits = []
     for color_mapping in color_mappings:
-        if uses_faint_version:
-            bits.append(f'        case getfainthex("{color_mapping.main.lower()}").toHex(): hlColour = getfainthex("{color_mapping.highlight.lower()}").toHex(); break;')
-        else:
-            bits.append(f'        case "{color_mapping.main.lower()}": hlColour = "{color_mapping.highlight.lower()}"; break;')
+        if color_mapping.highlight:
+            if fn_used_to_make_fill is None:  ## then map from the original main color
+                fill_color = f'        case "{color_mapping.main.lower()}"'
+            else:
+                fill_color = f'        case {fn_used_to_make_fill}("{color_mapping.main.lower()}").toHex()'
+            if fn_desired_on_highlight_color is None:  ## then map to the original hover color
+                hover_color = f'hlColour = "{color_mapping.highlight.lower()}"'
+            else:
+                hover_color = f'hlColour = {fn_desired_on_highlight_color}("{color_mapping.highlight.lower()}").toHex()'
+            fill2highlight = f"{fill_color}: {hover_color}; break;"
+            bits.append(fill2highlight)
     cases = '\n'.join(bits)
     highlighting_function = (dedent(f"""\
     var highlight_{chart_uuid} = function(colour){{
