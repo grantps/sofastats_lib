@@ -67,6 +67,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#data-preparation" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -331,6 +336,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Preparation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -348,6 +373,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#long-format-vs-wide-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Long Format vs Wide Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-to-long-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Converting to Long Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -370,6 +436,38 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#long-format-vs-wide-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Long Format vs Wide Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-to-long-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Converting to Long Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -389,9 +487,133 @@
   
 
 
-  <h1>Data Preparation</h1>
+<h1 id="data-preparation">Data Preparation</h1>
+<p>Your data might come from a database, or you might have entered it manually into a spreadsheet.
+But however you get your data, <code>sofastats</code> needs your data to be in a structure called "long format"
+(sometimes called "long-data format").
+This is explained in more detail <a href="#long-format-vs-wide-format">below</a>, but it has nothing to do with colour or style -
+it is to do with the way the data is structured.</p>
+<p>Hopefully, your data is already in the long format structure and everything Just Works™.
+If not, it should be possible to transform your data into the correct structure.
+<a href="#converting-to-long-format">Here</a> are some suggestions for how to make any required changes.</p>
+<blockquote>
+<p><span class="large-quote"><code>sofastats</code> needs long-format data</span></p>
+</blockquote>
+<h2 id="long-format-vs-wide-format">Long Format vs Wide Format</h2>
+<p>The internet has numerous user-friendly and in-depth explanations of long-format versus wide-format.
+If the explanation below doesn't help, have a look for something that works better for you.</p>
+<p>Wide format splits values for variables into different columns.
+Long format split variables into values in the same column.
+Confused?
+The best way to understand the difference is probably by example.</p>
+<p>Let's start with a simple dataset and, as we change it, we can see the difference between wide-format and long-format.</p>
+<table>
+<thead>
+<tr>
+<th>Wide Format (easiest for humans to read)</th>
+<th>Long Format (easiest for computers to read)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="Simple data structure" src="images/wide_and_long.png" /></td>
+<td><img alt="Simple data structure" src="images/wide_and_long.png" /></td>
+</tr>
+<tr>
+<td><img alt="Scores by game wide format" src="images/wide_games.png" /></td>
+<td><img alt="Scores by game long format" src="images/long_games.png" /></td>
+</tr>
+<tr>
+<td><img alt="Scores by game and year wide format" src="images/wide_games_years.png" width='450'/></td>
+<td><img alt="Scores by game and year long format" src="images/long_games_years.png" /></td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="https://github.com/sofastats/sofastats_examples/tree/main/src/sofastats_examples/files">example CSVs in the sofastats_examples package</a>
+are all long-format.</p>
+<h2 id="converting-to-long-format">Converting to Long Format</h2>
+<p>If you need to change the data structure, you have at least three options.</p>
+<ol>
+<li>Manually shift round blocks of data. This is possible with small amounts of data.</li>
+<li>Write your own Python script using a library like Pandas or Polars.</li>
+<li>Ask an AI for help about your specific data - it should be able to provide some customised Python code you can run to transform your specific data.</li>
+</ol>
+<p>Here is an example of some working code to transform some synthetic library data.</p>
+<p><img alt="Data for transformation from wide to long Python example" src="images/data_for_example_wide_to_long_transformation_using_python.png" /> </p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_long_format_rows_with_no</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We need this because &#39;No&#39; is not an actual value - this makes sense when you follow the code step-by-step</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">df</span> <span class="o">==</span> <span class="s1">&#39;No&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_df</span>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">to_long_format</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">df_source</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/path/to/wide_format.csv&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">)</span>
+    <span class="c1">#</span>
+    <span class="c1"># Turn wide format:</span>
+    <span class="c1">#</span>
+    <span class="c1">#      Name    Youth    Adult    Large Print (ignoring columns other than the ones we are &quot;lengthening&quot;)</span>
+    <span class="c1">#    Rachel       No      Yes             No</span>
+    <span class="c1">#       ...      ...      ...            ...</span>
+    <span class="c1">#</span>
+    <span class="c1"># into naive long format:</span>
+    <span class="c1">#</span>
+    <span class="c1">#      Name      Book Type    value</span>
+    <span class="c1">#    Rachel          Youth       No   &lt;------ Just another legitimate value as far as melt is concerned</span>
+    <span class="c1">#    Rachel          Adult      Yes</span>
+    <span class="c1">#    Rachel    Large Print       No</span>
+    <span class="c1">#       ...            ...      ...</span>
+    <span class="c1">#</span>
+    <span class="c1"># and then, finally, into Yes/No-aware long format:</span>
+    <span class="c1">#</span>
+    <span class="c1">#      Name      Book Type</span>
+    <span class="c1">#    Rachel          Adult</span>
+    <span class="c1">#       ...            ...</span>
+    <span class="c1">#</span>
+    <span class="n">df_book_type_inc_no_rows</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df_source</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">],</span>
+        <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Book Type&#39;</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Youth&#39;</span><span class="p">,</span> <span class="s1">&#39;Adult&#39;</span><span class="p">,</span> <span class="s1">&#39;Large Print&#39;</span><span class="p">])</span>
+    <span class="n">df_book_type</span> <span class="o">=</span> <span class="n">remove_long_format_rows_with_no</span><span class="p">(</span><span class="n">df_book_type_inc_no_rows</span><span class="p">)</span>
+    <span class="c1">#</span>
+    <span class="c1"># As above but:</span>
+    <span class="c1">#</span>
+    <span class="c1">#      Name    History    Romance    Sci-Fi</span>
+    <span class="c1">#    Rachel         No        Yes        No</span>
+    <span class="c1">#       ...        ...        ...       ...</span>
+    <span class="c1">#</span>
+    <span class="c1"># into:</span>
+    <span class="c1">#</span>
+    <span class="c1">#      Name      Genre</span>
+    <span class="c1">#    Rachel    Romance</span>
+    <span class="c1">#       ...        ...</span>
+    <span class="c1">#</span>
+    <span class="n">df_genre_inc_no_rows</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">df_source</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">],</span>
+        <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;Genre&#39;</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;History&#39;</span><span class="p">,</span> <span class="s1">&#39;Romance&#39;</span><span class="p">,</span> <span class="s1">&#39;Science Fiction&#39;</span><span class="p">])</span>
+    <span class="n">df_genre</span> <span class="o">=</span> <span class="n">remove_long_format_rows_with_no</span><span class="p">(</span><span class="n">df_genre_inc_no_rows</span><span class="p">)</span>
+    <span class="c1">#</span>
+    <span class="c1">#       Name   Age        +       Book Type</span>
+    <span class="c1">#     Rachel    21                    Adult</span>
+    <span class="c1">#        ...   ...                      ...</span>
+    <span class="c1">#</span>
+    <span class="c1"># becomes:</span>
+    <span class="c1">#</span>
+    <span class="c1">#       Name   Age    Book Type</span>
+    <span class="c1">#     Rachel    21        Adult</span>
+    <span class="c1">#        ...   ...          ...</span>
+    <span class="c1">#</span>
+    <span class="c1">#   +   Genre</span>
+    <span class="c1">#     Romance</span>
+    <span class="c1">#        ...</span>
+    <span class="c1"># becomes:</span>
+    <span class="c1">#</span>
+    <span class="c1">#       Name   Age    Book Type      Genre</span>
+    <span class="c1">#     Rachel    21        Adult    Romance</span>
+    <span class="c1">#        ...   ...          ...        ...</span>
+    <span class="c1">#</span>
+    <span class="n">df_added_book_type</span> <span class="o">=</span> <span class="n">df_source</span><span class="p">[[</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Age&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_book_type</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+    <span class="n">df_added_genre</span> <span class="o">=</span> <span class="n">df_added_book_type</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_genre</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+</code></pre></div>
 
 
 
