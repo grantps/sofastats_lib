@@ -186,7 +186,7 @@ def book_type_to_genre(book_type: BookType) -> Genre:
         raise ValueError(f"Unexpected book_type '{book_type}'")
     return genre
 
-def make_group_pattern(con, *, debug=False):
+def make_group_pattern_books(con, *, debug=False):
     n_records = 2_000
     data = [(fake.name(), ) for _i in range(n_records)]
     df = pd.DataFrame(data, columns = ['Name'])
@@ -261,7 +261,7 @@ def get_valuer(column: pd.Series) -> str:
         counts=[3, 25], k=1)[0]
     return valuer
 
-def make_correlation(con, *, debug=False):
+def make_correlation_properties(con, *, debug=False):
     n_records = 20_000
     data = [fake.address() for _i in range(n_records)]
     df = pd.DataFrame(data, columns = ['Address'])
@@ -403,8 +403,8 @@ def run(*, debug=False):
 
     make_education_paired_difference(con, debug=debug)
     make_sport_independent_difference(con, debug=debug)
-    make_group_pattern(con, debug=debug)
-    make_correlation(con, debug=debug)
+    make_group_pattern_books(con, debug=debug)
+    make_correlation_properties(con, debug=debug)
     make_varied_nestable_data(con, debug=debug)
 
     con.close()

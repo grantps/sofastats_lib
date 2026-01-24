@@ -21,8 +21,19 @@ See [How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson
 for how we're trying to improve the User Experience (UX) for SOFA users, and for a peek at the GUI.
 
 <a href="https://www.youtube.com/watch?v=5DDZa46g3Yc" target="_blank">
-  <img src="https://sofastats.github.io/sofastats_lib/images/ux_pycon_presentation.png" alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
+  <img src="https://sofastats.github.io/sofastats_lib/images/ux_pycon_presentation.png"
+  alt="How UX Can Improve Your Python Project by Grant and Charlotte Paton-Simpson" width="400" />
 </a>
+
+## Example Output
+
+`sofastats` can be used for statistical tests, charting, and report tables.
+Check out the <a href="https://sofastats.github.io/sofastats_lib/output_gallery.html" target="_blank">Output Gallery</a>
+
+Several styles are built-in, and it is easy to add your own custom styles by copying and editing a simple YAML config file.
+See <a href="https://sofastats.github.io/sofastats_lib/styles/" target="_blank">Making Custom Styles</a>
+
+<img alt="Example outputs" src="https://sofastats.github.io/sofastats_lib/images/outputs.png" width="700" />
 
 ## Usage Overview
 
@@ -180,7 +191,7 @@ We can check what uv has made by looking at contents of the new project folder, 
 As you can see, a lot of boilerplate has been set up.
 Don’t worry if you can’t use the tree command on your machine – we just wanted to show you what has been made by `uv`.
 
-<img src="https://sofastats.github.io/sofastats_lib/images/no_trees.svg" width="300" />
+<img src="https://sofastats.github.io/sofastats_lib/images/no_trees.svg" width="200" />
 
 ### Step 2 - Install sofastats_lib as a project library
 

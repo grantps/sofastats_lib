@@ -6,6 +6,7 @@ nav:
   - Output Gallery: 'output_gallery.html'
   - API: 'API.md'
   - Styles: 'styles.md'
+  - Data Preparation: 'data_prep.md'
 plugins:
   - search
   - mkdocstrings:
