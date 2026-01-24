@@ -7,6 +7,7 @@
 }
 
 .large-quote {
+color: red;
     font-size: 5em;
     font-style: italic;
     line-height: 5em;
