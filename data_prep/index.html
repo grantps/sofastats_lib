@@ -390,10 +390,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tldr" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        tl;dr
+        Summary
       
     </span>
   </a>
@@ -468,10 +468,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tldr" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        tl;dr
+        Summary
       
     </span>
   </a>
@@ -532,26 +532,26 @@
 
 
 <h1 id="data-preparation">Data Preparation</h1>
-<h2 id="tldr">tl;dr</h2>
+<h2 id="summary">Summary</h2>
 <blockquote>
 <p><span class="large-quote"><code>sofastats</code> needs long-format data</span></p>
 </blockquote>
+<p><img alt="Long floor mat?" src="images/wide_or_long_floormat.png" width="275"/></p>
 <h2 id="overview">Overview</h2>
 <p>Your data might come from a database, or you might have entered it manually into a spreadsheet.
 But however you get your data, <code>sofastats</code> needs your data to be in a structure called "long format"
 (sometimes called "long-data format").
 This is explained in more detail <a href="#long-format-vs-wide-format">below</a>, but it has nothing to do with colour or style -
 it is to do with the way the data is structured.</p>
-<p>Hopefully, your data is already in the long format structure and everything Just Works™.
+<p>Hopefully, your data is already in the long format structure and everything Just Works.
 If not, it should be possible to transform your data into the correct structure.
 <a href="#converting-to-long-format">Here</a> are some suggestions for how to make any required changes.</p>
 <h2 id="long-format-vs-wide-format">Long Format vs Wide Format</h2>
 <p>The internet has numerous user-friendly and in-depth explanations of long-format versus wide-format.
 If the explanation below doesn't help, have a look for something that works better for you.</p>
 <p>Wide format splits values for variables into different columns.
-Long format split variables into values in the same column.
-Confused?
-The best way to understand the difference is probably by example.</p>
+Long format splits variables into values in the same column.
+Confused?</p>
 <p>Let's start with a simple dataset and, as we change it, we can see the difference between wide-format and long-format.</p>
 <table>
 <thead>
@@ -585,7 +585,7 @@ are all long-format.</p>
 <li>Ask an AI for help about your specific data - it should be able to provide some customised Python code you can run to transform your specific data.</li>
 </ol>
 <p>Here is an example of some working code to transform some synthetic library data.</p>
-<p><img alt="Data for transformation from wide to long Python example" src="https://sofastats.github.io/sofastats_lib/images/data_for_example_wide_to_long_transformation_using_python.png" /></p>
+<p><img alt="Data for transformation from wide to long Python example" src="https://sofastats.github.io/sofastats_lib/images/data_for_example_wide_to_long_transformation_using_python.png" width="500"/></p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">remove_long_format_rows_with_no</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
