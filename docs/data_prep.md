@@ -3,7 +3,7 @@
 ## Summary
 > <span class="large-quote">`sofastats` needs long-format data</span>
 
-<img alt="Long floor mat?" src="images/wide_or_long_floormat.png" width="275"/>
+<img alt="Long floor mat?" src="https://sofastats.github.io/sofastats_lib/images/wide_or_long_floormat.png" width="275"/>
 
 ## Overview
 
