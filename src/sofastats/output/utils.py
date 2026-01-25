@@ -131,25 +131,6 @@ def _get_report(*, design_specs: Sequence[ReportDesignsSpec] | Sequence[HasToHTM
           color: #3465a4;
         }
 
-        a#return-to-origin {
-          font-weight: bold;
-          font-size: 22px;
-          display: block;
-          margin: 0 0 24px 0;
-        }
-        a#return-to-origin:link, a#return-to-origin:visited, a#return-to-origin:focus {
-          text-decoration: none;
-          color: #3465a4;
-        }
-        a#return-to-origin:hover {
-          text-decoration: underline;
-          color: #3465a4;
-        }
-        a#return-to-origin:active {
-          text-decoration: none;
-          color: #3465a4;
-        }
-
         .item-heading {
           margin-bottom: 12px;
         }
@@ -257,12 +238,8 @@ def _get_report(*, design_specs: Sequence[ReportDesignsSpec] | Sequence[HasToHTM
     items_html = """"<br><div style="clear: both;"></div><br>""".join(items)
 
     ## consolidate items
-    if is_gallery:
-        return_html_or_not = (
-            f"<a id='return-to-origin' href='https://sofastats.github.io/sofastats_lib'>⮪ Back to sofastats main menu</a>\n")
-    else:
-        return_html_or_not = ""
-    tpl_bits.append(f"<h1 class='gallery'>{title}</h1>\n{return_html_or_not}"
+    tpl_bits.append(f"<h1 class='gallery'>{title}</h1>\n"
+        '<img src="https://sofastats.github.io/sofastats_lib/images/carousel.png" alt="Output Carousel" width="400" />'
         f"\n<p>Note - custom styles can be applied to your output. For example, you could make a retro80s style. "
         f'How-To Guide here: <a target="_blank" href="https://sofastats.github.io/sofastats_lib/styles/">Making Custom Styles</a>'
         f"</p>{toc_or_not}"

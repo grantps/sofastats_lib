@@ -14,7 +14,7 @@ pd.set_option('display.min_rows', 30)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1_000)
 
-examples_folder = Path.cwd().parent
+examples_folder = Path.cwd().parent / 'sofastats_examples'
 files_folder = examples_folder / 'files'
 
 countries = ['USA', 'South Korea', 'NZ', 'Denmark']
@@ -395,19 +395,33 @@ def make_varied_nestable_data(con, *, debug=False):
     df.to_csv(files_folder / 'people.csv', index=False)
     df.to_sql('people', con=con, if_exists='replace', index=False)
 
-def run(*, debug=False):
-    pass
-    sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
+def refresh_db_from_csvs():
+    sqlite_demo_db_file_path = examples_folder / 'sofastats_demo.db'
     sqlite_demo_db_file_path.unlink(missing_ok=True)
     con = sqlite.connect(sqlite_demo_db_file_path)
 
-    make_education_paired_difference(con, debug=debug)
-    make_sport_independent_difference(con, debug=debug)
-    make_group_pattern_books(con, debug=debug)
-    make_correlation_properties(con, debug=debug)
-    make_varied_nestable_data(con, debug=debug)
+    csv_names = ['books', 'education', 'people', 'properties', 'sports', ]
+    for csv_name in csv_names:
+        df = pd.read_csv(files_folder / f"{csv_name}.csv")
+        df.to_sql(csv_name, con=con, if_exists='replace', index=False)
 
     con.close()
+
+def run(*, debug=False):
+    pass
+    # refresh_db_from_csvs()
+
+    # sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
+    # sqlite_demo_db_file_path.unlink(missing_ok=True)
+    # con = sqlite.connect(sqlite_demo_db_file_path)
+    #
+    # make_education_paired_difference(con, debug=debug)
+    # make_sport_independent_difference(con, debug=debug)
+    # make_group_pattern_books(con, debug=debug)
+    # make_correlation_properties(con, debug=debug)
+    # make_varied_nestable_data(con, debug=debug)
+    #
+    # con.close()
 
 if __name__ == '__main__':
     pass

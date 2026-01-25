@@ -80,7 +80,7 @@ def simple_bar_chart_averages_from_csv(csv_file_path):
         output_title="Simple Bar Chart (Averages)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
+        style_name='gray_spirals',
         metric=ChartMetric.AVG,
         field_name='Sleep',
         category_field_name='Age Group',
@@ -118,7 +118,7 @@ def simple_bar_chart_lots_of_x_vals(csv_file_path):
         output_title="Simple Bar Chart (Wide)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='prestige_screen',
+        style_name='default',
         category_field_name='Car',
         category_sort_order=SortOrder.VALUE,
         rotate_x_labels=False,
@@ -154,7 +154,7 @@ def clustered_bar_chart(csv_file_path):
         output_title="Clustered Bar Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
+        style_name='black_pastel',
         category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
         series_field_name='Country',
@@ -481,7 +481,7 @@ def multi_chart_scatter_plot(csv_file_path):
         output_title="Multi-Chart Scatterplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
+        style_name='gray_spirals',
         x_field_name='Reading Score Before Help',
         y_field_name='Reading Score After Help',
         chart_field_name='Country',
@@ -575,7 +575,7 @@ def box_plot_chart_narrow_labels(csv_file_path):
         output_title="Boxplot (narrow)",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='default',
+        style_name='red_spirals',
         field_name='Age',
         category_field_name='Country',
         category_sort_order=SortOrder.CUSTOM,
@@ -604,17 +604,37 @@ def box_plot_chart_very_wide(csv_file_path):
     )
     design.make_output()
 
-def clustered_box_plot(csv_file_path):
+def clustered_box_plot_default_style(csv_file_path):
     design = ClusteredBoxplotChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_multiseries_box_plot.html',
+        output_file_path=output_folder / 'demo_multi_series_box_plot.html',
         output_title="Multi-Series Boxplot",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
         field_name='Age',
-        category_field_name='Country',
-        series_field_name='Home Location Type',
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        series_sort_order=SortOrder.CUSTOM,
+        category_sort_order=SortOrder.CUSTOM,
+        box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
+        show_n_records=True,
+        x_axis_font_size=12,
+        decimal_points=3,
+    )
+    design.make_output()
+
+def clustered_box_plot_black_pastel_style(csv_file_path):
+    design = ClusteredBoxplotChartDesign(
+        csv_file_path=csv_file_path,
+        output_file_path=output_folder / 'demo_multi_series_box_plot_black_pastel.html',
+        output_title="Multi-Series Boxplot (black_pastel design)",
+        show_in_web_browser=True,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        style_name='black_pastel',
+        field_name='Age',
+        category_field_name='Home Location Type',
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
         category_sort_order=SortOrder.CUSTOM,
         box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,

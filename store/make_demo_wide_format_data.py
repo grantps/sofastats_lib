@@ -153,7 +153,7 @@ def to_long_format(con, *, debug=False):
 def run(*, debug=False):
     pass
     sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
-    sqlite_demo_db_file_path.unlink(missing_ok=True)
+    # sqlite_demo_db_file_path.unlink(missing_ok=True)  ## leave the rest alone e.g. people
     con = sqlite.connect(sqlite_demo_db_file_path)
 
     make_group_pattern_books(con, debug=debug)

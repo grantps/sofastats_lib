@@ -1,1 +1,3 @@
-{! "output_gallery.html" !}
+{%
+    include-markdown "output_gallery.html"
+%}

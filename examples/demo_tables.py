@@ -69,7 +69,7 @@ def run_cross_tab_from_sqlite_db(sqlite_cur):
     )
     design.make_output()
 
-def run_cross_tab(csv_file_path):
+def cross_tab(csv_file_path):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
@@ -92,7 +92,7 @@ def run_cross_tab(csv_file_path):
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         row_variable_designs=[row_variables_design_1, row_variables_design_2, row_variables_design_3],
         column_variable_designs=[col_variables_design_1, col_variables_design_2, col_variables_design_3],
-        style_name='default',
+        style_name='red_spirals',
         decimal_points=2,
     )
     design.make_output()

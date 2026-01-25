@@ -14,14 +14,30 @@ from sofastats.output.stats.wilcoxon_signed_ranks import WilcoxonSignedRanksDesi
 
 from sofastats_examples.scripts.conf import output_folder, sort_orders_yaml_file_path
 
-def run_anova(csv_file_path):
+def run_anova_black_pastel_style(csv_file_path):
     design = AnovaDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_anova_age_by_country.html',
-        output_title='ANOVA',
+        output_file_path=output_folder / 'demo_anova_age_by_country_black_pastel_style.html',
+        output_title='ANOVA - Black Pastel Style',
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        style_name='prestige_screen',
+        style_name='black_pastel',
+        grouping_field_name='Country',
+        group_values=['South Korea', 'NZ', 'USA'],
+        measure_field_name='Age',
+        high_precision_required=False,
+        decimal_points=3,
+    )
+    design.make_output()
+
+def run_anova_red_spirals_style(csv_file_path):
+    design = AnovaDesign(
+        csv_file_path=csv_file_path,
+        output_file_path=output_folder / 'demo_anova_age_by_country_red_spirals_style.html',
+        output_title='ANOVA - Red Spirals Design',
+        show_in_web_browser=True,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        style_name='red_spirals',
         grouping_field_name='Country',
         group_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
