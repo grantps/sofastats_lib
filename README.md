@@ -33,7 +33,7 @@ Check out the <a href="https://sofastats.github.io/sofastats_lib/output_gallery.
 Several styles are built-in, and it is easy to add your own custom styles by copying and editing a simple YAML config file.
 See <a href="https://sofastats.github.io/sofastats_lib/styles/" target="_blank">Making Custom Styles</a>
 
-<img alt="Example outputs" src="https://sofastats.github.io/sofastats_lib/images/outputs.png" width="700" />
+<img alt="Example outputs" src="images/carousel.png" width="700" />
 
 ## Usage Overview
 
