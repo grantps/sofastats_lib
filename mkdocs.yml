@@ -9,6 +9,7 @@ nav:
   - Data Preparation: 'data_prep.md'
 plugins:
   - search
+  - include-markdown
   - mkdocstrings:
       handlers:
         python:
