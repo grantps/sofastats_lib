@@ -3,7 +3,7 @@ repo_url: https://github.com/grantps/sofastats_lib/
 site_description: Documentation for sofastats_lib
 nav:
   - README: 'README.md'
-  - Output Gallery: 'output_gallery.html'
+  - Output Gallery: 'output_gallery.md'
   - API: 'API.md'
   - Styles: 'styles.md'
   - Data Preparation: 'data_prep.md'
