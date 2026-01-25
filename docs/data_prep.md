@@ -1,7 +1,9 @@
 # Data Preparation
 
-## tl;dr
+## Summary
 > <span class="large-quote">`sofastats` needs long-format data</span>
+
+<img alt="Long floor mat?" src="images/wide_or_long_floormat.png" width="275"/>
 
 ## Overview
 
@@ -11,7 +13,7 @@ But however you get your data, `sofastats` needs your data to be in a structure 
 This is explained in more detail [below](#long-format-vs-wide-format), but it has nothing to do with colour or style -
 it is to do with the way the data is structured.
 
-Hopefully, your data is already in the long format structure and everything Just Works™.
+Hopefully, your data is already in the long format structure and everything Just Works.
 If not, it should be possible to transform your data into the correct structure.
 [Here](#converting-to-long-format) are some suggestions for how to make any required changes.
 
@@ -21,9 +23,8 @@ The internet has numerous user-friendly and in-depth explanations of long-format
 If the explanation below doesn't help, have a look for something that works better for you.
 
 Wide format splits values for variables into different columns.
-Long format split variables into values in the same column.
+Long format splits variables into values in the same column.
 Confused?
-The best way to understand the difference is probably by example.
 
 Let's start with a simple dataset and, as we change it, we can see the difference between wide-format and long-format.
 
@@ -46,7 +47,7 @@ If you need to change the data structure, you have at least three options.
 
 Here is an example of some working code to transform some synthetic library data.
 
-<img alt="Data for transformation from wide to long Python example" src="https://sofastats.github.io/sofastats_lib/images/data_for_example_wide_to_long_transformation_using_python.png" />
+<img alt="Data for transformation from wide to long Python example" src="https://sofastats.github.io/sofastats_lib/images/data_for_example_wide_to_long_transformation_using_python.png" width="500"/>
 
 ```python
 import pandas as pd
