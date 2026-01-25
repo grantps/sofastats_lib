@@ -1,1 +1,1 @@
---8<-- "output_gallery.html"
+{! "output_gallery.html" !}
