@@ -2799,7 +2799,7 @@ If set to 3, for example, 1.23456789 will be displayed as 1.235. 1.320000000 wil
 <span class="normal">282</span>
 <span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CommonDesign</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Output dataclasses (e.g. ClusteredBoxplotChartDesign) inherit from CommonDesign.</span>
 <span class="sd">    Can&#39;t have defaults in CommonDesign attributes (which go first) and then missing defaults for the output dataclasses.</span>
 <span class="sd">    Therefore, we are required to supply defaults for everything in the output dataclasses.</span>
