@@ -28,11 +28,15 @@ Confused?
 
 Let's start with a simple dataset and, as we change it, we can see the difference between wide-format and long-format.
 
-| Wide Format (easiest for humans to read)                                                       | Long Format (easiest for computers to read)                                         |
-|------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| Wide Format (easiest for humans to read)                                                                                                 | Long Format (easiest for computers to read)                                                                                   |
+|------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| Score only                                                                                                                               | Score only                                                                                                                    |
 | <img alt="Simple data structure" src="https://sofastats.github.io/sofastats_lib/images/wide_and_long.png" />                             | <img alt="Simple data structure" src="https://sofastats.github.io/sofastats_lib/images/wide_and_long.png" />                  |
+| Per Game (need new columns for each new Game)                                                                                            | By Game (need new blocks of rows in Game column for each new Game)                                                            |
 | <img alt="Scores by game wide format" src="https://sofastats.github.io/sofastats_lib/images/wide_games.png" />                           | <img alt="Scores by game long format" src="https://sofastats.github.io/sofastats_lib/images/long_games.png" />                |
+| Per Game and Year (each column must be the combination so columns need to change)                                                        | By Game and By Year (for each new variable a new column must be added)                                                        |
 | <img alt="Scores by game and year wide format" src="https://sofastats.github.io/sofastats_lib/images/wide_games_years.png" width='450'/> | <img alt="Scores by game and year long format" src="https://sofastats.github.io/sofastats_lib/images/long_games_years.png" /> |
+| As new variables are added there can be a combinatorial explosion 💥 of columns needed                                                     | As new variables are added the table gets longer much faster than it gets wider                                               |
 
 The [example CSVs in the sofastats_examples package](https://github.com/sofastats/sofastats_examples/tree/main/src/sofastats_examples/files)
 are all long-format.

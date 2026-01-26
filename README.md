@@ -201,3 +201,9 @@ Inside the demo folder, add `sofastats_lib` to the demo project. Here’s how yo
 
 Now `sofastats_lib` is installed as a library ready to use somewhere under demo like
 `demo/.venv/lib/python3.13/site-packages/sofastats_lib/`
+
+## Source Code
+
+`sofastats_lib` is 100% open source. We welcome bug fixes, issues, and pull requests.
+
+[sofastats_lib GitHub repo](https://github.com/sofastats/sofastats_lib)

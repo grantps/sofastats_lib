@@ -97,7 +97,7 @@ class HasToHTMLItemSpec(Protocol):
 
 @dataclass(frozen=False)
 class CommonDesign(ABC):
-    """
+    r"""
     Output dataclasses (e.g. ClusteredBoxplotChartDesign) inherit from CommonDesign.
     Can't have defaults in CommonDesign attributes (which go first) and then missing defaults for the output dataclasses.
     Therefore, we are required to supply defaults for everything in the output dataclasses.

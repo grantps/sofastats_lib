@@ -34,5 +34,22 @@ theme:
     - navigation.tracking
     - navigation.sections
   logo: images/bunny_head_small.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-6
+        name: Switch between light and dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: #3465a4;
+      scheme: slate
+      toggle:
+        icon: material/brightness-6
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: #3465a4;
+      scheme: default
+      toggle:
+        icon: material/brightness-6
+        name: Switch to dark mode
 extra_css:
     - stylesheets/extra.css
