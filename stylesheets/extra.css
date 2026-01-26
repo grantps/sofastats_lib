@@ -11,3 +11,18 @@
     font-style: italic;
     line-height: 1.5em;
 }
+
+#button-full-size {
+    background-color: #3465a4;
+    border: none;
+    color: white !important;
+    padding: 12px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    margin: -25px 2px 4px 0;
+    cursor: pointer;
+    border-radius: 4px;
+}
