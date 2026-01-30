@@ -1,0 +1,18 @@
+Age Group:
+  ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', ]
+Area Group:
+  ['< 40', '40 to <50', '50 to <75', '75 to <100', '100 to <120', '120 to <150', '150 to <175', '175 to <200', '200 to <250', '250 to <300', '300+', ]
+Country:
+  ['USA', 'NZ', 'South Korea', 'Denmark', ]
+Handedness:
+  ['Right', 'Left', 'Ambidextrous', ]
+Home Location Type:
+  ['City', 'Town', 'Rural', ]
+Price Group:
+  ['< 200K', '200K to <350K', '350K to <500K', '500K to <750K', '750K to <1M', '1M to < 1.5M', '1.5M to < 2M', '2M to < 5M', '5M to <10M', '10M+', ]
+Sleep Group:
+  ['Under 7 hours', '7 to <9 hours', '9+ hours', ]
+Sport:
+  ['Badminton', 'Archery', 'Basketball', ]
+Tertiary Qualifications:
+  ['No Qualifications', 'Undergraduate', 'Postgraduate', ]

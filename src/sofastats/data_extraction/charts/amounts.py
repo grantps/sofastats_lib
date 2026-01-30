@@ -47,8 +47,8 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
             def get_amount_and_tool_tip(freq: int, category_pct: float) -> tuple[int, str]:
                 return int(freq), f"{freq}<br>({round(category_pct, decimal_points)}%)"
         elif metric == ChartMetric.PCT:
-            def get_amount_and_tool_tip(freq: int, category_pct: float) -> tuple[int, str]:
-                return int(category_pct), f"{freq}<br>({round(category_pct, decimal_points)}%)"
+            def get_amount_and_tool_tip(freq: int, category_pct: float) -> tuple[float, str]:
+                return float(category_pct), f"{freq}<br>({round(category_pct, decimal_points)}%)"
         else:
             raise ValueError(f"Metric {metric} is not supported")
     elif metric == ChartMetric.AVG:
@@ -57,14 +57,14 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
           average_value
         """
         def get_amount_and_tool_tip(avg: float) -> tuple[float, str]:
-            return float(avg), str(round(avg, 2))
+            return float(avg), str(round(avg, decimal_points))
     elif metric == ChartMetric.SUM:
         agg_fields_clause = f"""\
         SUM({field_name_quoted}) AS
           summed_value
         """
-        def get_amount_and_tool_tip(summed_value: float) -> tuple[int, str]:
-            return int(summed_value), str(round(summed_value, 2))
+        def get_amount_and_tool_tip(summed_value: float) -> tuple[float, str]:
+            return float(summed_value), str(round(summed_value, decimal_points))
     else:
         raise ValueError(f"Metric {metric} is not supported")
     ## assemble SQL
@@ -139,11 +139,11 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
-            def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+            def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
-                return int(args_dict['category_pct']), returned_tool_tip
+                return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
     elif metric == ChartMetric.AVG:
@@ -160,11 +160,11 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
         SUM({field_name_quoted}) AS
           summed_value
         """
-        def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+        def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['series_val']}"
                 f"<br>{round(args_dict['summed_value'], decimal_points)}")
-            return int(args_dict['summed_value']), returned_tool_tip
+            return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
     ## assemble SQL
@@ -255,11 +255,11 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
-            def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+            def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['chart_val']}"
                     f"<br>{args_dict['freq']}"
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
-                return int(args_dict['category_pct']), returned_tool_tip
+                return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
     elif metric == ChartMetric.AVG:
@@ -276,11 +276,11 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
         SUM({field_name_quoted}) AS
           summed_value
         """
-        def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+        def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['chart_val']}"
                 f"<br>{round(args_dict['summed_value'], decimal_points)}")
-            return int(args_dict['summed_value']), returned_tool_tip
+            return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
     ## assemble SQL
@@ -375,11 +375,11 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
-            def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+            def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
                     f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
-                return int(args_dict['category_pct']), returned_tool_tip
+                return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
     elif metric == ChartMetric.AVG:
@@ -396,11 +396,11 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
         SUM({field_name_quoted}) AS
           summed_value
         """
-        def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+        def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['series_val']}"
                 f"<br>{round(args_dict['summed_value'], decimal_points)}")
-            return int(args_dict['summed_value']), returned_tool_tip
+            return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
     ## assemble SQL
