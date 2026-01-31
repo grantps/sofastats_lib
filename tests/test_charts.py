@@ -1,9 +1,49 @@
+"""
+Strategy for getting sorted category items (values or labels)
+
+1. Get a starting df from which to calculate category values.
+   If inside a loop (chart values or series values), or loops (chart and series values) filter accordingly.
+   E.g. if charts by Country and category is Age Group we start by df_vals = df.loc[df['Country'] == country]
+   E.g. if charts by Country, series by Home Location Type, and category is Age Group we start by
+   df_filtered = df.loc[(df['Country'] == country) & (df['Home Location Type'] == home_location_type)]
+
+2. Rely on pandas .groupby() to do the hard work of getting all category values per group at once.
+   For category frequencies, s_freqs = df_filtered.groupby(<category_field_name>).size()
+   For category percentages, s_pcts = ((100 * df_filtered.groupby(<category_field_name>).size()) / len(df_filtered))
+   For category averages, s_avgs = df_filtered.groupby(<category_field_name>)[<field_name>].mean()
+   For category sums, s_sums = df_filtered.groupby(<category_field_name>)[<field_name>].sum()
+
+3. Convert resulting series into dictionaries so we can pluck values out using keys we supply following a sort order
+   we control externally. E.g. looping through sorted or unsorted Age Group values.
+   category2freq = dict(s_freqs.items())
+   category2pct = dict(s_pcts.items())
+
+4. Gather category values and labels into lists e.g.
+   category_freqs = []
+   category_labels = []
+   for category in age_groups_unsorted:
+       ## use dictionary to extract value for specified category
+       category_freq = category2freq[category]
+       category_freqs.append(category_freq)
+       category_pct = display_pcts(category2pct[category])
+       category_label = f"'{category_freq}<br>({category_pct}%)'"
+       category_labels.append(category_label)
+
+5. Assemble expected HTML content from lists
+   I.e. "vals=[...]"; "yLbls: [...]" with individual items generated from f-strings
+   such as f"{freq}<br>({label}%)" when no series
+   or f"{<category_name>}, {<series_name>}<br>{freq}<br>({label}%)" when a series variable
+"""
+from collections.abc import Sequence
 from pathlib import Path
 
 from sofastats.conf.main import ChartMetric, SortOrder
+from sofastats.output.charts.area import AreaChartDesign, MultiChartAreaChartDesign
 from sofastats.output.charts.bar import (
     ClusteredBarChartDesign, MultiChartBarChartDesign, MultiChartClusteredBarChartDesign, SimpleBarChartDesign)
-from sofastats.output.charts.line import LineChartDesign, MultiLineChartDesign
+from sofastats.output.charts.line import (
+    LineChartDesign, MultiChartLineChartDesign, MultiChartMultiLineChartDesign, MultiLineChartDesign)
+from sofastats.output.charts.pie import PieChartDesign
 
 import pandas as pd
 
@@ -13,10 +53,11 @@ people_csv_fpath = csvs_folder / 'people.csv'
 
 unused_output_folder = Path.cwd()
 
-country_categories_sorted = ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+']
-country_categories_unsorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', '<20']
+age_groups_sorted = ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+']
+age_groups_unsorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', '<20']
+home_location_types_sorted = ['City', 'Town', 'Rural']
 
-def display_vals(raw: float, *, is_pct=False) -> str:
+def display_val(raw: float, *, is_pct=False) -> str:
     new = str(round(raw, 3))
     if new[-2:] != '.0':
         new = new.rstrip('0')
@@ -24,462 +65,499 @@ def display_vals(raw: float, *, is_pct=False) -> str:
         new += '%'
     return new
 
-def display_amounts(raw: float) -> str:
-    return display_vals(raw, is_pct=False)
+def display_amount(raw: float) -> str:
+    return display_val(raw, is_pct=False)
 
-def display_pcts(raw: float) -> str:
-    return display_vals(raw, is_pct=True)
+def display_pct(raw: float) -> str:
+    return display_val(raw, is_pct=True)
 
-def test_simple_bar_chart_unsorted():
-    design = SimpleBarChartDesign(
-        csv_file_path=people_csv_fpath,
-        category_field_name='Age Group',
-    )
-    html = design.to_html_design().html_item_str
-    # print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_unsorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    ## category vals
-    val_under_20 = len(df.loc[df['Age Group'] == '<20'])
-    val_20_30 = len(df.loc[df['Age Group'] == '20 to <30'])
-    val_30_40 = len(df.loc[df['Age Group'] == '30 to <40'])
-    val_40_50 = len(df.loc[df['Age Group'] == '40 to <50'])
-    val_50_60 = len(df.loc[df['Age Group'] == '50 to <60'])
-    val_60_70 = len(df.loc[df['Age Group'] == '60 to <70'])
-    val_70_80 = len(df.loc[df['Age Group'] == '70 to <80'])
-    val_80_plus = len(df.loc[df['Age Group'] == '80+'])
-    html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-    assert f'["vals"] = [{val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}, {val_under_20}];' in html2use
-    ## category labels
-    df_vals = ((100 * df.groupby('Age Group').size()) / len(df))
-    val_under_20_2 = display_pcts(df_vals.loc[['<20']].values[0])
-    val_20_30_2 = display_pcts(df_vals.loc[['20 to <30']].values[0])
-    val_30_40_2 = display_pcts(df_vals.loc[['30 to <40']].values[0])
-    val_40_50_2 = display_pcts(df_vals.loc[['40 to <50']].values[0])
-    val_50_60_2 = display_pcts(df_vals.loc[['50 to <60']].values[0])
-    val_60_70_2 = display_pcts(df_vals.loc[['60 to <70']].values[0])
-    val_70_80_2 = display_pcts(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus_2 = display_pcts(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-    assert (f"yLbls: ["
-        f"'{val_20_30}<br>({val_20_30_2})', "
-        f"'{val_30_40}<br>({val_30_40_2})', "
-        f"'{val_40_50}<br>({val_40_50_2})', "
-        f"'{val_50_60}<br>({val_50_60_2})', "
-        f"'{val_60_70}<br>({val_60_70_2})', "
-        f"'{val_70_80}<br>({val_70_80_2})', "
-        f"'{val_80_plus}<br>({val_80_plus_2})', "
-        f"'{val_under_20}<br>({val_under_20_2})']") in html2use
-
-def check_category_age_group(html: str):
+def _initial_category_checks(*, df_filtered: pd.DataFrame, html: str, category_values_in_expected_order: Sequence[str],
+        series_value: str | None = None, already_checked_n_records=False):
     """
+    Note - frequencies by category have % in labels so some shared logic with percentages by category
+    Some things are in common between area, bar, and line.
+    If by chart only - Category, Chart
+    If by series only - Category, Series
+    If by chart AND series - Category, Series
+    """
+    if series_value:  ## if by series then have to do n_record calculations out at the chart / total df level
+        if not already_checked_n_records:
+            raise Exception("The n_records value needs to be checked but this has to happen outside of "
+                "the check_category_freqs() function call when there is a series "
+                "because we don't have access to the full df")
+    else:
+        n_records = len(df_filtered)
+        assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    for n, category in enumerate(category_values_in_expected_order, 1):
+        assert f'{{value: {n}, text: "{category}"}}' in html
+
+def check_category_freqs(*, df_filtered: pd.DataFrame, html: str,
+        category_field_name: str, category_values_in_expected_order: Sequence[str],
+        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False):
+    _initial_category_checks(df_filtered=df_filtered, html=html,
+        category_values_in_expected_order=category_values_in_expected_order,
+        series_value=series_value, already_checked_n_records=already_checked_n_records)
+    df_vals = df_filtered
+    s_freqs = df_filtered.groupby(category_field_name).size()
+    s_pcts = ((100 * df_vals.groupby(category_field_name).size()) / len(df_vals))
+    category2freq = dict(s_freqs.items())
+    category2pct = dict(s_pcts.items())
+    category_freqs = []
+    category_labels = []
+    for category in category_values_in_expected_order:
+        category_freq = category2freq[category]
+        category_freqs.append(category_freq)
+        category_pct = category2pct[category]
+        if series_value is not None:
+            chart_lbl = f"{category}, {series_value}<br>"
+        elif chart_value is not None:
+            chart_lbl = f"{category}, {chart_value}<br>"
+        else:
+            chart_lbl = ''
+        category_label = f"'{chart_lbl}{category_freq}<br>({display_pct(category_pct)})'"
+        category_labels.append(category_label)
+    assert f'["vals"] = {category_freqs};' in html
+    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+
+def check_category_pcts(*, df_filtered: pd.DataFrame, html: str,
+        category_field_name: str, category_values_in_expected_order: Sequence[str],
+        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False):
+    """
+    Note - frequencies by category have % in labels so some shared logic with percentages by category
     Some things are in common between area, bar, and line.
     """
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
+    _initial_category_checks(df_filtered=df_filtered, html=html,
+        category_values_in_expected_order=category_values_in_expected_order,
+        series_value=series_value, already_checked_n_records=already_checked_n_records)
+    df_vals = df_filtered
+    s_freqs = df_filtered.groupby(category_field_name).size()
+    s_pcts = ((100 * df_vals.groupby(category_field_name).size()) / len(df_vals))
+    category2freq = dict(s_freqs.items())
+    category2pct = dict(s_pcts.items())
+    category_pcts = []  ## raw values with all decimal points so graph accurate
+    category_labels = []  ## rounded values so sensible to read
+    for category in category_values_in_expected_order:
+        category_freq = category2freq[category]
+        category_pct = category2pct[category]
+        category_pcts.append(category_pct)
+        if series_value is not None:
+            chart_lbl = f"{category}, {series_value}<br>"
+        elif chart_value is not None:
+            chart_lbl = f"{category}, {chart_value}<br>"
+        else:
+            chart_lbl = ''
+        category_label = f"'{chart_lbl}{category_freq}<br>({display_pct(category_pct)})'"
+        category_labels.append(category_label)
+    assert f'["vals"] = {category_pcts};' in html
+    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+
+def check_category_averages(*, df_filtered: pd.DataFrame, html: str, field_name: str,
+        category_field_name: str, category_values_in_expected_order: Sequence[str]):
+    """
+    Values are unrounded averages; labels are rounded
+    """
+    n_records = len(df_filtered)
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_sorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    df_vals = df
-    val_under_20 = len(df_vals.loc[df_vals['Age Group'] == '<20'])
-    val_20_30 = len(df_vals.loc[df_vals['Age Group'] == '20 to <30'])
-    val_30_40 = len(df_vals.loc[df_vals['Age Group'] == '30 to <40'])
-    val_40_50 = len(df_vals.loc[df_vals['Age Group'] == '40 to <50'])
-    val_50_60 = len(df_vals.loc[df_vals['Age Group'] == '50 to <60'])
-    val_60_70 = len(df_vals.loc[df_vals['Age Group'] == '60 to <70'])
-    val_70_80 = len(df_vals.loc[df_vals['Age Group'] == '70 to <80'])
-    val_80_plus = len(df_vals.loc[df_vals['Age Group'] == '80+'])
-    html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-    assert f'["vals"] = [{val_under_20}, {val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}];' in html2use
-    df_vals = ((100 * df.groupby('Age Group').size()) / len(df))
-    val_under_20_2 = display_pcts(df_vals.loc[['<20']].values[0])
-    val_20_30_2 = display_pcts(df_vals.loc[['20 to <30']].values[0])
-    val_30_40_2 = display_pcts(df_vals.loc[['30 to <40']].values[0])
-    val_40_50_2 = display_pcts(df_vals.loc[['40 to <50']].values[0])
-    val_50_60_2 = display_pcts(df_vals.loc[['50 to <60']].values[0])
-    val_60_70_2 = display_pcts(df_vals.loc[['60 to <70']].values[0])
-    val_70_80_2 = display_pcts(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus_2 = display_pcts(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-    assert (f"yLbls: ["
-        f"'{val_under_20}<br>({val_under_20_2})', "
-        f"'{val_20_30}<br>({val_20_30_2})', "
-        f"'{val_30_40}<br>({val_30_40_2})', "
-        f"'{val_40_50}<br>({val_40_50_2})', "
-        f"'{val_50_60}<br>({val_50_60_2})', "
-        f"'{val_60_70}<br>({val_60_70_2})', "
-        f"'{val_70_80}<br>({val_70_80_2})', "
-        f"'{val_80_plus}<br>({val_80_plus_2})']") in html2use
+    for n, category in enumerate(category_values_in_expected_order, 1):
+        assert f'{{value: {n}, text: "{category}"}}' in html
+    s_avgs = df_filtered.groupby(category_field_name)[field_name].mean()
+    category2avg = dict(s_avgs.items())
+    category_avgs = []  ## raw values with all decimal points so graph accurate
+    category_labels = []  ## rounded values so sensible to read
+    for category in category_values_in_expected_order:
+        category_avg = category2avg[category]
+        category_avgs.append(category_avg)
+        category_label = f"'{display_amount(category_avg)}'"
+        category_labels.append(category_label)
+    assert f'["vals"] = {category_avgs};' in html
+    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+
+def check_category_sums(*, df_filtered: pd.DataFrame, html: str, field_name: str,
+        category_field_name: str, category_values_in_expected_order: Sequence[str]):
+    """
+    Values are unrounded averages; labels are rounded
+    """
+    n_records = len(df_filtered)
+    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    for n, category in enumerate(category_values_in_expected_order, 1):
+        assert f'{{value: {n}, text: "{category}"}}' in html
+    s_sums = df_filtered.groupby(category_field_name)[field_name].sum()
+    category2sum = dict(s_sums.items())
+    category_sums = []  ## raw values with all decimal points so graph accurate
+    category_labels = []  ## rounded values so sensible to read
+    for category in category_values_in_expected_order:
+        category_sum = category2sum[category]
+        category_sums.append(category_sum)
+        category_label = f"'{display_amount(category_sum)}'"
+        category_labels.append(category_label)
+    assert f'["vals"] = {category_sums};' in html
+    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+
+def test_simple_bar_chart_unsorted():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_unsorted
+    design = SimpleBarChartDesign(
+        csv_file_path=csv_file_path,
+        category_field_name=category_field_name,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    check_category_freqs(df_filtered=df, html=html,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_sorted():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Age Group',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    check_category_age_group(html)
+    df = pd.read_csv(csv_file_path)
+    check_category_freqs(df_filtered=df, html=html,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_percents():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
-        csv_file_path=people_csv_fpath,
-        output_title="Simple Bar Chart (Percents)",
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.PCT,
-        category_field_name='Age Group',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_sorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    df_vals = ((100 * df.groupby('Age Group').size()) / len(df))
-    val_under_20 = float(df_vals.loc[['<20']].values[0])
-    val_20_30 = float(df_vals.loc[['20 to <30']].values[0])
-    val_30_40 = float(df_vals.loc[['30 to <40']].values[0])
-    val_40_50 = float(df_vals.loc[['40 to <50']].values[0])
-    val_50_60 = float(df_vals.loc[['50 to <60']].values[0])
-    val_60_70 = float(df_vals.loc[['60 to <70']].values[0])
-    val_70_80 = float(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus = float(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-    assert f'["vals"] = [{val_under_20}, {val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}];' in html2use
-    ## freq for label
-    df_vals = df
-    val_under_20 = len(df_vals.loc[df_vals['Age Group'] == '<20'])
-    val_20_30 = len(df_vals.loc[df_vals['Age Group'] == '20 to <30'])
-    val_30_40 = len(df_vals.loc[df_vals['Age Group'] == '30 to <40'])
-    val_40_50 = len(df_vals.loc[df_vals['Age Group'] == '40 to <50'])
-    val_50_60 = len(df_vals.loc[df_vals['Age Group'] == '50 to <60'])
-    val_60_70 = len(df_vals.loc[df_vals['Age Group'] == '60 to <70'])
-    val_70_80 = len(df_vals.loc[df_vals['Age Group'] == '70 to <80'])
-    val_80_plus = len(df_vals.loc[df_vals['Age Group'] == '80+'])
-    ## % for label
-    df_vals = ((100 * df.groupby('Age Group').size()) / len(df))
-    val_under_20_2 = display_pcts(df_vals.loc[['<20']].values[0])
-    val_20_30_2 = display_pcts(df_vals.loc[['20 to <30']].values[0])
-    val_30_40_2 = display_pcts(df_vals.loc[['30 to <40']].values[0])
-    val_40_50_2 = display_pcts(df_vals.loc[['40 to <50']].values[0])
-    val_50_60_2 = display_pcts(df_vals.loc[['50 to <60']].values[0])
-    val_60_70_2 = display_pcts(df_vals.loc[['60 to <70']].values[0])
-    val_70_80_2 = display_pcts(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus_2 = display_pcts(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-    assert (f"yLbls: ["
-        f"'{val_under_20}<br>({val_under_20_2})', "
-        f"'{val_20_30}<br>({val_20_30_2})', "
-        f"'{val_30_40}<br>({val_30_40_2})', "
-        f"'{val_40_50}<br>({val_40_50_2})', "
-        f"'{val_50_60}<br>({val_50_60_2})', "
-        f"'{val_60_70}<br>({val_60_70_2})', "
-        f"'{val_70_80}<br>({val_70_80_2})', "
-        f"'{val_80_plus}<br>({val_80_plus_2})']") in html2use
+    df = pd.read_csv(csv_file_path)
+    check_category_pcts(df_filtered=df, html=html,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_averages():
+    csv_file_path = people_csv_fpath
+    field_name = 'Sleep'
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.AVG,
-        field_name='Sleep',
-        category_field_name='Age Group',
+        field_name=field_name,
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_sorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    df_vals = df.groupby('Age Group')['Sleep'].mean()
-    val_under_20 = float(df_vals.loc[['<20']].values[0])
-    val_20_30 = float(df_vals.loc[['20 to <30']].values[0])
-    val_30_40 = float(df_vals.loc[['30 to <40']].values[0])
-    val_40_50 = float(df_vals.loc[['40 to <50']].values[0])
-    val_50_60 = float(df_vals.loc[['50 to <60']].values[0])
-    val_60_70 = float(df_vals.loc[['60 to <70']].values[0])
-    val_70_80 = float(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus = float(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-    assert f'["vals"] = [{val_under_20}, {val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}];' in html2use
-    val_under_20 = display_amounts(round(float(df_vals.loc[['<20']].values[0]), 3))
-    val_20_30 = display_amounts(round(float(df_vals.loc[['20 to <30']].values[0]), 3))
-    val_30_40 = display_amounts(round(float(df_vals.loc[['30 to <40']].values[0]), 3))
-    val_40_50 = display_amounts(round(float(df_vals.loc[['40 to <50']].values[0]), 3))
-    val_50_60 = display_amounts(round(float(df_vals.loc[['50 to <60']].values[0]), 3))
-    val_60_70 = display_amounts(round(float(df_vals.loc[['60 to <70']].values[0]), 3))
-    val_70_80 = display_amounts(round(float(df_vals.loc[['70 to <80']].values[0]), 3))
-    val_80_plus = display_amounts(round(float(df_vals.loc[['80+']].values[0]), 3))
-    html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-    assert f"yLbls: ['{val_under_20}', '{val_20_30}', '{val_30_40}', '{val_40_50}', '{val_50_60}', '{val_60_70}', '{val_70_80}', '{val_80_plus}']" in html2use
+    df = pd.read_csv(csv_file_path)
+    check_category_averages(df_filtered=df, html=html, field_name=field_name,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_sums():
+    csv_file_path = people_csv_fpath
+    field_name = 'Sleep'
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.SUM,
-        field_name='Sleep',
-        category_field_name='Age Group',
+        field_name=field_name,
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_sorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    df_vals = df.groupby('Age Group')['Sleep'].sum()
-    val_under_20 = float(df_vals.loc[['<20']].values[0])
-    val_20_30 = float(df_vals.loc[['20 to <30']].values[0])
-    val_30_40 = float(df_vals.loc[['30 to <40']].values[0])
-    val_40_50 = float(df_vals.loc[['40 to <50']].values[0])
-    val_50_60 = float(df_vals.loc[['50 to <60']].values[0])
-    val_60_70 = float(df_vals.loc[['60 to <70']].values[0])
-    val_70_80 = float(df_vals.loc[['70 to <80']].values[0])
-    val_80_plus = float(df_vals.loc[['80+']].values[0])
-    html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-    assert f'["vals"] = [{val_under_20}, {val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}];' in html2use
-    val_under_20 = display_amounts(round(float(df_vals.loc[['<20']].values[0]), 3))
-    val_20_30 = display_amounts(round(float(df_vals.loc[['20 to <30']].values[0]), 3))
-    val_30_40 = display_amounts(round(float(df_vals.loc[['30 to <40']].values[0]), 3))
-    val_40_50 = display_amounts(round(float(df_vals.loc[['40 to <50']].values[0]), 3))
-    val_50_60 = display_amounts(round(float(df_vals.loc[['50 to <60']].values[0]), 3))
-    val_60_70 = display_amounts(round(float(df_vals.loc[['60 to <70']].values[0]), 3))
-    val_70_80 = display_amounts(round(float(df_vals.loc[['70 to <80']].values[0]), 3))
-    val_80_plus = display_amounts(round(float(df_vals.loc[['80+']].values[0]), 3))
-    html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-    assert f"yLbls: ['{val_under_20}', '{val_20_30}', '{val_30_40}', '{val_40_50}', '{val_50_60}', '{val_60_70}', '{val_70_80}', '{val_80_plus}']" in html2use
+    df = pd.read_csv(csv_file_path)
+    check_category_sums(df_filtered=df, html=html, field_name=field_name,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
-def test_multi_bar_chart():
+def test_multi_chart_bar_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Home Location Type'
+    category_values_in_expected_order = home_location_types_sorted
+    chart_field_name = 'Country'
     design = MultiChartBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Home Location Type',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
-        chart_field_name='Country',
+        chart_field_name=chart_field_name,
         chart_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_chart_records = df.groupby('Country').size()
-    for n_records in n_chart_records:
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    assert '{value: 1, text: "City"}' in html
-    assert '{value: 2, text: "Town"}' in html
-    assert '{value: 3, text: "Rural"}' in html
-    countries = df['Country'].unique()
-    for country in countries:  ## not testing whether in the right order
-        assert f"Country: {country}" in html
-        home_locations = df[df['Country'] == country].groupby('Home Location Type').size()
-        home_location_freqs = dict(home_locations.items())
-        vals = []
-        for category in ['City', 'Town', 'Rural']:
-            vals.append(home_location_freqs[category])
-        vals_declaration = f'["vals"] = {vals};'
-        # print(vals_declaration)
-        assert vals_declaration in html
-        sub_total = sum(vals)
-        for home_location, val in home_location_freqs.items():
-            assert f"{home_location}, {country}<br>{val}<br>({round((100 * val) / sub_total, 3)}%)" in html
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html
+        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html,
+            category_field_name=category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_clustered_bar_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Home Location Type'
+    category_values_in_expected_order = home_location_types_sorted
+    series_field_name = 'Country'
     design = ClusteredBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Home Location Type',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name='Country',
+        series_field_name=series_field_name,
         series_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_records = len(df)
+    df = pd.read_csv(csv_file_path)
+    n_records = len(df)  ## when no chart, but series, have to do it here
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    assert '{value: 1, text: "City"}' in html
-    assert '{value: 2, text: "Town"}' in html
-    assert '{value: 3, text: "Rural"}' in html
-    countries = df['Country'].unique()
-    for country in countries:  ## not testing whether in the right order
-        assert f'["label"] = "{country}"' in html  ## series
-        home_locations = df[df['Country'] == country].groupby('Home Location Type').size()
-        home_location_freqs = dict(home_locations.items())
-        vals = []
-        for category in ['City', 'Town', 'Rural']:
-            vals.append(home_location_freqs[category])
-        vals_declaration = f'["vals"] = {vals};'
-        # print(vals_declaration)
-        assert vals_declaration in html  ## category vals
-        sub_total = sum(vals)
-        for home_location, val in home_location_freqs.items():
-            assert f"{home_location}, {country}<br>{val}<br>({round((100 * val) / sub_total, 3)}%)" in html  ## category labels
+    series_values = df[series_field_name].unique()
+    for series_value in series_values:  ## not testing whether in the right order
+        assert f'["label"] = "{series_value}"' in html  ## series
+        df_filtered = df.loc[df[series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html,
+            category_field_name=category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
+            series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_clustered_bar_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Home Location Type'
+    category_values_in_expected_order = home_location_types_sorted
+    series_field_name = 'Country'
+    chart_field_name = 'Tertiary Qualifications'
     design = MultiChartClusteredBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Home Location Type',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name='Country',
+        series_field_name=series_field_name,
         series_sort_order=SortOrder.CUSTOM,
-        chart_field_name='Tertiary Qualifications',
+        chart_field_name=chart_field_name,
         chart_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_chart_records = df.groupby('Tertiary Qualifications').size()
-    for n_records in n_chart_records:
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html  ## chart
+        series_values = df[series_field_name].unique()
+        df_chart = df[df[chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    assert '{value: 1, text: "City"}' in html
-    assert '{value: 2, text: "Town"}' in html
-    assert '{value: 3, text: "Rural"}' in html
-    quals = df['Tertiary Qualifications'].unique()
-    for qual in quals:  ## not testing whether in the right order
-        assert f"Tertiary Qualifications: {qual}" in html  ## chart
-        countries = df['Country'].unique()
-        for country in countries:  ## not testing whether in the right order
-            assert f'["label"] = "{country}"' in html  ## series
-            s_home_locations = df.loc[(df['Tertiary Qualifications'] == qual) & (df['Country'] == country)].groupby('Home Location Type').size()
-            home_location_freqs = dict(s_home_locations.items())
-            vals = []
-            for category in ['City', 'Town', 'Rural']:
-                vals.append(home_location_freqs[category])
-            vals_declaration = f'["vals"] = {vals};'
-            # print(vals_declaration)
-            assert vals_declaration in html  ## category val
-            sub_total = sum(vals)
-            for home_location, val in home_location_freqs.items():
-                assert f"{home_location}, {country}<br>{val}<br>({round((100 * val) / sub_total, 3)}%)" in html  ## category label
+        for series_value in series_values:  ## not testing whether in the right order
+            assert f'["label"] = "{series_value}"' in html  ## series
+            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html,
+                category_field_name=category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_clustered_percents_bar_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Home Location Type'
+    category_values_in_expected_order = home_location_types_sorted
+    series_field_name = 'Country'
+    chart_field_name = 'Tertiary Qualifications'
     design = MultiChartClusteredBarChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.PCT,
-        category_field_name='Home Location Type',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name='Country',
+        series_field_name=series_field_name,
         series_sort_order=SortOrder.CUSTOM,
-        chart_field_name='Tertiary Qualifications',
+        chart_field_name=chart_field_name,
         chart_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
-    n_chart_records = df.groupby('Tertiary Qualifications').size()
-    for n_records in n_chart_records:
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html  ## chart
+        series_values = df[series_field_name].unique()
+        df_chart = df[df[chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    assert '{value: 1, text: "City"}' in html
-    assert '{value: 2, text: "Town"}' in html
-    assert '{value: 3, text: "Rural"}' in html
-    quals = df['Tertiary Qualifications'].unique()
-    for qual in quals:  ## not testing whether in the right order
-        assert f"Tertiary Qualifications: {qual}" in html  ## chart
-        countries = df['Country'].unique()
-        for country in countries:  ## not testing whether in the right order
-            assert f'["label"] = "{country}"' in html  ## series
-            df2use = df.loc[(df['Tertiary Qualifications'] == qual) & (df['Country'] == country)]
-            s_home_locations_pcts = ((100 * df2use.groupby('Home Location Type').size()) / len(df2use))
-            home_location_pcts = dict(s_home_locations_pcts.items())
-            s_home_locations_freqs = df2use.groupby('Home Location Type').size()
-            home_location_freqs = dict(s_home_locations_freqs.items())
-            pct_vals = []
-            for category in ['City', 'Town', 'Rural']:
-                pct_vals.append(home_location_pcts[category])
-            pct_vals_declaration = f'["vals"] = {pct_vals};'
-            # print(pct_vals_declaration)
-            assert pct_vals_declaration in html  ## category val
-            sub_total = len(df2use)
-            for home_location, freq in home_location_freqs.items():
-                assert f"{home_location}, {country}<br>{freq}<br>({round((100 * freq) / sub_total, 3)}%)" in html  ## category label
+        for series_value in series_values:  ## not testing whether in the right order
+            assert f'["label"] = "{series_value}"' in html  ## series
+            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            check_category_pcts(df_filtered=df_filtered, html=html,
+                category_field_name=category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
 
 def test_line_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
     design = LineChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Age Group',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    check_category_age_group(html)
+    df = pd.read_csv(csv_file_path)
+    check_category_freqs(df_filtered=df, html=html,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
 
 def test_multi_line_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
+    series_field_name = 'Country'
     design = MultiLineChartDesign(
-        csv_file_path=people_csv_fpath,
+        csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name='Age Group',
+        category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name='Country',
+        series_field_name=series_field_name,
         series_sort_order=SortOrder.CUSTOM,
     )
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(people_csv_fpath)
+    df = pd.read_csv(csv_file_path)
     n_records = len(df)
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    ## expected categories
-    for n, country_category in enumerate(country_categories_sorted, 1):
-        assert f'{{value: {n}, text: "{country_category}"}}' in html
-    countries = df['Country'].unique()
-    for country in countries:  ## not testing whether in the right order
-        assert f'["label"] = "{country}"' in html  ## series
+    series_values = df[series_field_name].unique()
+    for series_value in series_values:  ## not testing whether in the right order
+        assert f'["label"] = "{series_value}"' in html  ## series
+        df_filtered = df.loc[df[series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html,
+            category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+            series_value=series_value, already_checked_n_records=True)
 
-        ## TODO: use dicts instead? Everywhere?
+def test_multi_chart_line_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
+    chart_field_name = 'Country'
+    design = MultiChartLineChartDesign(
+        csv_file_path=csv_file_path,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name=category_field_name,
+        category_sort_order=SortOrder.CUSTOM,
+        chart_field_name=chart_field_name,
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html  ## chart
+        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html,
+            category_field_name=category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
+            chart_value=chart_value, already_checked_n_records=True)
 
-        ## category vals
-        df2use = df.loc[df['Country'] == country]
-        df_vals = df2use
-        val_under_20 = len(df_vals.loc[df_vals['Age Group'] == '<20'])
-        val_20_30 = len(df_vals.loc[df_vals['Age Group'] == '20 to <30'])
-        val_30_40 = len(df_vals.loc[df_vals['Age Group'] == '30 to <40'])
-        val_40_50 = len(df_vals.loc[df_vals['Age Group'] == '40 to <50'])
-        val_50_60 = len(df_vals.loc[df_vals['Age Group'] == '50 to <60'])
-        val_60_70 = len(df_vals.loc[df_vals['Age Group'] == '60 to <70'])
-        val_70_80 = len(df_vals.loc[df_vals['Age Group'] == '70 to <80'])
-        val_80_plus = len(df_vals.loc[df_vals['Age Group'] == '80+'])
-        html2use = html[html.index('series_00["vals"]'):]  ## so test output shows useful output before truncated
-        assert f'["vals"] = [{val_under_20}, {val_20_30}, {val_30_40}, {val_40_50}, {val_50_60}, {val_60_70}, {val_70_80}, {val_80_plus}];' in html2use
-        ## category labels
-        df_vals = ((100 * df2use.groupby('Age Group').size()) / len(df2use))
-        val_under_20_2 = display_pcts(df_vals.loc[['<20']].values[0])
-        val_20_30_2 = display_pcts(df_vals.loc[['20 to <30']].values[0])
-        val_30_40_2 = display_pcts(df_vals.loc[['30 to <40']].values[0])
-        val_40_50_2 = display_pcts(df_vals.loc[['40 to <50']].values[0])
-        val_50_60_2 = display_pcts(df_vals.loc[['50 to <60']].values[0])
-        val_60_70_2 = display_pcts(df_vals.loc[['60 to <70']].values[0])
-        val_70_80_2 = display_pcts(df_vals.loc[['70 to <80']].values[0])
-        val_80_plus_2 = display_pcts(df_vals.loc[['80+']].values[0])
-        html2use = html[html.index('yLbls: ['):]  ## so test output shows useful output before truncated
-        assert (f"yLbls: ["
-            f"'<20, {country}<br>{val_under_20}<br>({val_under_20_2})', "
-            f"'20 to <30, {country}<br>{val_20_30}<br>({val_20_30_2})', "
-            f"'30 to <40, {country}<br>{val_30_40}<br>({val_30_40_2})', "
-            f"'40 to <50, {country}<br>{val_40_50}<br>({val_40_50_2})', "
-            f"'50 to <60, {country}<br>{val_50_60}<br>({val_50_60_2})', "
-            f"'60 to <70, {country}<br>{val_60_70}<br>({val_60_70_2})', "
-            f"'70 to <80, {country}<br>{val_70_80}<br>({val_70_80_2})', "
-            f"'80+, {country}<br>{val_80_plus}<br>({val_80_plus_2})']") in html2use
+def test_multi_chart_multi_line_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Home Location Type'
+    category_values_in_expected_order = home_location_types_sorted
+    series_field_name = 'Country'
+    chart_field_name = 'Age Group'
+    design = MultiChartMultiLineChartDesign(
+        csv_file_path=csv_file_path,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name=category_field_name,
+        category_sort_order=SortOrder.CUSTOM,
+        series_field_name=series_field_name,
+        series_sort_order=SortOrder.CUSTOM,
+        chart_field_name=chart_field_name,
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html  ## chart
+        series_values = df[series_field_name].unique()
+        df_chart = df[df[chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        assert f'conf["n_records"] = "N = {n_records:,}";' in html
+        for series_value in series_values:  ## not testing whether in the right order
+            assert f'["label"] = "{series_value}"' in html  ## series
+            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html,
+                category_field_name=category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_area_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
+    design = AreaChartDesign(
+        csv_file_path=csv_file_path,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name=category_field_name,
+        category_sort_order=SortOrder.CUSTOM,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    check_category_freqs(df_filtered=df, html=html,
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+
+def test_multi_chart_area_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Age Group'
+    category_values_in_expected_order = age_groups_sorted
+    chart_field_name = 'Country'
+    design = MultiChartAreaChartDesign(
+        csv_file_path=csv_file_path,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name=category_field_name,
+        category_sort_order=SortOrder.CUSTOM,
+        chart_field_name=chart_field_name,
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    chart_values = df[chart_field_name].unique()
+    for chart_value in chart_values:  ## not testing whether in the right order
+        assert f"{chart_field_name}: {chart_value}" in html
+        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html,
+            category_field_name=category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
+
+def test_pie_chart():
+    csv_file_path = people_csv_fpath
+    category_field_name = 'Country'
+    design = PieChartDesign(
+        csv_file_path=csv_file_path,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name=category_field_name,
+        category_sort_order=SortOrder.CUSTOM,
+    )
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(csv_file_path)
+    ## TODO: pass n_records through to Pie Charts!
+    """
+    {"val": 2227, "label": "USA", "tool_tip": "2227<br>(44.54%)"},
+    {"val": 897, "label": "NZ", "tool_tip": "897<br>(17.94%)"},
+    {"val": 1140, "label": "South Korea", "tool_tip": "1140<br>(22.8%)"},
+    {"val": 736, "label": "Denmark", "tool_tip": "736<br>(14.72%)"}
+    """
 
 if __name__ == "__main__":
     pass
@@ -488,9 +566,14 @@ if __name__ == "__main__":
     # test_simple_bar_chart_percents()
     # test_simple_bar_chart_averages()
     # test_simple_bar_chart_sums()
-    # test_multi_bar_chart()
+    # test_multi_chart_bar_chart()
     # test_clustered_bar_chart()
     # test_multi_chart_clustered_bar_chart()
     # test_multi_chart_clustered_percents_bar_chart()
     # test_line_chart()
     # test_multi_line_chart()
+    # test_multi_chart_line_chart()
+    # test_multi_chart_multi_line_chart()
+    # test_area_chart()
+    # test_multi_chart_area_chart()
+    test_pie_chart()
