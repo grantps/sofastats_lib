@@ -15,6 +15,7 @@ from sofastats.output.interfaces import (
     DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType, CommonDesign)
 from sofastats.output.styles.interfaces import ColorWithHighlight, StyleSpec
 from sofastats.output.styles.utils import get_js_highlighting_function, get_long_color_list, get_style_spec
+from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
 @dataclass
@@ -36,6 +37,7 @@ class CommonColorSpec:
 @dataclass(frozen=True)
 class CommonOptions:
     is_multi_chart: bool
+    show_n_records: bool
 
 @dataclass(frozen=True)
 class CommonMiscSpec:
@@ -133,6 +135,7 @@ def get_common_charting_spec(charting_spec: PieChartingSpec, style_spec: StyleSp
     )
     options = CommonOptions(
         is_multi_chart=charting_spec.is_multi_chart,
+        show_n_records=charting_spec.show_n_records,
     )
     return CommonChartingSpec(
         color_spec=color_spec,
@@ -179,10 +182,12 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     slice_strs[-1] = slice_strs[-1].rstrip(',')
     js_highlighting_function = get_js_highlighting_function(
         color_mappings=common_charting_spec.color_spec.color_mappings, chart_uuid=chart_uuid)
+    n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     indiv_context = {
         'chart_uuid': chart_uuid,
         'indiv_title_html': indiv_title_html,
         'js_highlighting_function': js_highlighting_function,
+        'n_records': n_records,
         'page_break': page_break,
         'slice_colors_as_displayed': slice_colors_as_displayed,
         'slice_strs': slice_strs,
