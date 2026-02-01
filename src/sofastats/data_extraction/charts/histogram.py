@@ -23,6 +23,7 @@ class HistoIndivChartSpec:
 @dataclass(frozen=False)
 class HistoValsSpec:
     field_name: str
+    chart_field_name: str | None
     chart_name: str | None
     vals: Sequence[float]
     decimal_points: int = 3
@@ -44,8 +45,9 @@ class HistoValsSpec:
         sum_norm_y_vals = sum(norm_y_vals)
         norm_multiplier = float(sum_y_vals / sum_norm_y_vals)
         adjusted_norm_y_vals = [float(val) * norm_multiplier for val in norm_y_vals]
+        label = f"{self.chart_field_name}: {self.chart_name}" if self.chart_field_name else ''
         indiv_chart_spec = HistoIndivChartSpec(
-            label=self.chart_name,
+            label=label,
             n_records=len(self.vals),
             norm_y_vals=adjusted_norm_y_vals,
             y_vals=self.bin_freqs,
@@ -114,6 +116,7 @@ def get_by_vals_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_
     ## build result
     data_spec = HistoValsSpec(
         field_name=field_name,
+        chart_field_name=None,
         chart_name=None,
         vals=vals,
         decimal_points=decimal_points,
@@ -156,6 +159,7 @@ def get_by_chart_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source
         vals = list(df_vals['val'])
         vals_spec = HistoValsSpec(
             field_name=field_name,  ## needed when single chart but redundant / repeated here in multi-chart context
+            chart_field_name=chart_field_name,
             chart_name=chart_val,
             vals=vals,
         )
