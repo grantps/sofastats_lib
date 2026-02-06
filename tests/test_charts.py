@@ -35,7 +35,6 @@ Strategy for getting sorted category items (values or labels)
    or f"{<category_name>}, {<series_name>}<br>{freq}<br>({label}%)" when a series variable
 """
 from collections.abc import Sequence
-from pathlib import Path
 from statistics import median
 
 from sofastats.conf.main import ChartMetric, SortOrder
@@ -54,37 +53,11 @@ from sofastats.utils.stats import get_quartiles
 
 import pandas as pd
 
-from tests.conf import csvs_folder, sort_orders_yaml_file_path
+from tests.conf import (age_groups_sorted, age_groups_unsorted, education_csv_fpath, handedness_sorted,
+    home_location_types_sorted, people_csv_fpath, sort_orders_yaml_file_path, sports_csv_file_path)
+from tests.utils import display_amount_as_nice_str, display_pct_as_nice_str
 
-books_csv_fpath = csvs_folder / 'books.csv'
-education_csv_fpath = csvs_folder / 'education.csv'
-people_csv_fpath = csvs_folder / 'people.csv'
-sports_csv_file_path = csvs_folder / 'sports.csv'
-
-unused_output_folder = Path.cwd()
-
-age_groups_sorted = ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+']
-age_groups_unsorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', '<20', ]
-countries_sorted = ['USA', 'NZ', 'South Korea', 'Denmark', ]
-handedness_sorted = ['Right', 'Left', 'Ambidextrous', ]
-home_location_types_sorted = ['City', 'Town', 'Rural']
-
-def display_val(raw: float, *, is_pct=False) -> str:
-    new = str(round(raw, 3))
-    if new[-2:] != '.0':
-        new = new.rstrip('0')
-    if is_pct:
-        new += '%'
-    return new
-
-def display_amount(raw: float) -> str:
-    return display_val(raw, is_pct=False)
-
-def display_pct(raw: float) -> str:
-    return display_val(raw, is_pct=True)
-
-
-## checks **************************************************************************************************************
+## common checks *******************************************************************************************************
 
 def _check_n_records(
         *, df_filtered: pd.DataFrame, html: str, series_value: str | None = None, already_checked_n_records=False):
@@ -114,7 +87,8 @@ def _initial_category_checks(*, df_filtered: pd.DataFrame, html: str, category_v
 
 def check_category_freqs(*, df_filtered: pd.DataFrame, html: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str],
-        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False):
+        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False,
+        decimal_points: int = 3):
     _initial_category_checks(df_filtered=df_filtered, html=html,
         category_values_in_expected_order=category_values_in_expected_order,
         series_value=series_value, already_checked_n_records=already_checked_n_records)
@@ -134,14 +108,16 @@ def check_category_freqs(*, df_filtered: pd.DataFrame, html: str,
             filter_lbl = f"{category}, {chart_value}<br>"
         else:
             filter_lbl = ''
-        category_label = f"'{filter_lbl}{category_freq}<br>({display_pct(category_pct)})'"
+        label_pct = display_pct_as_nice_str(category_pct, decimal_points=decimal_points)
+        category_label = f"'{filter_lbl}{category_freq}<br>({label_pct})'"
         category_labels.append(category_label)
     assert f'["vals"] = {category_freqs};' in html
     assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
 
 def check_category_pcts(*, df_filtered: pd.DataFrame, html: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str],
-        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False):
+        series_value: str | None = None, chart_value: str | None = None, already_checked_n_records=False,
+        decimal_points: int = 3):
     """
     Note - frequencies by category have % in labels so some shared logic with percentages by category
     Some things are in common between area, bar, and line.
@@ -165,13 +141,14 @@ def check_category_pcts(*, df_filtered: pd.DataFrame, html: str,
             filter_lbl = f"{category}, {chart_value}<br>"
         else:
             filter_lbl = ''
-        category_label = f"'{filter_lbl}{category_freq}<br>({display_pct(category_pct)})'"
+        label_pct = display_pct_as_nice_str(category_pct, decimal_points=decimal_points)
+        category_label = f"'{filter_lbl}{category_freq}<br>({label_pct})'"
         category_labels.append(category_label)
     assert f'["vals"] = {category_pcts};' in html
     assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
 
 def check_category_averages(*, df_filtered: pd.DataFrame, html: str, field_name: str,
-        category_field_name: str, category_values_in_expected_order: Sequence[str]):
+        category_field_name: str, category_values_in_expected_order: Sequence[str], decimal_points: int = 3):
     """
     Values are unrounded averages; labels are rounded
     """
@@ -186,13 +163,13 @@ def check_category_averages(*, df_filtered: pd.DataFrame, html: str, field_name:
     for category in category_values_in_expected_order:
         category_avg = category2avg[category]
         category_avgs.append(category_avg)
-        category_label = f"'{display_amount(category_avg)}'"
+        category_label = f"'{display_amount_as_nice_str(category_avg, decimal_points=decimal_points)}'"
         category_labels.append(category_label)
     assert f'["vals"] = {category_avgs};' in html
     assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
 
 def check_category_sums(*, df_filtered: pd.DataFrame, html: str, field_name: str,
-        category_field_name: str, category_values_in_expected_order: Sequence[str]):
+        category_field_name: str, category_values_in_expected_order: Sequence[str], decimal_points: int = 3):
     """
     Values are unrounded averages; labels are rounded
     """
@@ -207,7 +184,7 @@ def check_category_sums(*, df_filtered: pd.DataFrame, html: str, field_name: str
     for category in category_values_in_expected_order:
         category_sum = category2sum[category]
         category_sums.append(category_sum)
-        category_label = f"'{display_amount(category_sum)}'"
+        category_label = f"'{display_amount_as_nice_str(category_sum, decimal_points=decimal_points)}'"
         category_labels.append(category_label)
     assert f'["vals"] = {category_sums};' in html
     assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
@@ -236,7 +213,7 @@ def check_category_slices(*, df_filtered: pd.DataFrame, html: str,
         else:
             filter_lbl = ''
         category_slice = (f'{{"val": {category_freq}, "label": "{category}", '
-            f'"tool_tip": "{filter_lbl}{category_freq}<br>({display_pct(category_pct)})"}}')
+            f'"tool_tip": "{filter_lbl}{category_freq}<br>({display_pct_as_nice_str(category_pct)})"}}')
         assert category_slice in html
 
 def check_some_points(*, df_filtered: pd.DataFrame, html: str,
@@ -246,16 +223,18 @@ def check_some_points(*, df_filtered: pd.DataFrame, html: str,
         already_checked_n_records=already_checked_n_records)
     df_points = df_filtered.groupby([x_field_name, y_field_name]).size().reset_index()
     sane_n_points_to_check = 100
-    for i, row in df_points.iterrows():
+    idx: int
+    for idx, row in df_points.iterrows():
         point_defn = f"{{x: {row[x_field_name]}, y: {row[y_field_name]}}}"
         assert point_defn in html
-        if i + 1 == sane_n_points_to_check:
+        if idx + 1 == sane_n_points_to_check:
             break
 
 def check_bins(*, df_filtered: pd.DataFrame, html: str, field_name: str):
     n_records = len(df_filtered)  ## filter to chart
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    bin_ranges = [(5, 10), (10, 15), (15, 20), (20, 25), (25, 30), (30, 35), (35, 40), (40, 45), (45, 50), (50, 55), (55, 60), (60, 65), (65, 70), (70, 75), (75, 80), (80, 85), (85, 90), (90, 95),
+    bin_ranges = [(5, 10), (10, 15), (15, 20), (20, 25), (25, 30), (30, 35), (35, 40), (40, 45), (45, 50), (50, 55),
+        (55, 60), (60, 65), (65, 70), (70, 75), (75, 80), (80, 85), (85, 90), (90, 95),
         (95, 100),  ## <= instead of the usual <
     ]
     vals = []
@@ -328,24 +307,28 @@ def test_simple_bar_chart_percents():
     csv_file_path = people_csv_fpath
     category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
+    decimal_points = 3
     design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.PCT,
         category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
+        decimal_points=decimal_points,
     )
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(csv_file_path)
     check_category_pcts(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+        decimal_points=decimal_points)
 
 def test_simple_bar_chart_averages():
     csv_file_path = people_csv_fpath
     field_name = 'Sleep'
     category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
+    decimal_points = 3
     design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -353,18 +336,21 @@ def test_simple_bar_chart_averages():
         field_name=field_name,
         category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
+        decimal_points=decimal_points,
     )
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(csv_file_path)
     check_category_averages(df_filtered=df, html=html, field_name=field_name,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+        decimal_points=decimal_points)
 
 def test_simple_bar_chart_sums():
     csv_file_path = people_csv_fpath
     field_name = 'Sleep'
     category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
+    decimal_points = 3
     design = SimpleBarChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -377,7 +363,8 @@ def test_simple_bar_chart_sums():
     print(html)
     df = pd.read_csv(csv_file_path)
     check_category_sums(df_filtered=df, html=html, field_name=field_name,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+        decimal_points=decimal_points)
 
 def test_multi_chart_bar_chart():
     csv_file_path = people_csv_fpath
@@ -470,6 +457,7 @@ def test_multi_chart_clustered_percents_bar_chart():
     category_values_in_expected_order = home_location_types_sorted
     series_field_name = 'Country'
     chart_field_name = 'Tertiary Qualifications'
+    decimal_points = 3
     design = MultiChartClusteredBarChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
@@ -480,6 +468,7 @@ def test_multi_chart_clustered_percents_bar_chart():
         series_sort_order=SortOrder.CUSTOM,
         chart_field_name=chart_field_name,
         chart_sort_order=SortOrder.CUSTOM,
+        decimal_points=decimal_points,
     )
     html = design.to_html_design().html_item_str
     print(html)
@@ -497,7 +486,7 @@ def test_multi_chart_clustered_percents_bar_chart():
             check_category_pcts(df_filtered=df_filtered, html=html,
                 category_field_name=category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
-                series_value=series_value, already_checked_n_records=True)
+                series_value=series_value, already_checked_n_records=True, decimal_points=decimal_points)
 
 def test_line_chart():
     csv_file_path = people_csv_fpath
@@ -604,17 +593,20 @@ def test_area_chart():
     csv_file_path = people_csv_fpath
     category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
+    decimal_points = 3
     design = AreaChartDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         category_field_name=category_field_name,
         category_sort_order=SortOrder.CUSTOM,
+        decimal_points=decimal_points,
     )
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(csv_file_path)
     check_category_freqs(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+        decimal_points=decimal_points)
 
 def test_multi_chart_area_chart():
     csv_file_path = people_csv_fpath

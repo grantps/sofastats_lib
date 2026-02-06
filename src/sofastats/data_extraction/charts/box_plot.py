@@ -8,7 +8,7 @@ import pandas as pd
 from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.stats_calc.interfaces import BoxResult, BoxplotType
-from sofastats.data_extraction.utils import to_sorted_values
+from sofastats.data_extraction.utils import to_values_sorted_by_custom_or_value
 from sofastats.stats_calc.utils import get_optimal_axis_bounds
 
 @dataclass(frozen=False)
@@ -138,8 +138,8 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
     ## build result
     category_vals_specs = []
     orig_category_vals = df['category_val'].unique()
-    sorted_category_vals = to_sorted_values(orig_vals=orig_category_vals,
-        field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
+    sorted_category_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_category_vals,
+                                                               field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
     for category_val in sorted_category_vals:
         vals = df.loc[df['category_val'] == category_val, 'field_val'].tolist()
         category_vals_spec = BoxplotCategoryItemValsSpec(category_val=category_val, vals=vals)
@@ -237,12 +237,12 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
     ## build result
     series_category_vals_specs_dict = defaultdict(list)
     orig_series_vals = df['series_val'].unique()
-    sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
-        field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+    sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
+                                                             field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         orig_category_vals = df.loc[df['series_val'] == series_val, 'category_val'].unique()
-        sorted_category_vals = to_sorted_values(orig_vals=orig_category_vals,
-            field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
+        sorted_category_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_category_vals,
+                                                                   field_name=category_field_name, sort_orders=sort_orders, sort_order=category_sort_order)
         for category_val in sorted_category_vals:
             vals = df.loc[
                 (df['series_val'] == series_val) & (df['category_val'] == category_val), 'field_val'].tolist()

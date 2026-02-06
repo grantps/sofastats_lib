@@ -29,11 +29,11 @@ from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.interfaces import BLANK, Column, Metric, PctType, Row
 from sofastats.output.tables.utils.html_fixes import (
     fix_top_left_box, merge_cols_of_blanks, merge_rows_of_blanks)
-from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-    get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
+from sofastats.output.tables.utils.misc import (apply_index_styles, get_data_from_spec,
+                                                get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
 from sofastats.output.tables.utils.multi_index_sort import (
     get_order_rules_for_multi_index_branches, get_sorted_multi_index_list)
-from sofastats.utils.misc import get_pandas_friendly_name
+from sofastats.utils.misc import get_pandas_friendly_name, correct_str_dps
 
 pd.set_option('display.max_rows', 200)
 pd.set_option('display.min_rows', 30)
@@ -43,7 +43,7 @@ pd.set_option('display.width', 1_000)
 from collections.abc import Collection
 
 def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[str],
-        n_row_fillers: int = 0, n_col_fillers: int = 0, pct_metrics: Collection[Metric], dp: int = 2,
+        n_row_fillers: int = 0, n_col_fillers: int = 0, pct_metrics: Collection[Metric], decimal_points: int = 2,
         debug=False) -> pd.DataFrame:
     """
     Includes at least the Freq metric but potentially the percentage ones as well.
@@ -186,10 +186,12 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[st
         df = df.fillna(0).infer_objects(copy=False)  ## needed so we can round values (can't round a NA). Also need to do later because of gaps appearing when pivoted then too
     if pct_metrics:
         if Metric.ROW_PCT in pct_metrics:
-            df_pre_pivot_inc_row_pct = get_df_pre_pivot_with_pcts(df, pct_type=PctType.ROW_PCT, dp=dp, debug=debug)
+            df_pre_pivot_inc_row_pct = get_df_pre_pivot_with_pcts(
+                df, pct_type=PctType.ROW_PCT, decimal_points=decimal_points, debug=debug)
             df_pre_pivots.append(df_pre_pivot_inc_row_pct)
         if Metric.COL_PCT in pct_metrics:
-            df_pre_pivot_inc_col_pct = get_df_pre_pivot_with_pcts(df, pct_type=PctType.COL_PCT, dp=dp, debug=debug)
+            df_pre_pivot_inc_col_pct = get_df_pre_pivot_with_pcts(
+                df, pct_type=PctType.COL_PCT, decimal_points=decimal_points, debug=debug)
             df_pre_pivots.append(df_pre_pivot_inc_col_pct)
     df_pre_pivot = pd.concat(df_pre_pivots)
     df = df_pre_pivot.pivot(index=index_cols, columns=column_cols, values='n')
@@ -197,7 +199,7 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str], col_vars: list[st
         df = df.fillna(0).infer_objects(copy=False)
     df = df.astype(str)
     ## have to ensure all significant digits are showing e.g. 3.33 and 1.0 or 0.0 won't align nicely
-    correct_string_dps = partial(correct_str_dps, dp=dp)
+    correct_string_dps = partial(correct_str_dps, decimal_points=decimal_points)
     df = df.map(correct_string_dps)
     return df
 
@@ -294,7 +296,7 @@ class CrossTabDesign(CommonDesign):
                 all_variables=all_variables, totalled_variables=totalled_variables, debug=self.debug)
             df_col = get_all_metrics_df_from_vars(data, row_vars=row_vars, col_vars=col_vars,
                 n_row_fillers=n_row_fillers, n_col_fillers=self.max_col_depth - len(col_vars),
-                pct_metrics=col_spec.self_or_descendant_pct_metrics, dp=self.decimal_points, debug=self.debug)
+                pct_metrics=col_spec.self_or_descendant_pct_metrics, decimal_points=self.decimal_points, debug=self.debug)
             df_cols.append(df_col)
         df = df_cols[0]
         df_cols_remaining = df_cols[1:]

@@ -9,7 +9,7 @@ import pandas as pd
 
 from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.utils import to_sorted_values
+from sofastats.data_extraction.utils import to_values_sorted_by_custom_or_value
 from sofastats.stats_calc.engine import get_normal_ys
 from sofastats.stats_calc.histogram import get_bin_details_from_vals
 
@@ -152,8 +152,8 @@ def get_by_chart_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source
     df = pd.DataFrame(data, columns=cols)
     chart_vals_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
-        field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
+    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
+                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         df_vals = df.loc[df['chart_val'] == chart_val, ['val']]
         vals = list(df_vals['val'])

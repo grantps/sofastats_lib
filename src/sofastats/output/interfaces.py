@@ -113,9 +113,10 @@ class CommonDesign(ABC):
         cur: dpapi2 cursor i.e. an object able to run cur.execute, `cur.fetchall()` etc. (if using a cursor as source)
         database_engine_name: e.g. `DbeName.SQLITE` or 'sqlite' (if using a cursor as the source)
         source_table_name: source table name (if using the cursor as a source OR using the internal SOFA SQLite database)
-        table_filter_sql: valid SQL to filter the source table - must be in the appropriate SQL dialect
-            and entities should be quoted appropriately as needed
-            e.g. SQLite requires backticks for field names with spaces such as \`Age Group\`
+        table_filter_sql: valid SQL to filter the source table as supplied in source_table_name -
+            must be in the appropriate SQL dialect and entities should be quoted appropriately as needed
+            e.g. SQLite requires backticks for field names with spaces such as \`Age Group\`.
+            You cannot filter a CSV. CSVs must already be in the form required for analysis.
         style_name: e.g. 'default'. Either one of the built-in styles under `sofastats.output.styles`
             or a custom style defined by YAML in the custom_styles subfolder of the sofastats local folder
             e.g. `~/Documents/sofastats/custom_styles`

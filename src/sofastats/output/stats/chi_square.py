@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from sofastats import logger
+from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.stats.chi_square import get_chi_square_data
 from sofastats.output.charts import boomslang
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
@@ -479,7 +480,9 @@ class ChiSquareDesign(CommonStatsDesign):
         show_workings: show the workings so you can see how the final results were derived
     """
     variable_a_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    variable_a_sort_order: SortOrder = SortOrder.VALUE
     variable_b_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    variable_b_sort_order: SortOrder = SortOrder.VALUE
 
     show_workings: bool = False
 
@@ -487,7 +490,8 @@ class ChiSquareDesign(CommonStatsDesign):
         ## data
         chi_square_data = get_chi_square_data(cur=self.cur, dbe_spec=self.dbe_spec,
             source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
-            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
+            variable_a_name=self.variable_a_name, variable_a_sort_order=self.variable_a_sort_order,
+            variable_b_name=self.variable_b_name, variable_b_sort_order=self.variable_b_sort_order,
             sort_orders=self.sort_orders)
         ## get results
         stats_result = chi_square_stats_calc(
@@ -502,7 +506,8 @@ class ChiSquareDesign(CommonStatsDesign):
         ## data
         chi_square_data = get_chi_square_data(cur=self.cur, dbe_spec=self.dbe_spec,
             source_table_name=self.source_table_name, table_filter_sql=self.table_filter_sql,
-            variable_a_name=self.variable_a_name, variable_b_name=self.variable_b_name,
+            variable_a_name=self.variable_a_name, variable_a_sort_order=self.variable_a_sort_order,
+            variable_b_name=self.variable_b_name, variable_b_sort_order=self.variable_b_sort_order,
             sort_orders=self.sort_orders)
         ## get results
         stats_result = chi_square_stats_calc(

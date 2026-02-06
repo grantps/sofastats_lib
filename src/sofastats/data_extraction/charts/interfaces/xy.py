@@ -6,7 +6,7 @@ import pandas as pd
 from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.charts.scatter_plot import ScatterDataSeriesSpec, ScatterIndivChartSpec
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.utils import to_sorted_values
+from sofastats.data_extraction.utils import to_values_sorted_by_custom_or_value
 
 @dataclass(frozen=True)
 class XYSpecs:
@@ -167,8 +167,8 @@ def get_by_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, so
     ## build result
     series_xy_specs = []
     orig_series_vals = df['series_val'].unique()
-    sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
-        field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+    sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
+                                                             field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         xys = df.loc[df['series_val'] == series_val, ['x', 'y']].to_records(index=False).tolist()
         series_xy_spec = SeriesXYSpec(
@@ -216,8 +216,8 @@ def get_by_chart_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
     ## build result
     charts_xy_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
-        field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
+    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
+                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         xys = df.loc[df['chart_val'] == chart_val, ['x', 'y']].to_records(index=False).tolist()
         chart_xy_spec = ChartXYSpec(
@@ -265,13 +265,13 @@ def get_by_chart_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
     ## build result
     chart_series_xy_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
-        field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
+    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
+                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         series_xy_specs = []
         orig_series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
-            field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+        sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
+                                                                 field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
         for series_val in sorted_series_vals:
             xys = df.loc[
                 (df['chart_val'] == chart_val) & (df['series_val'] == series_val),

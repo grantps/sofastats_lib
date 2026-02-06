@@ -11,21 +11,6 @@ from sofastats.conf.main import DbeSpec
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.tables.interfaces import PCT_METRICS, TOTAL, Metric, PctType
 
-def correct_str_dps(val: str, *, dp: int) -> str:
-    """
-    Apply decimal points to floats only - leave Freq integers alone.
-    3dp
-    0.0 => 0.000
-    12 => 12
-    """
-    try:
-        len_after_dot = len(val.split('.')[1])
-    except IndexError:
-        return val
-    n_zeros2add = dp - len_after_dot
-    zeros2add = '0' * n_zeros2add
-    return val + zeros2add
-
 def get_raw_df(cur, dbe_spec: DbeSpec, source_table_name: str, *, debug=False) -> pd.DataFrame:
     source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
     cur.exe(f"SELECT * FROM {source_table_name_quoted}")
@@ -135,18 +120,18 @@ def get_data_from_spec(cur, dbe_spec: DbeSpec, source_table_name: str, table_fil
             print(row)
     return data
 
-def rounder(raw, dp: int = 2):
+def rounder(raw, decimal_points: int = 2):
     """
     If it finds a string (i.e. anything other than a number it can round) it returns N/A
     """
     try:
-        ret = round(raw, dp)
+        ret = round(raw, decimal_points)
     except TypeError:
         ret = 'N/A'
     return ret
 
 def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
-        is_cross_tab=True, pct_type: PctType, dp: int = 2, debug=False) -> pd.DataFrame:
+        is_cross_tab=True, pct_type: PctType, decimal_points: int = 2, debug=False) -> pd.DataFrame:
     """
     Strategy - we have multi-indexes so let's use them!
     Note - exact same approach works if you work from the df (for rows and Row %) or from a transposed df (for cols and Col %)
@@ -265,7 +250,7 @@ def get_df_pre_pivot_with_pcts(df: pd.DataFrame, *,
                 summed_value = np.nan
             s_row_pcts = (100 * row) / summed_value
         s_row_pcts = s_row_pcts.replace(np.nan, 'N/A')
-        s_row_pcts = s_row_pcts.apply(rounder, dp=dp)
+        s_row_pcts = s_row_pcts.apply(rounder, decimal_points=decimal_points)
         if debug: print(s_row_pcts)
         ## create rows ready to append to df_pre_pivot before re-pivoting but with additional metric type
         for sub_index, val in s_row_pcts.items():

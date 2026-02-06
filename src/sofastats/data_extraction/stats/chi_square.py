@@ -6,9 +6,9 @@ from typing import Any
 from sofastats import logger
 from sofastats.conf.main import (
     MAX_CHI_SQUARE_VALS_IN_DIM, MAX_CHI_SQUARE_CELLS, MAX_VALUE_LENGTH_IN_SQL_CLAUSE, MIN_CHI_SQUARE_VALS_IN_DIM,
-    DbeName, DbeSpec, SortOrderSpecs)
+    DbeName, DbeSpec, SortOrder, SortOrderSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.utils.misc import apply_custom_sorting_to_values
+from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible
 
 @dataclass(frozen=True)
 class ChiSquareData:
@@ -96,7 +96,9 @@ def get_cleaned_values(*, original_vals: list[str | float], dbe_spec: DbeSpec) -
     return original_vals
 
 def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str, table_filter_sql: str,
-        variable_a_name: str, variable_b_name: str, sort_orders: SortOrderSpecs) -> ChiSquareData:
+        variable_a_name: str, variable_a_sort_order: SortOrder,
+        variable_b_name: str, variable_b_sort_order: SortOrder,
+        sort_orders: SortOrderSpecs) -> ChiSquareData:
     """
     The Chi Square statistical calculation relies on having access to the raw counts per intersection between
     variable A and B. These are the observed values. E.g.
@@ -141,8 +143,11 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_
     row_data = cur.fetchall()
     row_vals = [x[0] for x in row_data]
     variable_a_values_orig = get_cleaned_values(original_vals=row_vals, dbe_spec=dbe_spec)
-    variable_a_values = apply_custom_sorting_to_values(
-        variable_name=variable_a_name, values=variable_a_values_orig, sort_orders=sort_orders)
+    if variable_a_sort_order == SortOrder.CUSTOM:
+        variable_a_values = apply_custom_sorting_to_values_if_possible(
+            variable_name=variable_a_name, values=variable_a_values_orig, sort_orders=sort_orders)
+    else:
+        variable_a_values = variable_a_values_orig
     n_variable_a_vals = len(variable_a_values)
     if n_variable_a_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_a_vals} vs "
@@ -163,8 +168,11 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_
     col_data = cur.fetchall()
     col_vals = [x[0] for x in col_data]
     variable_b_values_orig = get_cleaned_values(original_vals=col_vals, dbe_spec=dbe_spec)
-    variable_b_values = apply_custom_sorting_to_values(
-        variable_name=variable_b_name, values=variable_b_values_orig, sort_orders=sort_orders)
+    if variable_b_sort_order == SortOrder.CUSTOM:
+        variable_b_values = apply_custom_sorting_to_values_if_possible(
+            variable_name=variable_b_name, values=variable_b_values_orig, sort_orders=sort_orders)
+    else:
+        variable_b_values = variable_b_values_orig
     n_variable_b_vals = len(variable_b_values)
     if n_variable_b_vals > MAX_CHI_SQUARE_VALS_IN_DIM:
         raise Exception(f"Too many separate values ({n_variable_b_vals} vs "

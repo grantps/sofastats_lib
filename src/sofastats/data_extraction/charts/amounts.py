@@ -12,7 +12,8 @@ from sofastats.data_extraction.charts.interfaces.amounts import (
     ChartSeriesCategoryAmountSpec, ChartSeriesCategoryAmountSpecs,
     SeriesCategoryAmountSpec, SeriesCategoryAmountSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.utils import to_sorted_values
+from sofastats.data_extraction.utils import to_values_sorted_by_custom_or_value
+from sofastats.utils.misc import display_float_as_nice_str
 
 def validate_metric_and_field_name(metric: ChartMetric, field_name: str):
     if metric in (ChartMetric.AVG, ChartMetric.SUM):
@@ -45,10 +46,12 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
         """
         if metric == ChartMetric.FREQ:
             def get_amount_and_tool_tip(freq: int, category_pct: float) -> tuple[int, str]:
-                return int(freq), f"{freq}<br>({round(category_pct, decimal_points)}%)"
+                label_pct = display_float_as_nice_str(category_pct, decimal_points=decimal_points, show_pct=True)
+                return int(freq), f"{freq}<br>({label_pct})"
         elif metric == ChartMetric.PCT:
             def get_amount_and_tool_tip(freq: int, category_pct: float) -> tuple[float, str]:
-                return float(category_pct), f"{freq}<br>({round(category_pct, decimal_points)}%)"
+                label_pct = display_float_as_nice_str(category_pct, decimal_points=decimal_points, show_pct=True)
+                return float(category_pct), f"{freq}<br>({label_pct})"
         else:
             raise ValueError(f"Metric {metric} is not supported")
     elif metric == ChartMetric.AVG:
@@ -57,14 +60,14 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
           average_value
         """
         def get_amount_and_tool_tip(avg: float) -> tuple[float, str]:
-            return float(avg), str(round(avg, decimal_points))
+            return float(avg), display_float_as_nice_str(avg, decimal_points=decimal_points)
     elif metric == ChartMetric.SUM:
         agg_fields_clause = f"""\
         SUM({field_name_quoted}) AS
           summed_value
         """
         def get_amount_and_tool_tip(summed_value: float) -> tuple[float, str]:
-            return float(summed_value), str(round(summed_value, decimal_points))
+            return float(summed_value), display_float_as_nice_str(summed_value, decimal_points=decimal_points)
     else:
         raise ValueError(f"Metric {metric} is not supported")
     ## assemble SQL
@@ -134,15 +137,19 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
         """
         if metric == ChartMetric.FREQ:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
@@ -153,7 +160,7 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
         """
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
-                f"<br>{round(args_dict['avg'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['avg'], decimal_points=decimal_points)}")
             return float(args_dict['avg']), returned_tool_tip
     elif metric == ChartMetric.SUM:
         agg_fields_clause = f"""\
@@ -163,7 +170,7 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['series_val']}"
-                f"<br>{round(args_dict['summed_value'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['summed_value'], decimal_points=decimal_points)}")
             return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
@@ -191,8 +198,8 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
     df = pd.DataFrame(data, columns=cols)
     series_category_amount_specs = []
     orig_series_vals = df['series_val'].unique()
-    sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
-        field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+    sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
+                                                             field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         category_item_amount_specs = []
         for _i, row in df.loc[df['series_val'] == series_val].iterrows():
@@ -250,15 +257,19 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
         """
         if metric == ChartMetric.FREQ:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['chart_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['chart_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
@@ -269,7 +280,7 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
         """
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['chart_val']}"
-                f"<br>{round(args_dict['avg'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['avg'], decimal_points=decimal_points)}")
             return float(args_dict['avg']), returned_tool_tip
     elif metric == ChartMetric.SUM:
         agg_fields_clause = f"""\
@@ -279,7 +290,7 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['chart_val']}"
-                f"<br>{round(args_dict['summed_value'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['summed_value'], decimal_points=decimal_points)}")
             return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
@@ -307,8 +318,8 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     df = pd.DataFrame(data, columns=cols)
     chart_category_amount_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
-        field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
+    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
+                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         amount_specs = []
         for _i, row in df.loc[df['chart_val'] == chart_val].iterrows():
@@ -370,15 +381,19 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
         """
         if metric == ChartMetric.FREQ:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[int, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return int(args_dict['freq']), returned_tool_tip
         elif metric == ChartMetric.PCT:
             def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
+                label_pct = display_float_as_nice_str(
+                    args_dict['category_pct'], decimal_points=decimal_points, show_pct=True)
                 returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
                     f"<br>{args_dict['freq']}"
-                    f"<br>({round(args_dict['category_pct'], decimal_points)}%)")
+                    f"<br>({label_pct})")
                 return float(args_dict['category_pct']), returned_tool_tip
         else:
             raise ValueError(f"Metric {metric} is not supported")
@@ -389,7 +404,7 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
         """
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (f"{args_dict['category_val']}, {args_dict['series_val']}"
-                f"<br>{round(args_dict['avg'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['avg'], decimal_points=decimal_points)}")
             return float(args_dict['avg']), returned_tool_tip
     elif metric == ChartMetric.SUM:
         agg_fields_clause = f"""\
@@ -399,7 +414,7 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
         def get_amount_and_tool_tip(args_dict: dict) -> tuple[float, str]:
             returned_tool_tip = (
                 f"{args_dict['category_val']}, {args_dict['series_val']}"
-                f"<br>{round(args_dict['summed_value'], decimal_points)}")
+                f"<br>{display_float_as_nice_str(args_dict['summed_value'], decimal_points=decimal_points)}")
             return float(args_dict['summed_value']), returned_tool_tip
     else:
         raise ValueError(f"Metric {metric} is not supported")
@@ -430,13 +445,13 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
     df = pd.DataFrame(data, columns=cols)
     chart_series_category_amount_specs = []
     orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_sorted_values(orig_vals=orig_chart_vals,
-        field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
+    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
+                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         series_category_amount_specs = []
         orig_series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = to_sorted_values(orig_vals=orig_series_vals,
-            field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
+        sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
+                                                                 field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
         for series_val in sorted_series_vals:
             amount_specs = []
             for _i, row in df.loc[(df['chart_val'] == chart_val) & (df['series_val'] == series_val)].iterrows():

@@ -5,6 +5,7 @@ from typing import Any
 import jinja2
 import pandas as pd
 
+from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
@@ -23,7 +24,7 @@ from sofastats.stats_calc.engine import anova as anova_stats_calc
 from sofastats.stats_calc.interfaces import AnovaResult, NumericParametricSampleSpecFormatted
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
-from sofastats.utils.misc import apply_custom_sorting_to_values, todict
+from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible, todict
 from sofastats.utils.stats import get_p_str
 
 def anova_from_df(df: pd.DataFrame, *,
@@ -222,13 +223,17 @@ class AnovaDesign(CommonStatsDesign):
     """
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     grouping_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    grouping_field_sort_order: SortOrder = SortOrder.VALUE
     group_values: Collection[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     high_precision_required: bool = False
 
     def to_result(self) -> AnovaResult:
         ## values (sorted)
-        grouping_field_values = apply_custom_sorting_to_values(
-            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
+        if self.grouping_field_sort_order == SortOrder.CUSTOM:
+            grouping_field_values = apply_custom_sorting_to_values_if_possible(
+                variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
+        else:
+            grouping_field_values = self.group_values
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function
@@ -248,8 +253,11 @@ class AnovaDesign(CommonStatsDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## values (sorted)
-        grouping_field_values = apply_custom_sorting_to_values(
-            variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
+        if self.grouping_field_sort_order == SortOrder.CUSTOM:
+            grouping_field_values = apply_custom_sorting_to_values_if_possible(
+                variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
+        else:
+            grouping_field_values = self.group_values
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
         ## build sample results ready for anova function

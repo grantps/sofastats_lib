@@ -155,7 +155,8 @@ class AreaChartDesign(CommonDesign):
             category_field_name=self.category_field_name,
             sort_orders=self.sort_orders,
             category_sort_order=self.category_sort_order,
-            table_filter_sql=self.table_filter_sql)
+            table_filter_sql=self.table_filter_sql,
+            decimal_points=self.decimal_points)
         ## chart details
         charting_spec = AreaChartingSpec(
             categories=intermediate_charting_spec.sorted_categories,

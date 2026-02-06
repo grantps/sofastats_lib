@@ -14,12 +14,13 @@ pd.set_option('display.min_rows', 30)
 pd.set_option('display.max_columns', 25)
 pd.set_option('display.width', 500)
 
-def apply_custom_sorting_to_values(*, variable_name: str, values: list[Any], sort_orders: SortOrderSpecs) -> list[Any]:
+def apply_custom_sorting_to_values_if_possible(
+        *, variable_name: str, values: list[Any], sort_orders: SortOrderSpecs) -> list[Any]:
     orig_values = values.copy()
     try:
         specified_custom_values_in_order = sort_orders[variable_name]
     except KeyError:
-        sorted_values = sorted(orig_values)
+        sorted_values = orig_values  ## leave as the order they were supplied - don't sort
     else:
         value2order = {val: order for order, val in enumerate(specified_custom_values_in_order)}
         try:
@@ -110,3 +111,52 @@ def lengthen(*, wide_csv_fpath: Path, cols2stack: Sequence[str] | None = None,
 if __name__ == '__main__':
     csv_fpath = Path("/home/g/projects/sofastats/store/food_data.csv")
     lengthen(wide_csv_fpath=csv_fpath, debug=True)
+
+
+def correct_str_dps(val: str, *, decimal_points: int = 3) -> str:
+    """
+    Apply decimal points to floats only - leave Freq integers alone.
+    Assumes already rounded to correct dp's.
+    3dp
+    '0.0' => '0.000'
+    '12' => '12'
+    """
+    try:
+        len_after_dot = len(val.split('.')[1])
+    except IndexError:
+        return val
+    n_zeros2add = decimal_points - len_after_dot
+    zeros2add = '0' * n_zeros2add
+    return val + zeros2add
+
+def display_float_as_nice_str(raw: float, *, decimal_points: int = 3, show_pct=False) -> str:
+    """
+    decimal_points = 0
+    show_pct=True
+    52.6 -> '53%'
+    decimal_points = 1
+    show_pct=True
+    52.6 -> '52.6%'
+
+    decimal_points = 0
+    show_pct=True
+    52.0 -> '52%'
+    decimal_points = 1
+    show_pct=True
+    52.0 -> '52.0%'
+    decimal_points = 3
+    show_pct=True
+    52.0 -> '52.000%'
+
+    decimal_points = 0
+    show_pct=False
+    52.6 -> '53'
+    decimal_points = 1
+    show_pct=False
+    52.6 -> '52.6'
+    """
+    val = str(round(raw, decimal_points))
+    new = correct_str_dps(val=val, decimal_points=decimal_points)
+    if show_pct:
+        new += '%'
+    return new

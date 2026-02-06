@@ -4,14 +4,17 @@ from sofastats.conf.main import DbeName, DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.stats_calc.interfaces import PairedSamples, Sample
-from sofastats.utils.misc import apply_custom_sorting_to_values
+from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible
 
-def to_sorted_values(*, orig_vals: list[Any], field_name: str,
+def to_values_sorted_by_custom_or_value(*, orig_vals: list[Any], field_name: str,
         sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
+    """
+    Only allows VALUE or CUSTOM (not INCREASING or DECREASING)
+    """
     if sort_order == SortOrder.VALUE:
         sorted_series_vals = sorted(orig_vals)
     elif sort_order == SortOrder.CUSTOM:
-        sorted_series_vals = apply_custom_sorting_to_values(
+        sorted_series_vals = apply_custom_sorting_to_values_if_possible(
             variable_name=field_name, values=orig_vals, sort_orders=sort_orders)
     else:
         raise Exception(f"Unexpected sort_order ({sort_order})"

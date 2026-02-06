@@ -1,5 +1,5 @@
 """
-GP-S 2/1/2010
+Grant Paton-Simpson: Changes as at 2 Jan 2010:
 completely unchanged apart from
     zprob = Dispatch ( (lzprob, (IntType, FloatType)),
                        (azprob, (N.ndarray, )) )
@@ -9,6 +9,9 @@ was changed to:
 
 so that askewtests could even run.  It was being sent a numpy.float64
 which had no effect except to prevent the dispatch from responding correctly.
+
+Plus changed import location for pstat to tests.reference_pstat_library as pstat
+
 
 Py2->Py3
 Changed exceptions so compliant. Plus print statements -> print functions
@@ -278,8 +281,8 @@ import argparse
 
 
 
-
-import sofastats.tests.pstat as pstat
+import tests.reference_pstat_library as pstat
+# import sofastats.tests.pstat as pstat
 import copy
 import math
 
@@ -1202,6 +1205,39 @@ def lchisquare(f_obs,f_exp=None):
     for i in range(len(f_obs)):
         chisq = chisq + (f_obs[i]-f_exp[i])**2 / float(f_exp[i])
     return chisq, chisqprob(chisq, k-1)
+
+
+def chisquare_df_corrected(f_obs,f_exp=None, df=None):
+    """
+    Inserted into reference library because it has a correction.
+    From stats.py lchisquare() as above.  Modified to receive df e.g. when in a crosstab.
+    In a crosstab, df will NOT  be k-1 it will be (a-1) x (b-1)
+          Male   Female
+    0-19
+    20-29
+    30-39
+    40-49
+    50+
+    k=(2x5) i.e. 10, k-1 = 9 but df should be (2-1) x (5-1) i.e. 4
+
+    Also turns f_obs[i] explicitly into a float so no mismatching between floats
+    and decimals.
+    -------------------------------------
+    Calculates a one-way chi square for list of observed frequencies and returns
+    the result.  If no expected frequencies are given, the total N is assumed to
+    be equally distributed across all groups.
+
+    Usage:   chisquare(f_obs, f_exp=None)   f_obs = list of observed cell freq.
+    Returns: chisquare-statistic, associated p-value
+    """
+    k = len(f_obs)  ## number of groups
+    if f_exp == None:
+        f_exp = [sum(f_obs) / float(k)] * len(f_obs)  ## create k bins with = freq.
+    chisq = 0
+    for i in range(len(f_obs)):
+        chisq = chisq + (float(f_obs[i])-float(f_exp[i]))**2 / float(f_exp[i])
+    if not df: df = k-1
+    return chisq, chisqprob(chisq, df)
 
 
 def lks_2samp (data1,data2):

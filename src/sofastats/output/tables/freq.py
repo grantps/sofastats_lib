@@ -8,14 +8,15 @@ from sofastats.output.interfaces import (
 from sofastats.output.tables.interfaces import BLANK, PctType, Row
 from sofastats.output.styles.utils import get_style_spec
 from sofastats.output.tables.utils.html_fixes import fix_top_left_box, merge_cols_of_blanks
-from sofastats.output.tables.utils.misc import (apply_index_styles, correct_str_dps, get_data_from_spec,
-    get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
+from sofastats.output.tables.utils.misc import (apply_index_styles, get_data_from_spec,
+                                                get_df_pre_pivot_with_pcts, get_raw_df, set_table_styles)
 from sofastats.output.tables.utils.multi_index_sort import (
     get_metric2order, get_order_rules_for_multi_index_branches, get_sorted_multi_index_list)
-from sofastats.utils.misc import get_pandas_friendly_name
+from sofastats.utils.misc import get_pandas_friendly_name, correct_str_dps
+
 
 def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
-        n_row_fillers: int = 0, inc_col_pct=False, dp: int = 2, debug=False) -> pd.DataFrame:
+        n_row_fillers: int = 0, inc_col_pct=False, decimal_points: int = 2, debug=False) -> pd.DataFrame:
     """
     Includes at least the Freq metric but potentially the percentage ones as well.
 
@@ -89,7 +90,7 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
         df = df.fillna(0).infer_objects(copy=False)  ## needed so we can round values (can't round a NA). Also need to do later because of gaps appearing when pivoted then too
     if inc_col_pct:
         df_pre_pivot_inc_row_pct = get_df_pre_pivot_with_pcts(
-            df, is_cross_tab=False, pct_type=PctType.COL_PCT, dp=dp, debug=debug)
+            df, is_cross_tab=False, pct_type=PctType.COL_PCT, decimal_points=decimal_points, debug=debug)
         df_pre_pivots.append(df_pre_pivot_inc_row_pct)
     df_pre_pivot = pd.concat(df_pre_pivots)
     df_pre_pivot['__throwaway__'] = 'Metric'
@@ -98,7 +99,7 @@ def get_all_metrics_df_from_vars(data, *, row_vars: list[str],
         df = df.fillna(0).infer_objects(copy=False)
     df = df.astype(str)
     ## have to ensure all significant digits are showing e.g. 3.33 and 1.0 or 0.0 won't align nicely
-    correct_string_dps = partial(correct_str_dps, dp=dp)
+    correct_string_dps = partial(correct_str_dps, decimal_points=decimal_points)
     df = df.map(correct_string_dps)
     return df
 
@@ -145,7 +146,7 @@ class FrequencyTableDesign(CommonDesign):
         if row_dupes:
             raise ValueError(f"Duplicate top-level variable(s) detected in row dimension - {sorted(row_dupes)}")
 
-    def get_row_df(self, cur, *, row_idx: int, dp: int = 2) -> pd.DataFrame:
+    def get_row_df(self, cur, *, row_idx: int, decimal_points: int = 2) -> pd.DataFrame:
         """
         See cross_tab docs
         """
@@ -158,14 +159,14 @@ class FrequencyTableDesign(CommonDesign):
         n_row_fillers = self.max_row_depth - len(row_vars)
         df = get_all_metrics_df_from_vars(data, row_vars=row_vars, n_row_fillers=n_row_fillers,
             inc_col_pct=self.include_column_percent,
-            dp=dp, debug=self.debug)
+            decimal_points=decimal_points, debug=self.debug)
         return df
 
     def get_tbl_df(self, cur) -> pd.DataFrame:
         """
         See cross_tab docs
         """
-        dfs = [self.get_row_df(cur, row_idx=row_idx, dp=self.decimal_points)
+        dfs = [self.get_row_df(cur, row_idx=row_idx, decimal_points=self.decimal_points)
             for row_idx in range(len(self.row_variable_designs))]
         df_t = dfs[0].T
         dfs_remaining = dfs[1:]
