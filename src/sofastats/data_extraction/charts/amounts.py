@@ -1,7 +1,12 @@
 """
 Amounts - frequencies, percentages, averages, and sums.
 Common code used by Area, Bar, and Line charts
+
+Do sorting for series and charts at earliest point -
+(much, much) easier to sort series values than the objects built per series.
 """
+from collections.abc import Sequence
+from typing import Any
 
 import pandas as pd
 
@@ -12,6 +17,7 @@ from sofastats.data_extraction.charts.interfaces.amounts import (
     ChartSeriesCategoryAmountSpec, ChartSeriesCategoryAmountSpecs,
     SeriesCategoryAmountSpec, SeriesCategoryAmountSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 from sofastats.utils.misc import display_float_as_nice_str
 
 def validate_metric_and_field_name(metric: ChartMetric, field_name: str):
@@ -21,6 +27,70 @@ def validate_metric_and_field_name(metric: ChartMetric, field_name: str):
     elif metric in (ChartMetric.FREQ, ChartMetric.PCT):
         if field_name:
             raise ValueError("field_name should only be set if calculating Average or Sum")
+
+
+def to_sorted_category_amount_specs(*, category_amount_specs: Sequence[CategoryItemAmountSpec],
+        category_field_name: str, sort_orders: SortOrderSpecs, category_sort_order: SortOrder,
+        can_sort_by_freq=True) -> Sequence[Any]:
+    """
+    Get category specs in correct order ready for use.
+    The category specs are constant across all charts and series (if multi-chart and / or multi-series)
+
+    Only makes sense to order by INCREASING or DECREASING if single series and single chart.
+
+    Sorting here, at the earliest point, means all sorting (category, series, chart) is already done which simplifies
+    everything subsequently. How do I know? Because I tried to force all sorting to the end, and it was nasty vs simple.
+    It is harder to sort objects by chart or series than just the names when the objects are made.
+    """
+    if category_sort_order == SortOrder.VALUE:
+        def sort_me(amount_spec):
+            return amount_spec.category_val
+        reverse = False
+    elif category_sort_order == SortOrder.CUSTOM:
+        ## use supplied sort order
+        try:
+            values_in_order = sort_orders[category_field_name]
+        except KeyError:
+            raise Exception(
+                f"You wanted the values in variable '{category_field_name}' to have a custom sort order "
+                "but I couldn't find a sort order from what you supplied. "
+                "Please fix the sort order details or use another approach to sorting.")
+        value2order = {val: order for order, val in enumerate(values_in_order)}
+        def sort_me(amount_spec):
+            try:
+                idx_for_ordered_position = value2order[amount_spec.category_val]
+            except KeyError:
+                raise Exception(
+                    f"The custom sort order you supplied for values in variable '{category_field_name}' "
+                    f"didn't include value '{amount_spec.category_val}' so please fix that and try again.")
+            return idx_for_ordered_position
+        reverse = False
+    elif category_sort_order == SortOrder.INCREASING:
+        if can_sort_by_freq:
+            def sort_me(amount_spec):
+                return amount_spec.freq
+            reverse = False
+        else:
+            raise Exception(
+                f"Unexpected category_sort_order ({category_sort_order})"
+                "\nINCREASING is for ordering by frequency which makes no sense when multi-series charts."
+            )
+    elif category_sort_order == SortOrder.DECREASING:
+        if can_sort_by_freq:
+            def sort_me(amount_spec):
+                return amount_spec.freq
+            reverse = True
+        else:
+            raise Exception(
+                f"Unexpected category_sort_order ({category_sort_order})"
+                "\nDECREASING is for ordering by frequency which makes no sense when multi-series charts."
+            )
+    else:
+        raise Exception(f"Unexpected category_sort_order ({category_sort_order})")
+    sorted_category_amount_specs = sorted(category_amount_specs, key=sort_me, reverse=reverse)
+    return sorted_category_amount_specs
+
+## Get Data ************************************************************************************************************
 
 def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
         category_field_name: str, sort_orders: SortOrderSpecs, category_sort_order: SortOrder = SortOrder.VALUE,
@@ -93,11 +163,12 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
         amount_spec = CategoryItemAmountSpec(category_val=category_val,
             amount=amount, tool_tip=tool_tip, sub_total=sub_total)
         category_amount_specs.append(amount_spec)
+    sorted_category_amount_specs = to_sorted_category_amount_specs(category_amount_specs=category_amount_specs,
+        category_field_name=category_field_name, sort_orders=sort_orders, category_sort_order=category_sort_order,
+        can_sort_by_freq=True)
     data_spec = CategoryAmountSpecs(
         category_field_name=category_field_name,
-        category_amount_specs=category_amount_specs,
-        sort_orders=sort_orders,
-        category_sort_order=category_sort_order,
+        sorted_category_amount_specs=sorted_category_amount_specs,
         metric=metric,
         decimal_points=decimal_points,
     )
@@ -113,6 +184,8 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
     Intermediate charting spec - close to the data
 
     For clustered bar charts and multi-line line charts
+
+    Sorted by series as per sorting settings.
     """
     validate_metric_and_field_name(metric, field_name)
     ## prepare items
@@ -195,10 +268,16 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
     data = cur.fetchall()
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
-    series_category_amount_specs = []
+
+    category_vals = df['category_val'].unique()
+    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+        variable_name=category_field_name, values=category_vals, sort_orders=sort_orders, sort_order=category_sort_order)
+    sorted_series_category_amount_specs = []
     series_vals = df['series_val'].unique()
-    for series_val in series_vals:
-        category_item_amount_specs = []
+    sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+        variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
+    for series_val in sorted_series_vals:
+        category_amount_specs = []
         for _i, row in df.loc[df['series_val'] == series_val].iterrows():
             amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
             amount_spec = CategoryItemAmountSpec(
@@ -207,19 +286,20 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
                 tool_tip=tool_tip,
                 sub_total=row['sub_total'],
             )
-            category_item_amount_specs.append(amount_spec)
+            category_amount_specs.append(amount_spec)
+        sorted_category_amount_specs = to_sorted_category_amount_specs(
+            category_amount_specs=category_amount_specs, category_field_name=category_field_name,
+            sort_orders=sort_orders, category_sort_order=category_sort_order, can_sort_by_freq=False)
         series_category_amount_spec = SeriesCategoryAmountSpec(
             series_val=series_val,
-            category_amount_specs=category_item_amount_specs,
+            sorted_category_amount_specs=sorted_category_amount_specs,
         )
-        series_category_amount_specs.append(series_category_amount_spec)
+        sorted_series_category_amount_specs.append(series_category_amount_spec)
     data_spec = SeriesCategoryAmountSpecs(
         category_field_name=category_field_name,
+        sorted_category_vals=sorted_category_vals,
         series_field_name=series_field_name,
-        series_category_amount_specs=series_category_amount_specs,
-        sort_orders=sort_orders,
-        category_sort_order=category_sort_order,
-        series_sort_order=series_sort_order,
+        sorted_series_category_amount_specs=sorted_series_category_amount_specs,
         decimal_points=decimal_points,
     )
     return data_spec
@@ -314,10 +394,15 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     data = cur.fetchall()
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
-    chart_category_amount_specs = []
+    sorted_chart_category_amount_specs = []
+    category_vals = df['category_val'].unique()
+    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+        variable_name=category_field_name, values=category_vals, sort_orders=sort_orders, sort_order=category_sort_order)
     chart_vals = df['chart_val'].unique()
-    for chart_val in chart_vals:
-        amount_specs = []
+    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+        variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
+    for chart_val in sorted_chart_vals:
+        category_amount_specs = []
         for _i, row in df.loc[df['chart_val'] == chart_val].iterrows():
             amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
             amount_spec = CategoryItemAmountSpec(
@@ -326,19 +411,21 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
                 tool_tip=tool_tip,
                 sub_total=row['sub_total'],
             )
-            amount_specs.append(amount_spec)
+            category_amount_specs.append(amount_spec)
+        sorted_category_amount_specs = to_sorted_category_amount_specs(
+            category_amount_specs=category_amount_specs, category_field_name=category_field_name,
+            sort_orders=sort_orders, category_sort_order=category_sort_order, can_sort_by_freq=False)
         chart_category_amount_spec = ChartCategoryAmountSpec(
             chart_val=chart_val,
-            category_amount_specs=amount_specs,
+            sorted_category_amount_specs=sorted_category_amount_specs,
         )
-        chart_category_amount_specs.append(chart_category_amount_spec)
+        sorted_chart_category_amount_specs.append(chart_category_amount_spec)
+
     charting_spec = ChartCategoryAmountSpecs(
         category_field_name=category_field_name,
+        sorted_category_vals=sorted_category_vals,
         chart_field_name=chart_field_name,
-        chart_category_amount_specs=chart_category_amount_specs,
-        sort_orders=sort_orders,
-        category_sort_order=category_sort_order,
-        chart_sort_order=chart_sort_order,
+        sorted_chart_category_amount_specs=sorted_chart_category_amount_specs,
         decimal_points=decimal_points,
     )
     return charting_spec
@@ -440,13 +527,21 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
     data = cur.fetchall()
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
-    chart_series_category_amount_specs = []
+    sorted_chart_series_category_amount_specs = []
+    category_vals = df['category_val'].unique()
+    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+        variable_name=category_field_name, values=category_vals, sort_orders=sort_orders,
+        sort_order=category_sort_order)
     chart_vals = df['chart_val'].unique()
-    for chart_val in chart_vals:
-        series_category_amount_specs = []
+    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+        variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
+    for chart_val in sorted_chart_vals:
+        sorted_series_category_amount_specs = []
         series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        for series_val in series_vals:
-            amount_specs = []
+        sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+            variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
+        for series_val in sorted_series_vals:
+            category_amount_specs = []
             for _i, row in df.loc[(df['chart_val'] == chart_val) & (df['series_val'] == series_val)].iterrows():
                 amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
                 amount_spec = CategoryItemAmountSpec(
@@ -455,26 +550,26 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
                     tool_tip=tool_tip,
                     sub_total=row['sub_total'],
                 )
-                amount_specs.append(amount_spec)
+                category_amount_specs.append(amount_spec)
+            sorted_category_amount_specs = to_sorted_category_amount_specs(
+                category_amount_specs=category_amount_specs, category_field_name=category_field_name,
+                sort_orders=sort_orders, category_sort_order=category_sort_order, can_sort_by_freq=False)
             series_category_amount_spec = SeriesCategoryAmountSpec(
                 series_val=series_val,
-                category_amount_specs=amount_specs,
+                sorted_category_amount_specs=sorted_category_amount_specs,
             )
-            series_category_amount_specs.append(series_category_amount_spec)
-        chart_series_category_amount_spec = ChartSeriesCategoryAmountSpec(
+            sorted_series_category_amount_specs.append(series_category_amount_spec)
+        sorted_chart_series_category_amount_spec = ChartSeriesCategoryAmountSpec(
             chart_val=chart_val,
-            series_category_amount_specs=series_category_amount_specs,
+            sorted_series_category_amount_specs=sorted_series_category_amount_specs,
         )
-        chart_series_category_amount_specs.append(chart_series_category_amount_spec)
+        sorted_chart_series_category_amount_specs.append(sorted_chart_series_category_amount_spec)
     data_spec = ChartSeriesCategoryAmountSpecs(
-        chart_field_name=chart_field_name,
-        series_field_name=series_field_name,
         category_field_name=category_field_name,
-        chart_series_category_amount_specs=chart_series_category_amount_specs,
-        sort_orders=sort_orders,
-        category_sort_order=category_sort_order,
-        series_sort_order=series_sort_order,
-        chart_sort_order=chart_sort_order,
+        sorted_category_vals=sorted_category_vals,
+        series_field_name=series_field_name,
+        chart_field_name=chart_field_name,
+        sorted_chart_series_category_amount_specs=sorted_chart_series_category_amount_specs,
         decimal_points=decimal_points,
     )
     return data_spec

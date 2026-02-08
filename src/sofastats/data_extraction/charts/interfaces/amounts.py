@@ -28,6 +28,7 @@ from sofastats.conf.main import ChartMetric, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.charts.interfaces.common import DataItem, DataSeriesSpec, IndivChartSpec
 from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 
+
 ## Amount Specs ********************************************************************************************************
 
 @dataclass(frozen=True)
@@ -48,11 +49,11 @@ class SeriesCategoryAmountSpec:
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
     series_val: float | str  ## e.g. 1, or Male
-    category_amount_specs: Sequence[CategoryItemAmountSpec]  ## one frequency-related spec per country
+    sorted_category_amount_specs: Sequence[CategoryItemAmountSpec]  ## one frequency-related spec per country
 
     def __str__(self):
         bits = [f"Series value: {self.series_val}", ]
-        for amount_spec in self.category_amount_specs:
+        for amount_spec in self.sorted_category_amount_specs:
             bits.append(f"        {amount_spec}")
         return dedent('\n'.join(bits))
 
@@ -63,11 +64,11 @@ class ChartCategoryAmountSpec:
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
     chart_val: float | str
-    category_amount_specs: Sequence[CategoryItemAmountSpec]
+    sorted_category_amount_specs: Sequence[CategoryItemAmountSpec]
 
     def __str__(self):
         bits = [f"Chart value (label): {self.chart_val}", ]
-        for amount_spec in self.category_amount_specs:
+        for amount_spec in self.sorted_category_amount_specs:
             bits.append(f"        {amount_spec}")
         return dedent('\n'.join(bits))
 
@@ -79,11 +80,11 @@ class ChartSeriesCategoryAmountSpec:
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
     chart_val: float | str
-    series_category_amount_specs: Sequence[SeriesCategoryAmountSpec]
+    sorted_series_category_amount_specs: Sequence[SeriesCategoryAmountSpec]
 
     def __str__(self):
         bits = [f"Chart value: {self.chart_val}", ]
-        for series_category_amount_spec in self.series_category_amount_specs:
+        for series_category_amount_spec in self.sorted_series_category_amount_specs:
             bits.append(f"    {series_category_amount_spec}")
         return dedent('\n'.join(bits))
 
@@ -210,36 +211,27 @@ class CategoryAmountSpecs:
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
     category_field_name: str  ## e.g. Country
-    category_amount_specs: Sequence[CategoryItemAmountSpec]  ## e.g. one amount spec per country
-    sort_orders: SortOrderSpecs
-    category_sort_order: SortOrder
+    sorted_category_amount_specs: Sequence[CategoryItemAmountSpec]  ## e.g. one amount spec per country
     metric: ChartMetric = ChartMetric.FREQ
     decimal_points: int = 3
 
     def __str__(self):
         bits = [f"Category field value: {self.category_field_name}", ]
-        for amount_spec in self.category_amount_specs:
+        for amount_spec in self.sorted_category_amount_specs:
             bits.append(f"    {amount_spec}")
         return dedent('\n'.join(bits))
 
     @property
     def sorted_category_vals(self):
-        """
-        Needed outside of this class.
-        """
-        return to_sorted_category_vals(category_amount_specs=self.category_amount_specs,
-            category_field_name=self.category_field_name,
-            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order, can_sort_by_freq=True)
+        """Needed outside of this class"""
+        return [amount_spec.category_val for amount_spec in self.sorted_category_amount_specs]
 
     def to_indiv_chart_spec(self) -> IndivChartSpec:
-        n_records = sum(category_amount_spec.sub_total for category_amount_spec in self.category_amount_specs)
+        n_records = sum(category_amount_spec.sub_total for category_amount_spec in self.sorted_category_amount_specs)
         ## collect data items according to correctly sorted x-axis category items
         ## Note - never gaps for by-category only charts
         series_data_items = []
-        sorted_category_amount_specs = to_sorted_category_amount_specs(
-            category_amount_specs=self.category_amount_specs, category_field_name=self.category_field_name,
-            sort_orders=self.sort_orders, category_sort_order=self.category_sort_order, can_sort_by_freq=True)
-        for category_amount_spec in sorted_category_amount_specs:
+        for category_amount_spec in self.sorted_category_amount_specs:
             data_item = DataItem(
                 amount=category_amount_spec.amount,
                 tool_tip=category_amount_spec.tool_tip,
@@ -273,11 +265,9 @@ class SeriesCategoryAmountSpecs:
     Frequency-related includes percentage. Both freq and pct are about the number of items.
     """
     category_field_name: str  ## e.g. Country
+    sorted_category_vals: Sequence[str]
     series_field_name: str  ## e.g. Gender
-    series_category_amount_specs: Sequence[SeriesCategoryAmountSpec]
-    sort_orders: SortOrderSpecs
-    category_sort_order: SortOrder
-    series_sort_order: SortOrder
+    sorted_series_category_amount_specs: Sequence[SeriesCategoryAmountSpec]
     decimal_points: int = 3
 
     def __str__(self):
@@ -285,35 +275,16 @@ class SeriesCategoryAmountSpecs:
             f"Series field name: {self.series_field_name}",
             f"Category field name: {self.category_field_name}",
         ]
-        for series_category_amount_spec in self.series_category_amount_specs:
+        for series_category_amount_spec in self.sorted_series_category_amount_specs:
             bits.append(f"    {series_category_amount_spec}")
         return dedent('\n'.join(bits))
-
-    @property
-    def _all_category_vals(self) -> list[str]:
-        """
-        Relied upon by sorted_category_vals()
-        """
-        all_category_vals = set()
-        for series_category_amount_spec in self.series_category_amount_specs:
-            for amount_spec in series_category_amount_spec.category_amount_specs:
-                all_category_vals.add(amount_spec.category_val)
-        return sorted(all_category_vals)
-
-    @property
-    def sorted_category_vals(self):
-        return sort_values_by_value_or_custom_if_possible(variable_name=self.category_field_name, values=self._all_category_vals,
-            sort_orders=self.sort_orders, sort_order=self.category_sort_order)
 
     def to_indiv_chart_spec(self) -> IndivChartSpec:
         n_records = 0
         data_series_specs = []
-        sorted_series_category_amount_specs = to_sorted_series_category_amount_specs(
-            series_category_amount_specs=self.series_category_amount_specs, series_field_name=self.series_field_name,
-            sort_orders=self.sort_orders, series_sort_order=self.series_sort_order)
-        for series_category_amount_spec in sorted_series_category_amount_specs:
+        for series_category_amount_spec in self.sorted_series_category_amount_specs:
             category_val2spec = {}  ## so we can check expected category vals in order to see if category val in this actual series or not
-            for amount_spec in series_category_amount_spec.category_amount_specs:
+            for amount_spec in series_category_amount_spec.sorted_category_amount_specs:
                 n_records += amount_spec.sub_total  ## count up n_records while we're here in loop
                 category_val2spec[amount_spec.category_val] = amount_spec
             series_data_items = []
@@ -351,11 +322,9 @@ class ChartCategoryAmountSpecs:
     Also store labels for chart and category as a convenience so all the building blocks are in one place.
     """
     category_field_name: str  ## e.g. Country
+    sorted_category_vals: Sequence[str]
     chart_field_name: str  ## e.g. Web Browser
-    chart_category_amount_specs: Sequence[ChartCategoryAmountSpec]
-    sort_orders: SortOrderSpecs
-    category_sort_order: SortOrder
-    chart_sort_order: SortOrder
+    sorted_chart_category_amount_specs: Sequence[ChartCategoryAmountSpec]
     decimal_points: int = 3
 
     def __str__(self):
@@ -363,32 +332,16 @@ class ChartCategoryAmountSpecs:
             f"Chart field label: {self.chart_field_name}",
             f"Category field label: {self.category_field_name}",
         ]
-        for chart_category_amount_spec in self.chart_category_amount_specs:
+        for chart_category_amount_spec in self.sorted_chart_category_amount_specs:
             bits.append(f"    {chart_category_amount_spec}")
         return dedent('\n'.join(bits))
 
-    @property
-    def _all_category_vals(self) -> list[str]:
-        all_category_vals = set()
-        for chart_category_amount_spec in self.chart_category_amount_specs:
-            for amount_spec in chart_category_amount_spec.category_amount_specs:
-                all_category_vals.add(amount_spec.category_val)
-        return sorted(all_category_vals)
-
-    @property
-    def sorted_category_vals(self):
-        return sort_values_by_value_or_custom_if_possible(variable_name=self.category_field_name, values=self._all_category_vals,
-            sort_orders=self.sort_orders, sort_order=self.category_sort_order)
-
     def to_indiv_chart_specs(self) -> Sequence[IndivChartSpec]:
         indiv_chart_specs = []
-        sorted_chart_category_amount_specs = to_sorted_chart_amount_specs(
-            chart_amount_specs=self.chart_category_amount_specs, chart_field_name=self.chart_field_name,
-            sort_orders=self.sort_orders, chart_sort_order=self.chart_sort_order)
-        for chart_category_amount_spec in sorted_chart_category_amount_specs:
+        for chart_category_amount_spec in self.sorted_chart_category_amount_specs:
             n_records = 0
             category_val2spec = {}  ## so we can check expected category vals in order to see if category val in this actual series or not
-            for category_amount_spec in chart_category_amount_spec.category_amount_specs:
+            for category_amount_spec in chart_category_amount_spec.sorted_category_amount_specs:
                 n_records += category_amount_spec.sub_total
                 category_val2spec[category_amount_spec.category_val] = category_amount_spec
             chart_data_items = []
@@ -423,13 +376,10 @@ class ChartSeriesCategoryAmountSpecs:
     Also store labels for chart, series, and category as a convenience so all the building blocks are in one place.
     """
     category_field_name: str  ## e.g. Country
+    sorted_category_vals: Sequence[str]
     series_field_name: str  ## e.g. Gender
     chart_field_name: str  ## e.g. Web Browser
-    chart_series_category_amount_specs: Sequence[ChartSeriesCategoryAmountSpec]
-    sort_orders: SortOrderSpecs
-    category_sort_order: SortOrder
-    series_sort_order: SortOrder
-    chart_sort_order: SortOrder
+    sorted_chart_series_category_amount_specs: Sequence[ChartSeriesCategoryAmountSpec]
     decimal_points: int = 3
 
     def __str__(self):
@@ -438,42 +388,20 @@ class ChartSeriesCategoryAmountSpecs:
             f"Series field name: {self.series_field_name}",
             f"Category field name: {self.category_field_name}",
         ]
-        for chart_series_category_amount_spec in self.chart_series_category_amount_specs:
+        for chart_series_category_amount_spec in self.sorted_chart_series_category_amount_specs:
             bits.append(f"{chart_series_category_amount_spec}")
         return dedent('\n'.join(bits))
 
-    @property
-    def _all_category_vals(self) -> list[str]:
-        all_category_vals = set()
-        for chart_series_category_amount_spec in self.chart_series_category_amount_specs:
-            for series_category_amount_specs in chart_series_category_amount_spec.series_category_amount_specs:
-                for amount_spec in series_category_amount_specs.category_amount_specs:
-                    all_category_vals.add(amount_spec.category_val)
-        return sorted(all_category_vals)
-
-    @property
-    def sorted_category_vals(self):
-        return sort_values_by_value_or_custom_if_possible(variable_name=self.category_field_name, values=self._all_category_vals,
-            sort_orders=self.sort_orders, sort_order=self.category_sort_order)
-
     def to_indiv_chart_specs(self) -> Sequence[IndivChartSpec]:
         indiv_chart_specs = []
-        sorted_chart_series_category_amount_specs = to_sorted_chart_series_category_amount_specs(
-            chart_series_category_amount_specs=self.chart_series_category_amount_specs,
-            chart_field_name=self.chart_field_name,
-            sort_orders=self.sort_orders, chart_sort_order=self.chart_sort_order)
-        for chart_series_category_amount_spec in sorted_chart_series_category_amount_specs:
+        for chart_series_category_amount_spec in self.sorted_chart_series_category_amount_specs:
             n_records = 0
             data_series_specs = []
-            sorted_series_category_amount_specs = to_sorted_series_category_amount_specs(
-                series_category_amount_specs=chart_series_category_amount_spec.series_category_amount_specs,
-                series_field_name=self.series_field_name,
-                sort_orders=self.sort_orders, series_sort_order=self.series_sort_order)
-            for series_category_amount_spec in sorted_series_category_amount_specs:
+            for series_category_amount_spec in chart_series_category_amount_spec.sorted_series_category_amount_specs:
                 category_val2spec = {}  ## so we can check expected category vals in order to see if category val in this actual series or not
-                for amount_spec in series_category_amount_spec.category_amount_specs:
-                    n_records += amount_spec.sub_total  ## count up n_records while we're here in loop
-                    category_val2spec[amount_spec.category_val] = amount_spec
+                for category_amount_spec in series_category_amount_spec.sorted_category_amount_specs:
+                    n_records += category_amount_spec.sub_total  ## count up n_records while we're here in loop
+                    category_val2spec[category_amount_spec.category_val] = category_amount_spec
                 chart_series_data_items = []
                 ## run through in sort order recognising that some items might not be present for a particular chart
                 for category_val in self.sorted_category_vals:

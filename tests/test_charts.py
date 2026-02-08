@@ -948,7 +948,7 @@ if __name__ == "__main__":
     # test_multi_chart_scatter_plot()
     # test_multi_chart_by_series_scatter_plot()
     # test_histogram()
-    test_multi_chart_histogram()
+    # test_multi_chart_histogram()
     # test_box_plot()
     # test_clustered_box_plot()
 
