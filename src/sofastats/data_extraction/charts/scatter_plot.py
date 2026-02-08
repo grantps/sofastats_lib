@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from sofastats.conf.main import SortOrder, SortOrderSpecs
 from sofastats.stats_calc.utils import get_optimal_axis_bounds
 
 @dataclass
@@ -10,6 +11,9 @@ class ScatterDataSeriesSpec:
 
 @dataclass
 class ScatterIndivChartSpec:
+    series_field_name: str | None
+    sort_orders: SortOrderSpecs | None
+    series_sort_order: SortOrder | None
     data_series_specs: Sequence[ScatterDataSeriesSpec]
     label: str | None
 

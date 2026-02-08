@@ -100,7 +100,7 @@ class SimpleBarChartDesign(CommonBarDesign):
             table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = BarChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
@@ -155,7 +155,7 @@ class MultiChartBarChartDesign(CommonBarDesign):
         ## charts details
         charting_spec = BarChartingSpec(
             border_width=style_spec.chart.border_width,
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
@@ -209,7 +209,7 @@ class ClusteredBarChartDesign(CommonBarDesign):
         ## chart details
         charting_spec = BarChartingSpec(
             border_width=style_spec.chart.border_width,
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=intermediate_charting_spec.series_field_name,
             rotate_x_labels=self.rotate_x_labels,
@@ -273,7 +273,7 @@ class MultiChartClusteredBarChartDesign(CommonBarDesign):
         ## chart details
         charting_spec = BarChartingSpec(
             border_width=style_spec.chart.border_width,
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=intermediate_charting_spec.series_field_name,
             rotate_x_labels=self.rotate_x_labels,

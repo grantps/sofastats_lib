@@ -223,7 +223,7 @@ class PieChartDesign(CommonDesign):
             table_filter_sql=self.table_filter_sql)
         ## charts details
         charting_spec = PieChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             show_n_records=self.show_n_records,
         )
@@ -265,7 +265,7 @@ class MultiChartPieChartDesign(CommonDesign):
             table_filter_sql=self.table_filter_sql)
         ## charts details
         charting_spec = PieChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             show_n_records=self.show_n_records,
         )

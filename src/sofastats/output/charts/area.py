@@ -159,7 +159,7 @@ class AreaChartDesign(CommonDesign):
             decimal_points=self.decimal_points)
         ## chart details
         charting_spec = AreaChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
@@ -216,7 +216,7 @@ class MultiChartAreaChartDesign(CommonDesign):
             table_filter_sql=self.table_filter_sql, decimal_points=self.decimal_points)
         ## chart details
         charting_spec = AreaChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,

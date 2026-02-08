@@ -60,7 +60,7 @@ def test_chi_square():
         variable_a_name=variable_a_name, variable_a_sort_order=SortOrder.CUSTOM,
         variable_b_name=variable_b_name, variable_b_sort_order=SortOrder.CUSTOM,
     )
-    design.make_output()
+    # design.make_output()
     result = design.to_result()
     print(result)
 
@@ -106,4 +106,4 @@ def test_chi_square():
 if __name__ == '__main__':
     pass
     # test_anova()
-    # test_chi_square()
+    test_chi_square()

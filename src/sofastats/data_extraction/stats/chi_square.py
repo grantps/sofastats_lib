@@ -8,7 +8,8 @@ from sofastats.conf.main import (
     MAX_CHI_SQUARE_VALS_IN_DIM, MAX_CHI_SQUARE_CELLS, MAX_VALUE_LENGTH_IN_SQL_CLAUSE, MIN_CHI_SQUARE_VALS_IN_DIM,
     DbeName, DbeSpec, SortOrder, SortOrderSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+
 
 @dataclass(frozen=True)
 class ChiSquareData:
@@ -144,8 +145,9 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_
     row_vals = [x[0] for x in row_data]
     variable_a_values_orig = get_cleaned_values(original_vals=row_vals, dbe_spec=dbe_spec)
     if variable_a_sort_order == SortOrder.CUSTOM:
-        variable_a_values = apply_custom_sorting_to_values_if_possible(
-            variable_name=variable_a_name, values=variable_a_values_orig, sort_orders=sort_orders)
+        variable_a_values = sort_values_by_value_or_custom_if_possible(
+            variable_name=variable_a_name, values=variable_a_values_orig,
+            sort_orders=sort_orders, sort_order=variable_a_sort_order)
     else:
         variable_a_values = variable_a_values_orig
     n_variable_a_vals = len(variable_a_values)
@@ -169,8 +171,9 @@ def get_chi_square_data(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_
     col_vals = [x[0] for x in col_data]
     variable_b_values_orig = get_cleaned_values(original_vals=col_vals, dbe_spec=dbe_spec)
     if variable_b_sort_order == SortOrder.CUSTOM:
-        variable_b_values = apply_custom_sorting_to_values_if_possible(
-            variable_name=variable_b_name, values=variable_b_values_orig, sort_orders=sort_orders)
+        variable_b_values = sort_values_by_value_or_custom_if_possible(
+            variable_name=variable_b_name, values=variable_b_values_orig,
+            sort_orders=sort_orders, sort_order=variable_b_sort_order)
     else:
         variable_b_values = variable_b_values_orig
     n_variable_b_vals = len(variable_b_values)

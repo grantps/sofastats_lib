@@ -2,33 +2,16 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 import re
-from typing import Any, Literal
+from typing import Literal
 
 import pandas as pd
 
 from sofastats import SQLITE_DB
-from sofastats.conf.main import SortOrderSpecs
 
 pd.set_option('display.max_rows', 200)
 pd.set_option('display.min_rows', 30)
 pd.set_option('display.max_columns', 25)
 pd.set_option('display.width', 500)
-
-def apply_custom_sorting_to_values_if_possible(
-        *, variable_name: str, values: list[Any], sort_orders: SortOrderSpecs) -> list[Any]:
-    orig_values = values.copy()
-    try:
-        specified_custom_values_in_order = sort_orders[variable_name]
-    except KeyError:
-        sorted_values = orig_values  ## leave as the order they were supplied - don't sort
-    else:
-        value2order = {val: order for order, val in enumerate(specified_custom_values_in_order)}
-        try:
-            sorted_values = sorted(orig_values, key=lambda val: value2order[val])
-        except KeyError:
-            raise Exception(f"The custom sort order you supplied for values in variable '{variable_name}' "
-                "didn't include all the values in your analysis so please fix that and try again.")
-    return sorted_values
 
 def get_pandas_friendly_name(orig_name: str, suffix: Literal['_var', '_val'] | None = None) -> str:
     """

@@ -4,9 +4,9 @@ import uuid
 
 import jinja2
 
-from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, SortOrder
-from sofastats.data_extraction.charts.box_plot import (
-    BoxplotChartingSpec, BoxplotIndivChartSpec, get_by_category_charting_spec, get_by_series_category_charting_spec)
+from sofastats.conf.main import TEXT_WIDTH_N_CHARACTERS_WHEN_ROTATED, SortOrder, SortOrderSpecs
+from sofastats.data_extraction.charts.box_plot import (BoxplotDataSeriesSpec, BoxplotChartingSpec,
+    BoxplotIndivChartSpec, get_by_category_charting_spec, get_by_series_category_charting_spec)
 from sofastats.output.charts.common import get_common_charting_spec, get_html, get_indiv_chart_html
 from sofastats.output.charts.interfaces import JSBool
 from sofastats.output.charts.utils import (get_axis_label_drop, get_height, get_dojo_format_x_axis_numbers_and_labels,
@@ -18,6 +18,7 @@ from sofastats.output.styles.interfaces import ColorWithHighlight, ColorShiftJSF
 from sofastats.output.styles.utils import (
     get_js_highlighting_function, get_long_color_list, get_style_spec)
 from sofastats.stats_calc.interfaces import BoxplotType
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 from sofastats.utils.maths import format_num
 from sofastats.utils.misc import todict
 
@@ -190,7 +191,7 @@ class CommonMiscSpec:
     x_axis_max_val: float
     x_axis_title: str
     y_axis_title: str
-    y_axis_title_offset: int
+    y_axis_title_offset: float
     y_axis_max_val: float
     y_axis_min_val: float
 
@@ -281,9 +282,49 @@ def get_common_charting_spec(charting_spec: BoxplotChartingSpec, style_spec: Sty
         options=options,
     )
 
+def to_sorted_data_series_specs(*, data_series_specs: Sequence[BoxplotDataSeriesSpec], series_field_name: str,
+        sort_orders: SortOrderSpecs, series_sort_order: SortOrder) -> list[BoxplotDataSeriesSpec]:
+    if series_sort_order == SortOrder.VALUE:
+        def sort_me(data_series_spec):
+            return data_series_spec.label
+
+        reverse = False
+    elif series_sort_order == SortOrder.CUSTOM:
+        ## use supplied sort order
+        try:
+            values_in_order = sort_orders[series_field_name]
+        except KeyError:
+            raise Exception(
+                f"You wanted the values in variable '{series_field_name}' to have a custom sort order "
+                "but I couldn't find a sort order from what you supplied. "
+                "Please fix the sort order details or use another approach to sorting.")
+        value2order = {val: order for order, val in enumerate(values_in_order)}
+
+        def sort_me(data_series_spec):
+            amount_spec_val = data_series_spec.label
+            try:
+                idx_for_ordered_position = value2order[amount_spec_val]
+            except KeyError:
+                raise Exception(
+                    f"The custom sort order you supplied for values in variable '{series_field_name}' "
+                    f"didn't include value '{amount_spec_val}' so please fix that and try again.")
+            return idx_for_ordered_position
+
+        reverse = False
+    else:
+        raise Exception(
+            f"Unexpected series_sort_order ({series_sort_order})"
+            "\nINCREASING and DECREASING is for ordering by frequency which makes no sense for series."
+        )
+    sorted_amount_specs = sorted(data_series_specs, key=sort_me, reverse=reverse)
+    return sorted_amount_specs
+
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: BoxplotIndivChartSpec,
         *,  chart_counter: int) -> str:
+    """
+    For box-plots there is only ever one chart so the series values for a single chart are the full set.
+    """
     context = todict(common_charting_spec.color_spec, shallow=True)
     context.update(todict(common_charting_spec.misc_spec, shallow=True))
     context.update(todict(common_charting_spec.options, shallow=True))
@@ -295,10 +336,21 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
 
     dojo_series_specs = []
-    for i, data_series_spec in enumerate(indiv_chart_spec.data_series_specs):
+    if len(indiv_chart_spec.data_series_specs) == 1:
+        sorted_data_series_specs = indiv_chart_spec.data_series_specs
+    else:
+        sorted_data_series_specs = to_sorted_data_series_specs(
+            data_series_specs=indiv_chart_spec.data_series_specs, series_field_name=indiv_chart_spec.series_field_name,
+            sort_orders=indiv_chart_spec.sort_orders, series_sort_order=indiv_chart_spec.series_sort_order)
+    for i, data_series_spec in enumerate(sorted_data_series_specs):
         series_id = f"{i:>02}"
         border_color = common_charting_spec.color_spec.colors[i]  ## the border drives the colour of box plots - the fill is slightly paler, and the hover fill is in between
         box_specs = []
+
+
+        ## TODO: control sort order here
+
+
         for box_item in data_series_spec.box_items:
             if not box_item:
                 continue
@@ -387,13 +439,15 @@ class BoxplotChartDesign(CommonDesign):
             table_filter_sql=self.table_filter_sql,
             box_plot_type=self.box_plot_type)
         ## charts details
-        categories = [
+        unsorted_categories = [
             category_vals_spec.category_val for category_vals_spec in intermediate_charting_spec.category_vals_specs]
+        categories = sort_values_by_value_or_custom_if_possible(variable_name=self.category_field_name, values=unsorted_categories,
+                                                                sort_orders=self.sort_orders, sort_order=self.category_sort_order)
         indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec()
         charting_spec = BoxplotChartingSpec(
             categories=categories,
             indiv_chart_specs=[indiv_chart_spec, ],
-            series_legend_label=intermediate_charting_spec.series_field_name,
+            series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
             show_n_records=self.show_n_records,
             x_axis_title=intermediate_charting_spec.category_field_name,
@@ -444,16 +498,22 @@ class ClusteredBoxplotChartDesign(CommonDesign):
             table_filter_sql=self.table_filter_sql,
             box_plot_type=self.box_plot_type)
         ## charts details
-        categories = [category_vals_spec.category_val
-            for category_vals_spec in intermediate_charting_spec.series_category_vals_specs[0].category_vals_specs]
+        all_unsorted_category_values = set()
+        for boxplot_series_item_category_vals_specs in intermediate_charting_spec.series_category_vals_specs:
+            for category_vals_spec in boxplot_series_item_category_vals_specs.category_vals_specs:
+                all_unsorted_category_values.add(category_vals_spec.category_val)
+        all_unsorted_category_values = sorted(all_unsorted_category_values)
+        categories = sort_values_by_value_or_custom_if_possible(
+            variable_name=self.category_field_name, values=all_unsorted_category_values,
+            sort_orders=self.sort_orders, sort_order=self.category_sort_order)
         indiv_chart_spec = intermediate_charting_spec.to_indiv_chart_spec(dp=self.decimal_points)
         charting_spec = BoxplotChartingSpec(
             categories=categories,
             indiv_chart_specs=[indiv_chart_spec, ],
-            series_legend_label=intermediate_charting_spec.series_field,
+            series_legend_label=intermediate_charting_spec.series_field_name,
             rotate_x_labels=self.rotate_x_labels,
             show_n_records=self.show_n_records,
-            x_axis_title=intermediate_charting_spec.category_field,
+            x_axis_title=intermediate_charting_spec.category_field_name,
             y_axis_title=intermediate_charting_spec.field,
         )
         ## output

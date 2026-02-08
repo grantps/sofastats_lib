@@ -12,7 +12,6 @@ from sofastats.data_extraction.charts.interfaces.amounts import (
     ChartSeriesCategoryAmountSpec, ChartSeriesCategoryAmountSpecs,
     SeriesCategoryAmountSpec, SeriesCategoryAmountSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.data_extraction.utils import to_values_sorted_by_custom_or_value
 from sofastats.utils.misc import display_float_as_nice_str
 
 def validate_metric_and_field_name(metric: ChartMetric, field_name: str):
@@ -197,10 +196,8 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
     series_category_amount_specs = []
-    orig_series_vals = df['series_val'].unique()
-    sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
-                                                             field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
-    for series_val in sorted_series_vals:
+    series_vals = df['series_val'].unique()
+    for series_val in series_vals:
         category_item_amount_specs = []
         for _i, row in df.loc[df['series_val'] == series_val].iterrows():
             amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
@@ -217,11 +214,12 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
         )
         series_category_amount_specs.append(series_category_amount_spec)
     data_spec = SeriesCategoryAmountSpecs(
-        series_field_name=series_field_name,
         category_field_name=category_field_name,
+        series_field_name=series_field_name,
         series_category_amount_specs=series_category_amount_specs,
         sort_orders=sort_orders,
         category_sort_order=category_sort_order,
+        series_sort_order=series_sort_order,
         decimal_points=decimal_points,
     )
     return data_spec
@@ -317,10 +315,8 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
     chart_category_amount_specs = []
-    orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
-                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
-    for chart_val in sorted_chart_vals:
+    chart_vals = df['chart_val'].unique()
+    for chart_val in chart_vals:
         amount_specs = []
         for _i, row in df.loc[df['chart_val'] == chart_val].iterrows():
             amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
@@ -337,11 +333,12 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
         )
         chart_category_amount_specs.append(chart_category_amount_spec)
     charting_spec = ChartCategoryAmountSpecs(
-        chart_field_name=chart_field_name,
         category_field_name=category_field_name,
+        chart_field_name=chart_field_name,
         chart_category_amount_specs=chart_category_amount_specs,
         sort_orders=sort_orders,
         category_sort_order=category_sort_order,
+        chart_sort_order=chart_sort_order,
         decimal_points=decimal_points,
     )
     return charting_spec
@@ -444,15 +441,11 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(data, columns=cols)
     chart_series_category_amount_specs = []
-    orig_chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_chart_vals,
-                                                            field_name=chart_field_name, sort_orders=sort_orders, sort_order=chart_sort_order)
-    for chart_val in sorted_chart_vals:
+    chart_vals = df['chart_val'].unique()
+    for chart_val in chart_vals:
         series_category_amount_specs = []
-        orig_series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = to_values_sorted_by_custom_or_value(orig_vals=orig_series_vals,
-                                                                 field_name=series_field_name, sort_orders=sort_orders, sort_order=series_sort_order)
-        for series_val in sorted_series_vals:
+        series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
+        for series_val in series_vals:
             amount_specs = []
             for _i, row in df.loc[(df['chart_val'] == chart_val) & (df['series_val'] == series_val)].iterrows():
                 amount, tool_tip = get_amount_and_tool_tip(row.to_dict())
@@ -480,6 +473,8 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
         chart_series_category_amount_specs=chart_series_category_amount_specs,
         sort_orders=sort_orders,
         category_sort_order=category_sort_order,
+        series_sort_order=series_sort_order,
+        chart_sort_order=chart_sort_order,
         decimal_points=decimal_points,
     )
     return data_spec

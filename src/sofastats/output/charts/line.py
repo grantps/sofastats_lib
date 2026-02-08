@@ -289,7 +289,7 @@ class LineChartDesign(CommonDesign):
         )
         ## chart details
         charting_spec = LineChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
@@ -351,7 +351,7 @@ class MultiLineChartDesign(CommonDesign):
         )
         ## chart details
         charting_spec = LineChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=[intermediate_charting_spec.to_indiv_chart_spec(), ],
             series_legend_label=intermediate_charting_spec.series_field_name,
             rotate_x_labels=self.rotate_x_labels,
@@ -415,7 +415,7 @@ class MultiChartLineChartDesign(CommonDesign):
         )
         ## chart details
         charting_spec = LineChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=None,
             rotate_x_labels=self.rotate_x_labels,
@@ -486,7 +486,7 @@ class MultiChartMultiLineChartDesign(CommonDesign):
         )
         ## chart details
         charting_spec = LineChartingSpec(
-            categories=intermediate_charting_spec.sorted_categories,
+            categories=intermediate_charting_spec.sorted_category_vals,
             indiv_chart_specs=intermediate_charting_spec.to_indiv_chart_specs(),
             series_legend_label=intermediate_charting_spec.series_field_name,
             rotate_x_labels=self.rotate_x_labels,

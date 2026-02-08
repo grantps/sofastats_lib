@@ -24,7 +24,8 @@ from sofastats.stats_calc.engine import anova as anova_stats_calc
 from sofastats.stats_calc.interfaces import AnovaResult, NumericParametricSampleSpecFormatted
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
-from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible, todict
+from sofastats.utils.misc import todict
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 from sofastats.utils.stats import get_p_str
 
 def anova_from_df(df: pd.DataFrame, *,
@@ -230,7 +231,7 @@ class AnovaDesign(CommonStatsDesign):
     def to_result(self) -> AnovaResult:
         ## values (sorted)
         if self.grouping_field_sort_order == SortOrder.CUSTOM:
-            grouping_field_values = apply_custom_sorting_to_values_if_possible(
+            grouping_field_values = sort_values_by_value_or_custom_if_possible(
                 variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         else:
             grouping_field_values = self.group_values
@@ -254,7 +255,7 @@ class AnovaDesign(CommonStatsDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## values (sorted)
         if self.grouping_field_sort_order == SortOrder.CUSTOM:
-            grouping_field_values = apply_custom_sorting_to_values_if_possible(
+            grouping_field_values = sort_values_by_value_or_custom_if_possible(
                 variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         else:
             grouping_field_values = self.group_values

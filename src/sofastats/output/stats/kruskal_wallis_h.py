@@ -18,7 +18,8 @@ from sofastats.stats_calc.engine import kruskalwallish as kruskal_wallis_h_stats
 from sofastats.stats_calc.interfaces import KruskalWallisHResult, NumericNonParametricSampleSpecFormatted
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
-from sofastats.utils.misc import apply_custom_sorting_to_values_if_possible, todict
+from sofastats.utils.misc import todict
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 from sofastats.utils.stats import get_p_str
 
 def kruskal_wallis_h_from_df(df: pd.DataFrame) -> KruskalWallisHResult:
@@ -144,7 +145,7 @@ class KruskalWallisHDesign(CommonStatsDesign):
 
     def to_result(self) -> KruskalWallisHResult:
         ## values (sorted)
-        grouping_field_values = apply_custom_sorting_to_values_if_possible(
+        grouping_field_values = sort_values_by_value_or_custom_if_possible(
             variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
@@ -163,7 +164,7 @@ class KruskalWallisHDesign(CommonStatsDesign):
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
         ## values (sorted)
-        grouping_field_values = apply_custom_sorting_to_values_if_possible(
+        grouping_field_values = sort_values_by_value_or_custom_if_possible(
             variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
         ## data
         grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
