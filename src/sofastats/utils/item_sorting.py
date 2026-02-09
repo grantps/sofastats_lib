@@ -13,8 +13,11 @@ from sofastats.conf.main import SortOrderSpecs, SortOrder
 def sort_values_by_value_or_custom_if_possible(
         *, variable_name: str, values: list[Any], sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
     """
-    Sort values by the content of the values themselves if possible
+    Sort values by the content of the values themselves (if possible)
     i.e. not with reference to frequencies associated with those values.
+
+    Not always possible because the setting might be CUSTOM yet no custom sort order supplied
+    (in which case no change is made to the order)
     """
     if sort_order == SortOrder.VALUE:
         sorted_values = sorted(values)

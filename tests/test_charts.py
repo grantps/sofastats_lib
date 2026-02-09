@@ -34,7 +34,6 @@ Strategy for getting sorted category items (values or labels)
    such as f"{freq}<br>({label}%)" when no series
    or f"{<category_name>}, {<series_name>}<br>{freq}<br>({label}%)" when a series variable
 """
-## TODO: 
 from collections.abc import Sequence
 from statistics import median
 
@@ -70,7 +69,8 @@ def _check_n_records(
                 "because we don't have access to the full df")
     else:
         n_records = len(df_filtered)
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
 
 def _initial_category_checks(*, df_filtered: pd.DataFrame, html: str, category_values_in_expected_order: Sequence[str],
         series_value: str | None = None, already_checked_n_records=False):
@@ -85,7 +85,8 @@ def _initial_category_checks(*, df_filtered: pd.DataFrame, html: str, category_v
     _check_n_records(df_filtered=df_filtered, html=html, series_value=series_value,
         already_checked_n_records=already_checked_n_records)
     for n, category in enumerate(category_values_in_expected_order, 1):
-        assert f'{{value: {n}, text: "{category}"}}' in html
+        category_label = f'{{value: {n}, text: "{category}"}}'
+        assert category_label in html, category_label
 
 def check_category_freqs(*, df_filtered: pd.DataFrame, html: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str],
@@ -113,8 +114,10 @@ def check_category_freqs(*, df_filtered: pd.DataFrame, html: str,
         label_pct = display_pct_as_nice_str(category_pct, decimal_points=decimal_points)
         category_label = f"'{filter_lbl}{category_freq}<br>({label_pct})'"
         category_labels.append(category_label)
-    assert f'["vals"] = {category_freqs};' in html
-    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+    vals = f'["vals"] = {category_freqs};'
+    assert vals in html, vals
+    y_labels = "yLbls: [" + ", ".join(category_labels) + "]"
+    assert y_labels in html, y_labels
 
 def check_category_pcts(*, df_filtered: pd.DataFrame, html: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str],
@@ -146,8 +149,10 @@ def check_category_pcts(*, df_filtered: pd.DataFrame, html: str,
         label_pct = display_pct_as_nice_str(category_pct, decimal_points=decimal_points)
         category_label = f"'{filter_lbl}{category_freq}<br>({label_pct})'"
         category_labels.append(category_label)
-    assert f'["vals"] = {category_pcts};' in html
-    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+    vals = f'["vals"] = {category_pcts};'
+    assert vals in html, vals
+    y_labels = "yLbls: [" + ", ".join(category_labels) + "]"
+    assert y_labels in html, y_labels
 
 def check_category_averages(*, df_filtered: pd.DataFrame, html: str, field_name: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str], decimal_points: int = 3):
@@ -167,8 +172,10 @@ def check_category_averages(*, df_filtered: pd.DataFrame, html: str, field_name:
         category_avgs.append(category_avg)
         category_label = f"'{display_amount_as_nice_str(category_avg, decimal_points=decimal_points)}'"
         category_labels.append(category_label)
-    assert f'["vals"] = {category_avgs};' in html
-    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+    vals = f'["vals"] = {category_avgs};'
+    assert vals in html, vals
+    y_labels = "yLbls: [" + ", ".join(category_labels) + "]"
+    assert y_labels in html, y_labels
 
 def check_category_sums(*, df_filtered: pd.DataFrame, html: str, field_name: str,
         category_field_name: str, category_values_in_expected_order: Sequence[str], decimal_points: int = 3):
@@ -188,8 +195,10 @@ def check_category_sums(*, df_filtered: pd.DataFrame, html: str, field_name: str
         category_sums.append(category_sum)
         category_label = f"'{display_amount_as_nice_str(category_sum, decimal_points=decimal_points)}'"
         category_labels.append(category_label)
-    assert f'["vals"] = {category_sums};' in html
-    assert ("yLbls: [" + ", ".join(category_labels) + "]") in html
+    vals = f'["vals"] = {category_sums};'
+    assert vals in html, vals
+    y_labels = "yLbls: [" + ", ".join(category_labels) + "]"
+    assert y_labels in html, y_labels
 
 def check_category_slices(*, df_filtered: pd.DataFrame, html: str,
         category_field_name: str, series_value: str | None = None, chart_value: str | None = None):
@@ -200,7 +209,8 @@ def check_category_slices(*, df_filtered: pd.DataFrame, html: str,
     {"val": 736, "label": "Denmark", "tool_tip": "736<br>(14.72%)"}
     """
     n_records = len(df_filtered)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    records = f'conf["n_records"] = "N = {n_records:,}";'
+    assert records in html, records
     s_freqs = df_filtered.groupby(category_field_name).size()
     s_pcts = ((100 * df_filtered.groupby(category_field_name).size()) / len(df_filtered))
     category2freq = dict(s_freqs.items())
@@ -216,7 +226,7 @@ def check_category_slices(*, df_filtered: pd.DataFrame, html: str,
             filter_lbl = ''
         category_slice = (f'{{"val": {category_freq}, "label": "{category}", '
             f'"tool_tip": "{filter_lbl}{category_freq}<br>({display_pct_as_nice_str(category_pct)})"}}')
-        assert category_slice in html
+        assert category_slice in html, category_slice
 
 def check_some_points(*, df_filtered: pd.DataFrame, html: str,
         x_field_name: str, y_field_name: str,
@@ -228,13 +238,14 @@ def check_some_points(*, df_filtered: pd.DataFrame, html: str,
     idx: int
     for idx, row in df_points.iterrows():
         point_defn = f"{{x: {row[x_field_name]}, y: {row[y_field_name]}}}"
-        assert point_defn in html
+        assert point_defn in html, point_defn
         if idx + 1 == sane_n_points_to_check:
             break
 
 def check_bins(*, df_filtered: pd.DataFrame, html: str, field_name: str):
     n_records = len(df_filtered)  ## filter to chart
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    records = f'conf["n_records"] = "N = {n_records:,}";'
+    assert records in html, records
     bin_ranges = [(5, 10), (10, 15), (15, 20), (20, 25), (25, 30), (30, 35), (35, 40), (40, 45), (45, 50), (50, 55),
         (55, 60), (60, 65), (65, 70), (70, 75), (75, 80), (80, 85), (85, 90), (90, 95),
         (95, 100),  ## <= instead of the usual <
@@ -248,7 +259,8 @@ def check_bins(*, df_filtered: pd.DataFrame, html: str, field_name: str):
             df_freq = df_filtered.loc[(df_filtered[field_name] >= bin_start) & (df_filtered[field_name] < bin_end)]
         val = len(df_freq)
         vals.append(val)
-    assert f'data_spec["y_vals"] = {vals}' in html
+    y_vals = f'data_spec["y_vals"] = {vals}'
+    assert y_vals in html, y_vals
 
 def check_boxes(*, df_filtered: pd.DataFrame, html: str, category_field_name: str, field_name: str,
         category_values_in_expected_order: Sequence[str],
@@ -264,16 +276,19 @@ def check_boxes(*, df_filtered: pd.DataFrame, html: str, category_field_name: st
         else:
             filter_lbl = category_value
         category_label = f"""box_{series_idx:02}_{i}['indiv_boxlbl'] = "{filter_lbl}";"""
-        assert category_label in html
+        assert category_label in html, category_label
         vals = df_filtered.loc[df_filtered[category_field_name] == category_value, field_name].values.tolist()
         ## calculate quartiles, median etc
         lower_quartile, upper_quartile = get_quartiles(vals)
         box_bottom = lower_quartile
-        assert f"['box_bottom'] = {box_bottom};" in html
+        bottom = f"['box_bottom'] = {box_bottom};"
+        assert bottom in html, bottom
         box_top = upper_quartile
-        assert f"['box_top'] = {box_top};" in html
+        top = f"['box_top'] = {box_top};"
+        assert top in html, top
         box_median = median(vals)
-        assert f"['median'] = {box_median};" in html
+        med = f"['median'] = {box_median};"
+        assert med in html, med
 
 ## tests ***************************************************************************************************************
 
@@ -342,7 +357,6 @@ def test_simple_bar_chart_averages():
         category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_simple_bar_chart_sums():
-    csv_file_path = people_csv_fpath
     category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
         csv_file_path=people_csv_fpath,
@@ -356,7 +370,7 @@ def test_simple_bar_chart_sums():
     # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(design.csv_file_path)
     check_category_sums(df_filtered=df, html=html, field_name=design.field_name,
         category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
@@ -375,14 +389,13 @@ def test_multi_chart_bar_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
@@ -390,7 +403,6 @@ def test_multi_chart_bar_chart():
             category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_clustered_bar_chart():
-    csv_file_path = people_csv_fpath
     category_values_in_expected_order = home_location_types_sorted
     design = ClusteredBarChartDesign(
         csv_file_path=people_csv_fpath,
@@ -403,12 +415,16 @@ def test_clustered_bar_chart():
     # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(design.csv_file_path)
     n_records = len(df)  ## when no chart, but series, have to do it here
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    record = f'conf["n_records"] = "N = {n_records:,}";'
+    assert record in html, record
     series_values = df[design.series_field_name].unique()
-    for series_value in series_values:  ## not testing whether in the right order
-        assert f'["label"] = "{series_value}"' in html  ## series
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+        values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+    for series_idx, series_value in enumerate(sorted_series_values):
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
         df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
             category_field_name=design.category_field_name,
@@ -431,21 +447,24 @@ def test_multi_chart_clustered_bar_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         series_values = df[design.series_field_name].unique()
         df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
-        for series_value in series_values:  ## not testing whether in the right order
-            assert f'["label"] = "{series_value}"' in html  ## series
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_freqs(df_filtered=df_filtered, html=html,
@@ -471,21 +490,24 @@ def test_multi_chart_clustered_percents_bar_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         series_values = df[design.series_field_name].unique()
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
         df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
-        for series_value in series_values:  ## not testing whether in the right order
-            assert f'["label"] = "{series_value}"' in html  ## series
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_pcts(df_filtered=df_filtered, html=html,
@@ -523,10 +545,14 @@ def test_multi_line_chart():
     print(html)
     df = pd.read_csv(design.csv_file_path)
     n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    records = f'conf["n_records"] = "N = {n_records:,}";'
+    assert records in html, records
     series_values = df[design.series_field_name].unique()
-    for series_value in series_values:  ## not testing whether in the right order
-        assert f'["label"] = "{series_value}"' in html  ## series
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+        values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+    for series_idx, series_value in enumerate(sorted_series_values):
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
         df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order,
@@ -546,14 +572,13 @@ def test_multi_chart_line_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
@@ -577,21 +602,24 @@ def test_multi_chart_multi_line_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         series_values = df[design.series_field_name].unique()
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
         df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
-        for series_value in series_values:  ## not testing whether in the right order
-            assert f'["label"] = "{series_value}"' in html  ## series
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_freqs(df_filtered=df_filtered, html=html,
@@ -629,14 +657,13 @@ def test_multi_chart_area_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
@@ -669,18 +696,17 @@ def test_multi_chart_pie_chart():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
-        check_category_slices(
-            df_filtered=df_filtered, html=html, category_field_name=design.category_field_name, chart_value=chart_value)
+        check_category_slices(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            chart_value=chart_value)
 
 def test_simple_scatter_plot():
     design = SimpleScatterChartDesign(
@@ -710,13 +736,14 @@ def test_by_series_scatter_plot():
     print(html)
     df = pd.read_csv(design.csv_file_path)
     n_records = len(df)
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    records = f'conf["n_records"] = "N = {n_records:,}";'
+    assert records in html, records
     series_values = df[design.series_field_name].unique()
-    sorted_series_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.series_field_name, values=series_values,
-        sort_orders=design.sort_orders, sort_order=series_sort_order)
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+        values=series_values, sort_orders=design.sort_orders, sort_order=series_sort_order)
     for series_idx, series_value in enumerate(sorted_series_values):
-        assert f'series_{series_idx:>02}["label"] = "{series_value}"' in html  ## series
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
         df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_some_points(df_filtered=df_filtered, html=html,
             x_field_name=design.x_field_name, y_field_name=design.y_field_name,
@@ -735,14 +762,13 @@ def test_multi_chart_scatter_plot():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html  ## so test will fail if chart labels not in the correct order
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_some_points(df_filtered=df_filtered, html=html,
@@ -765,23 +791,23 @@ def test_multi_chart_by_series_scatter_plot():
     print(html)
     df = pd.read_csv(design.csv_file_path)
     unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=unsorted_chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         series_values = df[design.series_field_name].unique()
-        sorted_series_values = sort_values_by_value_or_custom_if_possible(
-            variable_name=design.series_field_name, values=series_values,
-            sort_orders=design.sort_orders, sort_order=series_sort_order)
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=series_sort_order)
         df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
-        assert f'conf["n_records"] = "N = {n_records:,}";' in html
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
         for series_idx, series_value in enumerate(sorted_series_values):
-            assert f'series_{series_idx:>02}["label"] = "{series_value}"' in html  ## series
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_some_points(df_filtered=df_filtered, html=html,
@@ -816,14 +842,13 @@ def test_multi_chart_histogram():
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(design.csv_file_path)
-    unsorted_chart_values = df[design.chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.chart_field_name, values=unsorted_chart_values,
-        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
-    for chart_value in chart_values:
+    for chart_value in sorted_chart_values:
         chart_label = f"{design.chart_field_name}: {chart_value}"
-        assert chart_label in html_shrinking
+        assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_bins(df_filtered=df_filtered, html=html, field_name=design.field_name)
@@ -873,11 +898,11 @@ def test_clustered_box_plot():
     print(html)
     df = pd.read_csv(design.csv_file_path)
     n_records = len(df)  ## filter to chart
-    assert f'conf["n_records"] = "N = {n_records:,}";' in html
+    records = f'conf["n_records"] = "N = {n_records:,}";'
+    assert records in html, records
     series_values = df[design.series_field_name].unique()
-    sorted_series_values = sort_values_by_value_or_custom_if_possible(
-        variable_name=design.series_field_name, values=series_values,
-        sort_orders=design.sort_orders, sort_order=series_sort_order)
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+        values=series_values, sort_orders=design.sort_orders, sort_order=series_sort_order)
     for series_idx, series_value in enumerate(sorted_series_values):
         df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_boxes(df_filtered=df_filtered, html=html,
@@ -910,6 +935,6 @@ if __name__ == "__main__":
     # test_multi_chart_by_series_scatter_plot()
     # test_histogram()
     # test_multi_chart_histogram()
-    # test_box_plot()
+    test_box_plot()
     # test_clustered_box_plot()
 
