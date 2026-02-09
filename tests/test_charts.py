@@ -34,6 +34,7 @@ Strategy for getting sorted category items (values or labels)
    such as f"{freq}<br>({label}%)" when no series
    or f"{<category_name>}, {<series_name>}<br>{freq}<br>({label}%)" when a series variable
 """
+## TODO: 
 from collections.abc import Sequence
 from statistics import median
 
@@ -277,548 +278,514 @@ def check_boxes(*, df_filtered: pd.DataFrame, html: str, category_field_name: st
 ## tests ***************************************************************************************************************
 
 def test_simple_bar_chart_unsorted():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_unsorted
     design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
-        category_field_name=category_field_name,
+        csv_file_path=people_csv_fpath,
+        category_field_name='Age Group',
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_freqs(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_sorted():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_freqs(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order)
 
 def test_simple_bar_chart_percents():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    decimal_points = 3
     design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.PCT,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        decimal_points=decimal_points,
+        decimal_points=3,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_pcts(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
-        decimal_points=decimal_points)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_pcts(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_simple_bar_chart_averages():
-    csv_file_path = people_csv_fpath
-    field_name = 'Sleep'
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    decimal_points = 3
     design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.AVG,
-        field_name=field_name,
-        category_field_name=category_field_name,
+        field_name='Sleep',
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        decimal_points=decimal_points,
+        decimal_points=3,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_averages(df_filtered=df, html=html, field_name=field_name,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
-        decimal_points=decimal_points)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_averages(df_filtered=df, html=html, field_name=design.field_name,
+        category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_simple_bar_chart_sums():
     csv_file_path = people_csv_fpath
-    field_name = 'Sleep'
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    decimal_points = 3
     design = SimpleBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.SUM,
-        field_name=field_name,
-        category_field_name=category_field_name,
+        field_name='Sleep',
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
+        decimal_points=3,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(csv_file_path)
-    check_category_sums(df_filtered=df, html=html, field_name=field_name,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
-        decimal_points=decimal_points)
+    check_category_sums(df_filtered=df, html=html, field_name=design.field_name,
+        category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_multi_chart_bar_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    chart_field_name = 'Country'
     design = MultiChartBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    # design.make_output()
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=category_field_name,
+            category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_clustered_bar_chart():
     csv_file_path = people_csv_fpath
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    series_field_name = 'Country'
     design = ClusteredBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
     df = pd.read_csv(csv_file_path)
     n_records = len(df)  ## when no chart, but series, have to do it here
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    series_values = df[series_field_name].unique()
+    series_values = df[design.series_field_name].unique()
     for series_value in series_values:  ## not testing whether in the right order
         assert f'["label"] = "{series_value}"' in html  ## series
-        df_filtered = df.loc[df[series_field_name] == series_value]
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=category_field_name,
+            category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order,
             series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_clustered_bar_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    series_field_name = 'Country'
-    chart_field_name = 'Tertiary Qualifications'
     design = MultiChartClusteredBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Tertiary Qualifications',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        series_values = df[series_field_name].unique()
-        df_chart = df[df[chart_field_name] == chart_value]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
         for series_value in series_values:  ## not testing whether in the right order
             assert f'["label"] = "{series_value}"' in html  ## series
-            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_freqs(df_filtered=df_filtered, html=html,
-                category_field_name=category_field_name,
+                category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
                 series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_clustered_percents_bar_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    series_field_name = 'Country'
-    chart_field_name = 'Tertiary Qualifications'
-    decimal_points = 3
     design = MultiChartClusteredBarChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         metric=ChartMetric.PCT,
-        category_field_name=category_field_name,
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Tertiary Qualifications',
         chart_sort_order=SortOrder.CUSTOM,
-        decimal_points=decimal_points,
+        decimal_points=3,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        series_values = df[series_field_name].unique()
-        df_chart = df[df[chart_field_name] == chart_value]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
         for series_value in series_values:  ## not testing whether in the right order
             assert f'["label"] = "{series_value}"' in html  ## series
-            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_pcts(df_filtered=df_filtered, html=html,
-                category_field_name=category_field_name,
+                category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
-                series_value=series_value, already_checked_n_records=True, decimal_points=decimal_points)
+                series_value=series_value, already_checked_n_records=True, decimal_points=design.decimal_points)
 
 def test_line_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
     design = LineChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_freqs(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order)
 
 def test_multi_line_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    series_field_name = 'Country'
     design = MultiLineChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(design.csv_file_path)
     n_records = len(df)
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    series_values = df[series_field_name].unique()
+    series_values = df[design.series_field_name].unique()
     for series_value in series_values:  ## not testing whether in the right order
         assert f'["label"] = "{series_value}"' in html  ## series
-        df_filtered = df.loc[df[series_field_name] == series_value]
-        check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
             series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_line_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    chart_field_name = 'Country'
     design = MultiChartLineChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=category_field_name,
+            category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order,
             chart_value=chart_value, already_checked_n_records=True)
 
 def test_multi_chart_multi_line_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    series_field_name = 'Country'
-    chart_field_name = 'Age Group'
     design = MultiChartMultiLineChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Age Group',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        series_values = df[series_field_name].unique()
-        df_chart = df[df[chart_field_name] == chart_value]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
         for series_value in series_values:  ## not testing whether in the right order
             assert f'["label"] = "{series_value}"' in html  ## series
-            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_category_freqs(df_filtered=df_filtered, html=html,
-                category_field_name=category_field_name,
+                category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
                 series_value=series_value, already_checked_n_records=True)
 
 def test_area_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    decimal_points = 3
     design = AreaChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        decimal_points=decimal_points,
+        decimal_points=3,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_freqs(df_filtered=df, html=html,
-        category_field_name=category_field_name, category_values_in_expected_order=category_values_in_expected_order,
-        decimal_points=decimal_points)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_multi_chart_area_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Age Group'
     category_values_in_expected_order = age_groups_sorted
-    chart_field_name = 'Country'
     design = MultiChartAreaChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Age Group',
         category_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=category_field_name,
+            category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_pie_chart():
-    csv_file_path = people_csv_fpath
-    category_field_name = 'Country'
     design = PieChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Country',
         category_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_category_slices(df_filtered=df, html=html, category_field_name=category_field_name)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_slices(df_filtered=df, html=html, category_field_name=design.category_field_name)
 
 def test_multi_chart_pie_chart():
-    csv_file_path = sports_csv_file_path
-    category_field_name = 'Sport'
-    chart_field_name = 'Country'
     design = MultiChartPieChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=sports_csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        category_field_name=category_field_name,
+        category_field_name='Sport',
         category_sort_order=SortOrder.CUSTOM,
-        chart_field_name=chart_field_name,
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
         check_category_slices(
-            df_filtered=df_filtered, html=html, category_field_name=category_field_name, chart_value=chart_value)
+            df_filtered=df_filtered, html=html, category_field_name=design.category_field_name, chart_value=chart_value)
 
 def test_simple_scatter_plot():
-    csv_file_path = education_csv_fpath
-    x_field_name = 'Reading Score Before Help'
-    y_field_name = 'Reading Score After Help'
     design = SimpleScatterChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=education_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        x_field_name=x_field_name,
-        y_field_name=y_field_name,
+        x_field_name='Reading Score Before Help',
+        y_field_name='Reading Score After Help',
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_some_points(df_filtered=df, html=html, x_field_name=x_field_name, y_field_name=y_field_name)
+    df = pd.read_csv(design.csv_file_path)
+    check_some_points(df_filtered=df, html=html, x_field_name=design.x_field_name, y_field_name=design.y_field_name)
 
 def test_by_series_scatter_plot():
-    csv_file_path = education_csv_fpath
-    x_field_name = 'Reading Score Before Help'
-    y_field_name = 'Reading Score After Help'
-    series_field_name = 'Country'
     series_sort_order = SortOrder.CUSTOM
     design = BySeriesScatterChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=education_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        x_field_name=x_field_name,
-        y_field_name=y_field_name,
-        series_field_name=series_field_name,
+        x_field_name='Reading Score Before Help',
+        y_field_name='Reading Score After Help',
+        series_field_name='Country',
         series_sort_order=series_sort_order,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    # design.make_output()
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(design.csv_file_path)
     n_records = len(df)
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    series_values = df[series_field_name].unique()
-    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=series_field_name, values=series_values,
-                                                                      sort_orders=design.sort_orders, sort_order=series_sort_order)
+    series_values = df[design.series_field_name].unique()
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.series_field_name, values=series_values,
+        sort_orders=design.sort_orders, sort_order=series_sort_order)
     for series_idx, series_value in enumerate(sorted_series_values):
         assert f'series_{series_idx:>02}["label"] = "{series_value}"' in html  ## series
-        df_filtered = df.loc[df[series_field_name] == series_value]
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
         check_some_points(df_filtered=df_filtered, html=html,
-            x_field_name=x_field_name, y_field_name=y_field_name,
+            x_field_name=design.x_field_name, y_field_name=design.y_field_name,
             series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_scatter_plot():
-    csv_file_path = education_csv_fpath
-    x_field_name = 'Reading Score Before Help'
-    y_field_name = 'Reading Score After Help'
-    chart_field_name = 'Country'
     design = MultiChartScatterChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=education_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        x_field_name=x_field_name,
-        y_field_name=y_field_name,
-        chart_field_name=chart_field_name,
+        x_field_name='Reading Score Before Help',
+        y_field_name='Reading Score After Help',
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html  ## so test will fail if chart labels not in the correct order
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
-        check_some_points(df_filtered=df_filtered, html=html, x_field_name=x_field_name, y_field_name=y_field_name)
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
+        check_some_points(df_filtered=df_filtered, html=html,
+            x_field_name=design.x_field_name, y_field_name=design.y_field_name)
 
 def test_multi_chart_by_series_scatter_plot():
-    csv_file_path = education_csv_fpath
-    x_field_name = 'Reading Score Before Help'
-    y_field_name = 'Reading Score After Help'
-    series_field_name = 'Home Location Type'
     series_sort_order = SortOrder.CUSTOM
-    chart_field_name = 'Country'
     design = MultiChartBySeriesScatterChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=education_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        x_field_name=x_field_name,
-        y_field_name=y_field_name,
-        series_field_name=series_field_name,
+        x_field_name='Reading Score Before Help',
+        y_field_name='Reading Score After Help',
+        series_field_name='Home Location Type',
         series_sort_order=series_sort_order,
-        chart_field_name=chart_field_name,
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    # design.make_output()
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        series_values = df[series_field_name].unique()
-        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=series_field_name, values=series_values,
-                                                                          sort_orders=design.sort_orders, sort_order=series_sort_order)
-        df_chart = df[df[chart_field_name] == chart_value]
+        series_values = df[design.series_field_name].unique()
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(
+            variable_name=design.series_field_name, values=series_values,
+            sort_orders=design.sort_orders, sort_order=series_sort_order)
+        df_chart = df[df[design.chart_field_name] == chart_value]
         n_records = len(df_chart)  ## filter to chart
         assert f'conf["n_records"] = "N = {n_records:,}";' in html
         for series_idx, series_value in enumerate(sorted_series_values):
             assert f'series_{series_idx:>02}["label"] = "{series_value}"' in html  ## series
-            df_filtered = df.loc[(df[chart_field_name] == chart_value) & (df[series_field_name] == series_value)]
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
             check_some_points(df_filtered=df_filtered, html=html,
-                x_field_name=x_field_name, y_field_name=y_field_name,
+                x_field_name=design.x_field_name, y_field_name=design.y_field_name,
                 series_value=series_value, already_checked_n_records=True)
 
 def test_histogram():
@@ -826,42 +793,40 @@ def test_histogram():
     Hard to make the test easier to trust than the code so supply the expected bins and calculate totals within them.
     Don't do the normal curve as well. Labels are in the JS so can't check in HTML.
     """
-    csv_file_path = people_csv_fpath
-    field_name = 'Age'
     design = HistogramChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        field_name=field_name,
+        field_name='Age',
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_bins(df_filtered=df, html=html, field_name=field_name)
+    df = pd.read_csv(design.csv_file_path)
+    check_bins(df_filtered=df, html=html, field_name=design.field_name)
 
 def test_multi_chart_histogram():
-    csv_file_path = people_csv_fpath
-    field_name = 'Age'
-    chart_field_name = 'Country'
     design = MultiChartHistogramChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        field_name=field_name,
-        chart_field_name=chart_field_name,
+        field_name='Age',
+        chart_field_name='Country',
         chart_sort_order=SortOrder.CUSTOM,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    unsorted_chart_values = df[chart_field_name].unique()
-    chart_values = sort_values_by_value_or_custom_if_possible(variable_name=chart_field_name, values=unsorted_chart_values,
-                                                              sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    df = pd.read_csv(design.csv_file_path)
+    unsorted_chart_values = df[design.chart_field_name].unique()
+    chart_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.chart_field_name, values=unsorted_chart_values,
+        sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
     html_shrinking = html
     for chart_value in chart_values:
-        chart_label = f"{chart_field_name}: {chart_value}"
+        chart_label = f"{design.chart_field_name}: {chart_value}"
         assert chart_label in html_shrinking
         html_shrinking = html[html.index(chart_label):]
-        df_filtered = df.loc[df[chart_field_name] == chart_value]
-        check_bins(df_filtered=df_filtered, html=html, field_name=field_name)
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
+        check_bins(df_filtered=df_filtered, html=html, field_name=design.field_name)
 
 def test_box_plot():
     """
@@ -874,53 +839,49 @@ def test_box_plot():
     summary_data_00_0['box_top'] = 66;
     summary_data_00_0['box_top_rounded'] = 66;
     """
-    csv_file_path = people_csv_fpath
-    field_name = 'Age'
-    category_field_name = 'Handedness'
     category_values_in_expected_order = handedness_sorted
     design = BoxplotChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        field_name=field_name,
-        category_field_name=category_field_name,
+        field_name='Age',
+        category_field_name='Handedness',
         category_sort_order=SortOrder.CUSTOM,
         box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    df = pd.read_csv(csv_file_path)
-    check_boxes(df_filtered=df, html=html, category_field_name=category_field_name, field_name=field_name,
+    df = pd.read_csv(design.csv_file_path)
+    check_boxes(df_filtered=df, html=html, category_field_name=design.category_field_name, field_name=design.field_name,
         category_values_in_expected_order=category_values_in_expected_order)
 
 def test_clustered_box_plot():
-    csv_file_path = people_csv_fpath
-    field_name = 'Age'
-    category_field_name = 'Home Location Type'
     category_values_in_expected_order = home_location_types_sorted
-    series_field_name = 'Country'
     series_sort_order = SortOrder.CUSTOM
     design = ClusteredBoxplotChartDesign(
-        csv_file_path=csv_file_path,
+        csv_file_path=people_csv_fpath,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        field_name=field_name,
-        category_field_name=category_field_name,
+        field_name='Age',
+        category_field_name='Home Location Type',
         category_sort_order=SortOrder.CUSTOM,
-        series_field_name=series_field_name,
+        series_field_name='Country',
         series_sort_order=series_sort_order,
         box_plot_type=BoxplotType.INSIDE_1_POINT_5_TIMES_IQR,
     )
+    # design.make_output()
     html = design.to_html_design().html_item_str
     print(html)
-    # design.make_output()
-    df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(design.csv_file_path)
     n_records = len(df)  ## filter to chart
     assert f'conf["n_records"] = "N = {n_records:,}";' in html
-    series_values = df[series_field_name].unique()
-    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=series_field_name, values=series_values,
-                                                                      sort_orders=design.sort_orders, sort_order=series_sort_order)
+    series_values = df[design.series_field_name].unique()
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(
+        variable_name=design.series_field_name, values=series_values,
+        sort_orders=design.sort_orders, sort_order=series_sort_order)
     for series_idx, series_value in enumerate(sorted_series_values):
-        df_filtered = df.loc[df[series_field_name] == series_value]
-        check_boxes(df_filtered=df_filtered, html=html, category_field_name=category_field_name, field_name=field_name,
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
+        check_boxes(df_filtered=df_filtered, html=html,
+            category_field_name=design.category_field_name, field_name=design.field_name,
             category_values_in_expected_order=category_values_in_expected_order,
             series_value=series_value, series_idx=series_idx, already_checked_n_records=True)
 

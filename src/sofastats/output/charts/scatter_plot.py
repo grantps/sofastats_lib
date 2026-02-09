@@ -238,43 +238,6 @@ def get_common_charting_spec(charting_spec: ScatterChartingSpec, style_spec: Sty
         options=options,
     )
 
-def to_sorted_data_series_specs(*, data_series_specs: Sequence[ScatterDataSeriesSpec], series_field_name: str,
-        sort_orders: SortOrderSpecs, series_sort_order: SortOrder) -> list[ScatterDataSeriesSpec]:
-    if series_sort_order == SortOrder.VALUE:
-        def sort_me(data_series_spec):
-            return data_series_spec.label
-
-        reverse = False
-    elif series_sort_order == SortOrder.CUSTOM:
-        ## use supplied sort order
-        try:
-            values_in_order = sort_orders[series_field_name]
-        except KeyError:
-            raise Exception(
-                f"You wanted the values in variable '{series_field_name}' to have a custom sort order "
-                "but I couldn't find a sort order from what you supplied. "
-                "Please fix the sort order details or use another approach to sorting.")
-        value2order = {val: order for order, val in enumerate(values_in_order)}
-
-        def sort_me(data_series_spec):
-            amount_spec_val = data_series_spec.label
-            try:
-                idx_for_ordered_position = value2order[amount_spec_val]
-            except KeyError:
-                raise Exception(
-                    f"The custom sort order you supplied for values in variable '{series_field_name}' "
-                    f"didn't include value '{amount_spec_val}' so please fix that and try again.")
-            return idx_for_ordered_position
-
-        reverse = False
-    else:
-        raise Exception(
-            f"Unexpected series_sort_order ({series_sort_order})"
-            "\nINCREASING and DECREASING is for ordering by frequency which makes no sense for series."
-        )
-    sorted_amount_specs = sorted(data_series_specs, key=sort_me, reverse=reverse)
-    return sorted_amount_specs
-
 @get_indiv_chart_html.register
 def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_spec: ScatterIndivChartSpec,
         *,  chart_counter: int) -> str:
@@ -289,13 +252,7 @@ def get_indiv_chart_html(common_charting_spec: CommonChartingSpec, indiv_chart_s
         if common_charting_spec.options.is_multi_chart else '')
     n_records = 'N = ' + format_num(indiv_chart_spec.n_records) if common_charting_spec.options.show_n_records else ''
     dojo_series_specs = []
-    if len(indiv_chart_spec.data_series_specs) == 1:
-        sorted_data_series_specs = indiv_chart_spec.data_series_specs
-    else:
-        sorted_data_series_specs = to_sorted_data_series_specs(
-            data_series_specs=indiv_chart_spec.data_series_specs, series_field_name=indiv_chart_spec.series_field_name,
-            sort_orders=indiv_chart_spec.sort_orders, series_sort_order=indiv_chart_spec.series_sort_order)
-    for i, data_series_spec in enumerate(sorted_data_series_specs):
+    for i, data_series_spec in enumerate(indiv_chart_spec.sorted_data_series_specs):
         series_id = f"{i:>02}"
         series_label = data_series_spec.label
         xy_dicts = [f"{{x: {x}, y: {y}}}" for x, y in data_series_spec.xy_pairs]

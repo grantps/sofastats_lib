@@ -11,13 +11,14 @@ from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.stats_calc.engine import get_normal_ys
 from sofastats.stats_calc.histogram import get_bin_details_from_vals
+from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
 
 @dataclass
 class HistoIndivChartSpec:
     label: str | None
     n_records: int
     norm_y_vals: Sequence[float]
-    y_vals: Sequence[int]
+    y_vals: Sequence[float]
 
 @dataclass(frozen=False)
 class HistoValsSpec:
@@ -64,54 +65,16 @@ class HistoValsSpec:
         return x_axis_min_val, x_axis_max_val
 
 
-
-def to_sorted_histo_chart_vals_specs(
-        histo_chart_vals_specs: Sequence[HistoValsSpec],
-        chart_field_name: str, sort_orders: SortOrderSpecs, chart_sort_order: SortOrder) -> list:
-    if chart_sort_order == SortOrder.VALUE:
-        def sort_me(histo_vals_spec):
-            return histo_vals_spec.chart_name
-        reverse = False
-    elif chart_sort_order == SortOrder.CUSTOM:
-        ## use supplied sort order
-        try:
-            values_in_order = sort_orders[chart_field_name]
-        except KeyError:
-            raise Exception(
-                f"You wanted the values in variable '{chart_field_name}' to have a custom sort order "
-                "but I couldn't find a sort order from what you supplied. "
-                "Please fix the sort order details or use another approach to sorting.")
-        value2order = {val: order for order, val in enumerate(values_in_order)}
-        def sort_me(histo_vals_spec):
-            histo_chart_val = histo_vals_spec.chart_name
-            try:
-                idx_for_ordered_position = value2order[histo_chart_val]
-            except KeyError:
-                raise Exception(
-                    f"The custom sort order you supplied for values in variable '{chart_field_name}' "
-                    f"didn't include value '{histo_chart_val}' so please fix that and try again.")
-            return idx_for_ordered_position
-    else:
-        raise Exception(
-            f"Unexpected chart_sort_order ({chart_sort_order})"
-            "\nDECREASING is for ordering by frequency which makes no sense when multi-series charts."
-        )
-    sorted_histo_chart_vals_specs = sorted(histo_chart_vals_specs, key=sort_me)
-    return sorted_histo_chart_vals_specs
-
-
 @dataclass(frozen=False)
 class HistoValsSpecs:
     field_name: str
     chart_field_name: str
-    sort_orders: SortOrderSpecs
-    chart_sort_order: SortOrder
-    chart_vals_specs: Sequence[HistoValsSpec]
+    sorted_chart_vals_specs: Sequence[HistoValsSpec]
     decimal_points: int = 3
 
     def __post_init__(self):
         vals = []
-        for chart_vals_spec in self.chart_vals_specs:
+        for chart_vals_spec in self.sorted_chart_vals_specs:
             vals.extend(chart_vals_spec.vals)
         self.vals = vals
         bin_spec, bin_freqs = get_bin_details_from_vals(vals)
@@ -119,11 +82,7 @@ class HistoValsSpecs:
 
     def to_indiv_chart_specs(self) -> Sequence[HistoIndivChartSpec]:
         indiv_chart_specs = []
-        sorted_histo_chart_vals_specs = to_sorted_histo_chart_vals_specs(
-            histo_chart_vals_specs=self.chart_vals_specs, chart_field_name=self.chart_field_name,
-            sort_orders=self.sort_orders, chart_sort_order=self.chart_sort_order,
-        )
-        for chart_vals_spec in sorted_histo_chart_vals_specs:
+        for chart_vals_spec in self.sorted_chart_vals_specs:
             indiv_chart_specs.extend(chart_vals_spec.to_indiv_chart_specs())
         return indiv_chart_specs
 
@@ -160,7 +119,7 @@ def get_by_vals_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_
         field_name=field_name,
         chart_field_name=None,
         chart_name=None,
-        vals=vals,
+        vals=vals,  ## raw values ready to be binned etc etc.
         decimal_points=decimal_points,
     )
     return data_spec
@@ -192,9 +151,11 @@ def get_by_chart_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source
     data = cur.fetchall()
     cols = ['chart_val', 'val']
     df = pd.DataFrame(data, columns=cols)
-    chart_vals_specs = []
+    sorted_chart_vals_specs = []
     chart_vals = df['chart_val'].unique()
-    for chart_val in chart_vals:
+    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+        variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
+    for chart_val in sorted_chart_vals:
         df_vals = df.loc[df['chart_val'] == chart_val, ['val']]
         vals = list(df_vals['val'])
         vals_spec = HistoValsSpec(
@@ -203,13 +164,11 @@ def get_by_chart_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source
             chart_name=chart_val,
             vals=vals,
         )
-        chart_vals_specs.append(vals_spec)
+        sorted_chart_vals_specs.append(vals_spec)
     data_spec = HistoValsSpecs(
         field_name=field_name,
         chart_field_name=chart_field_name,
-        sort_orders=sort_orders,
-        chart_sort_order=chart_sort_order,
-        chart_vals_specs=chart_vals_specs,
+        sorted_chart_vals_specs=sorted_chart_vals_specs,
         decimal_points=decimal_points,
     )
     return data_spec

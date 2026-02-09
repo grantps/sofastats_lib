@@ -11,15 +11,12 @@ class ScatterDataSeriesSpec:
 
 @dataclass
 class ScatterIndivChartSpec:
-    series_field_name: str | None
-    sort_orders: SortOrderSpecs | None
-    series_sort_order: SortOrder | None
-    data_series_specs: Sequence[ScatterDataSeriesSpec]
+    sorted_data_series_specs: Sequence[ScatterDataSeriesSpec]
     label: str | None
 
     def __post_init__(self):
         n_records = 0
-        for data_series_spec in self.data_series_specs:
+        for data_series_spec in self.sorted_data_series_specs:
             n_records += len(data_series_spec.xy_pairs)
         self.n_records = n_records
 
@@ -42,7 +39,7 @@ class ScatterChartingSpec:
         all_max_ys = []
         has_plenty_list = []
         for indiv_chart_spec in self.indiv_chart_specs:
-            for data_series_spec in indiv_chart_spec.data_series_specs:
+            for data_series_spec in indiv_chart_spec.sorted_data_series_specs:
                 xs = [xy_pair[0] for xy_pair in data_series_spec.xy_pairs]
                 ys = [xy_pair[1] for xy_pair in data_series_spec.xy_pairs]
                 ## xs
@@ -71,5 +68,5 @@ class ScatterChartingSpec:
         ## Derived attributes (could make actual fields using = fields(init=False) but OK as mere attributes)
         self.n_charts = len(self.indiv_chart_specs)
         self.is_multi_chart = self.n_charts > 1
-        self.n_series = len(self.indiv_chart_specs[0].data_series_specs)
+        self.n_series = len(self.indiv_chart_specs[0].sorted_data_series_specs)
         self.is_single_series = (self.n_series == 1)
