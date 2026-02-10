@@ -17,4 +17,5 @@ age_groups_unsorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 t
 countries_sorted = ['USA', 'NZ', 'South Korea', 'Denmark', ]
 handedness_sorted = ['Right', 'Left', 'Ambidextrous', ]
 home_location_types_sorted = ['City', 'Town', 'Rural']
+home_location_types_unsorted = ['City', 'Rural', 'Town']
 sleep_groups_sorted = ['Under 7 hours', '7 to <9 hours', '9+ hours']

@@ -55,7 +55,8 @@ from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possi
 from sofastats.utils.stats import get_quartiles
 
 from tests.conf import (age_groups_sorted, age_groups_unsorted, education_csv_fpath, handedness_sorted,
-    home_location_types_sorted, people_csv_fpath, sort_orders_yaml_file_path, sports_csv_file_path)
+    home_location_types_sorted, home_location_types_unsorted,
+    people_csv_fpath, sort_orders_yaml_file_path, sports_csv_file_path)
 from tests.utils import display_amount_as_nice_str, display_pct_as_nice_str
 
 ## common checks *******************************************************************************************************
@@ -320,6 +321,22 @@ def test_simple_bar_chart_sorted():
     check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order)
 
+
+def test_simple_bar_chart_percents_unsorted():
+    category_values_in_expected_order = age_groups_unsorted
+    design = SimpleBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        metric=ChartMetric.PCT,
+        category_field_name='Age Group',
+        decimal_points=3,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_pcts(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
+
 def test_simple_bar_chart_percents():
     category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
@@ -335,6 +352,24 @@ def test_simple_bar_chart_percents():
     print(html)
     df = pd.read_csv(design.csv_file_path)
     check_category_pcts(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
+
+
+def test_simple_bar_chart_averages_unsorted():
+    category_values_in_expected_order = age_groups_unsorted
+    design = SimpleBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        metric=ChartMetric.AVG,
+        field_name='Sleep',
+        category_field_name='Age Group',
+        decimal_points=3,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_averages(df_filtered=df, html=html, field_name=design.field_name,
+        category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
 def test_simple_bar_chart_averages():
@@ -356,6 +391,24 @@ def test_simple_bar_chart_averages():
         category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
 
+
+def test_simple_bar_chart_sums_unsorted():
+    category_values_in_expected_order = age_groups_unsorted
+    design = SimpleBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        metric=ChartMetric.SUM,
+        field_name='Sleep',
+        category_field_name='Age Group',
+        decimal_points=3,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_sums(df_filtered=df, html=html, field_name=design.field_name,
+        category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
+
 def test_simple_bar_chart_sums():
     category_values_in_expected_order = age_groups_sorted
     design = SimpleBarChartDesign(
@@ -374,6 +427,76 @@ def test_simple_bar_chart_sums():
     check_category_sums(df_filtered=df, html=html, field_name=design.field_name,
         category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order, decimal_points=design.decimal_points)
+
+
+def test_multi_chart_bar_chart_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        category_field_name='Home Location Type',
+        chart_field_name='Country',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
+
+def test_multi_chart_bar_chart_category_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        category_field_name='Home Location Type',
+        chart_field_name='Country',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
+
+def test_multi_chart_bar_chart_charts_unsorted():
+    category_values_in_expected_order = home_location_types_sorted
+    design = MultiChartBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        category_sort_order=SortOrder.CUSTOM,
+        chart_field_name='Country',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        df_filtered = df.loc[df[design.chart_field_name] == chart_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_multi_chart_bar_chart():
     category_values_in_expected_order = home_location_types_sorted
@@ -398,9 +521,86 @@ def test_multi_chart_bar_chart():
         assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
-        check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=design.category_field_name,
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
+
+
+def test_clustered_bar_chart_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = ClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    n_records = len(df)  ## when no chart, but series, have to do it here
+    record = f'conf["n_records"] = "N = {n_records:,}";'
+    assert record in html, record
+    series_values = df[design.series_field_name].unique()
+    sorted_series_values = sorted(series_values)
+    for series_idx, series_value in enumerate(sorted_series_values):
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
+            series_value=series_value, already_checked_n_records=True)
+
+def test_clustered_bar_chart_category_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = ClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        series_sort_order=SortOrder.CUSTOM,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    n_records = len(df)  ## when no chart, but series, have to do it here
+    record = f'conf["n_records"] = "N = {n_records:,}";'
+    assert record in html, record
+    series_values = df[design.series_field_name].unique()
+    sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+        values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+    for series_idx, series_value in enumerate(sorted_series_values):
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
+            series_value=series_value, already_checked_n_records=True)
+
+def test_clustered_bar_chart_series_unsorted():
+    category_values_in_expected_order = home_location_types_sorted
+    design = ClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        category_sort_order=SortOrder.CUSTOM,
+        series_field_name='Country',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    n_records = len(df)  ## when no chart, but series, have to do it here
+    record = f'conf["n_records"] = "N = {n_records:,}";'
+    assert record in html, record
+    series_values = df[design.series_field_name].unique()
+    sorted_series_values = sorted(series_values)
+    for series_idx, series_value in enumerate(sorted_series_values):
+        series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+        assert series_label in html, series_label
+        df_filtered = df.loc[df[design.series_field_name] == series_value]
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+            category_values_in_expected_order=category_values_in_expected_order,
+            series_value=series_value, already_checked_n_records=True)
 
 def test_clustered_bar_chart():
     category_values_in_expected_order = home_location_types_sorted
@@ -426,10 +626,232 @@ def test_clustered_bar_chart():
         series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
         assert series_label in html, series_label
         df_filtered = df.loc[df[design.series_field_name] == series_value]
-        check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=design.category_field_name,
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order,
             series_value=series_value, already_checked_n_records=True)
+
+
+def test_multi_chart_clustered_bar_chart_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        chart_field_name='Tertiary Qualifications',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sorted(series_values)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_category_unsorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        series_sort_order=SortOrder.CUSTOM,
+        chart_field_name='Tertiary Qualifications',
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_series_unsorted():
+    category_values_in_expected_order = home_location_types_sorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        category_sort_order=SortOrder.CUSTOM,
+        series_field_name='Country',
+        chart_field_name='Tertiary Qualifications',
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sorted(series_values)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_chart_unsorted():
+    category_values_in_expected_order = home_location_types_sorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        category_sort_order=SortOrder.CUSTOM,
+        series_field_name='Country',
+        series_sort_order=SortOrder.CUSTOM,
+        chart_field_name='Tertiary Qualifications',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_category_sorted():
+    category_values_in_expected_order = home_location_types_sorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        category_sort_order=SortOrder.CUSTOM,
+        series_field_name='Country',
+        chart_field_name='Tertiary Qualifications',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sorted(series_values)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_series_sorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        series_sort_order=SortOrder.CUSTOM,
+        chart_field_name='Tertiary Qualifications',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sorted(chart_values)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sort_values_by_value_or_custom_if_possible(variable_name=design.series_field_name,
+            values=series_values, sort_orders=design.sort_orders, sort_order=design.series_sort_order)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
 
 def test_multi_chart_clustered_bar_chart():
     category_values_in_expected_order = home_location_types_sorted
@@ -467,10 +889,52 @@ def test_multi_chart_clustered_bar_chart():
             assert series_label in html, series_label  ## series
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
-            check_category_freqs(df_filtered=df_filtered, html=html,
-                category_field_name=design.category_field_name,
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
                 series_value=series_value, already_checked_n_records=True)
+
+def test_multi_chart_clustered_bar_chart_charts_sorted():
+    category_values_in_expected_order = home_location_types_unsorted
+    design = MultiChartClusteredBarChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Home Location Type',
+        series_field_name='Country',
+        chart_field_name='Tertiary Qualifications',
+        chart_sort_order=SortOrder.CUSTOM,
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    chart_values = df[design.chart_field_name].unique()
+    sorted_chart_values = sort_values_by_value_or_custom_if_possible(variable_name=design.chart_field_name,
+        values=chart_values, sort_orders=design.sort_orders, sort_order=design.chart_sort_order)
+    html_shrinking = html
+    for chart_value in sorted_chart_values:
+        chart_label = f"{design.chart_field_name}: {chart_value}"
+        assert chart_label in html_shrinking, chart_label
+        html_shrinking = html[html.index(chart_label):]
+        series_values = df[design.series_field_name].unique()
+        df_chart = df[df[design.chart_field_name] == chart_value]
+        n_records = len(df_chart)  ## filter to chart
+        records = f'conf["n_records"] = "N = {n_records:,}";'
+        assert records in html, records
+        sorted_series_values = sorted(series_values)
+        for series_idx, series_value in enumerate(sorted_series_values):
+            series_label = f'series_{series_idx:>02}["label"] = "{series_value}"'
+            assert series_label in html, series_label  ## series
+            df_filtered = df.loc[
+                (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
+                category_values_in_expected_order=category_values_in_expected_order,
+                series_value=series_value, already_checked_n_records=True)
+
+
+
+
+
+
 
 def test_multi_chart_clustered_percents_bar_chart():
     category_values_in_expected_order = home_location_types_sorted
@@ -510,10 +974,24 @@ def test_multi_chart_clustered_percents_bar_chart():
             assert series_label in html, series_label
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
-            check_category_pcts(df_filtered=df_filtered, html=html,
-                category_field_name=design.category_field_name,
+            check_category_pcts(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
                 series_value=series_value, already_checked_n_records=True, decimal_points=design.decimal_points)
+
+
+def test_line_chart_unsorted():
+    category_values_in_expected_order = age_groups_unsorted
+    design = LineChartDesign(
+        csv_file_path=people_csv_fpath,
+        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
+        category_field_name='Age Group',
+    )
+    # design.make_output()
+    html = design.to_html_design().html_item_str
+    print(html)
+    df = pd.read_csv(design.csv_file_path)
+    check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
+        category_values_in_expected_order=category_values_in_expected_order)
 
 def test_line_chart():
     category_values_in_expected_order = age_groups_sorted
@@ -529,6 +1007,7 @@ def test_line_chart():
     df = pd.read_csv(design.csv_file_path)
     check_category_freqs(df_filtered=df, html=html, category_field_name=design.category_field_name,
         category_values_in_expected_order=category_values_in_expected_order)
+
 
 def test_multi_line_chart():
     category_values_in_expected_order = age_groups_sorted
@@ -581,8 +1060,7 @@ def test_multi_chart_line_chart():
         assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
-        check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=design.category_field_name,
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order,
             chart_value=chart_value, already_checked_n_records=True)
 
@@ -622,8 +1100,7 @@ def test_multi_chart_multi_line_chart():
             assert series_label in html, series_label
             df_filtered = df.loc[
                 (df[design.chart_field_name] == chart_value) & (df[design.series_field_name] == series_value)]
-            check_category_freqs(df_filtered=df_filtered, html=html,
-                category_field_name=design.category_field_name,
+            check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
                 category_values_in_expected_order=category_values_in_expected_order,
                 series_value=series_value, already_checked_n_records=True)
 
@@ -666,8 +1143,7 @@ def test_multi_chart_area_chart():
         assert chart_label in html_shrinking, chart_label
         html_shrinking = html[html.index(chart_label):]
         df_filtered = df.loc[df[design.chart_field_name] == chart_value]
-        check_category_freqs(df_filtered=df_filtered, html=html,
-            category_field_name=design.category_field_name,
+        check_category_freqs(df_filtered=df_filtered, html=html, category_field_name=design.category_field_name,
             category_values_in_expected_order=category_values_in_expected_order, chart_value=chart_value)
 
 def test_pie_chart():
@@ -914,17 +1390,36 @@ if __name__ == "__main__":
     pass
     # test_simple_bar_chart_unsorted()
     # test_simple_bar_chart_sorted()
+    # test_simple_bar_chart_percents_unsorted()
     # test_simple_bar_chart_percents()
+    # test_simple_bar_chart_averages_unsorted()
     # test_simple_bar_chart_averages()
+    # test_simple_bar_chart_sums_unsorted()
     # test_simple_bar_chart_sums()
+    # test_multi_chart_bar_chart_unsorted()
+    # test_multi_chart_bar_chart_category_unsorted()
+    # test_multi_chart_bar_chart_charts_unsorted()
     # test_multi_chart_bar_chart()
+    # test_clustered_bar_chart_unsorted()
+    # test_clustered_bar_chart_category_unsorted()
+    # test_clustered_bar_chart_series_unsorted()
     # test_clustered_bar_chart()
+    # test_multi_chart_clustered_bar_chart_unsorted()
+    # test_multi_chart_clustered_bar_chart_category_unsorted()
+    # test_multi_chart_clustered_bar_chart_series_unsorted()
+    # test_multi_chart_clustered_bar_chart_chart_unsorted()
+    # test_multi_chart_clustered_bar_chart_category_sorted()
+    # test_multi_chart_clustered_bar_chart_series_sorted()
+    # test_multi_chart_clustered_bar_chart_charts_sorted()
     # test_multi_chart_clustered_bar_chart()
-    # test_multi_chart_clustered_percents_bar_chart()
+    # test_multi_chart_clustered_percents_bar_chart()  ## not doing all the variants of this as well - already more than adequately tested
     # test_line_chart()
-    # test_multi_line_chart()
+    # test_line_chart_unsorted()
+
+    test_multi_line_chart()
     # test_multi_chart_line_chart()
     # test_multi_chart_multi_line_chart()
+
     # test_area_chart()
     # test_multi_chart_area_chart()
     # test_pie_chart()
@@ -935,6 +1430,6 @@ if __name__ == "__main__":
     # test_multi_chart_by_series_scatter_plot()
     # test_histogram()
     # test_multi_chart_histogram()
-    test_box_plot()
+    # test_box_plot()
     # test_clustered_box_plot()
 
