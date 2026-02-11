@@ -9,7 +9,7 @@ import tempfile
 from sofastats.conf.main import SortOrder
 from sofastats.output.stats.anova import AnovaDesign
 from sofastats.output.stats.chi_square import ChiSquareDesign
-from tests.conf import age_groups_sorted, countries_sorted, people_csv_fpath, sort_orders_yaml_file_path
+from tests.conf import age_groups_custom_sorted, countries_custom_sorted, people_csv_fpath, sort_orders_yaml_file_path
 from tests.reference_stats_library import anova as stats_anova, chisquare_df_corrected as stats_chi_square
 from tests.utils import sort_index_following_pattern
 # from tests.sofastatistics_core_stats import anova as ss_anova

@@ -4,7 +4,8 @@ from sofastats.conf.main import SortOrder
 from sofastats.output.tables.cross_tab import CrossTabDesign
 from sofastats.output.tables.freq import FrequencyTableDesign
 from sofastats.output.tables.interfaces import Column, Metric, Row
-from tests.conf import handedness_sorted, people_csv_fpath, sleep_groups_sorted, sort_orders_yaml_file_path
+from tests.conf import (
+    handedness_custom_sorted, people_csv_fpath, sleep_groups_custom_sorted, sort_orders_yaml_file_path)
 from tests.utils import (display_amount_as_nice_str, display_float_fraction_as_nice_pct_str,
     found_amount_sequence_in_html_table, sort_index_following_pattern)
 import pandas as pd
@@ -42,13 +43,13 @@ def test_cross_tab():
     s_denmark_city_by_sleep_group_freqs = (
         df.loc[(df['Country'] == 'Denmark') & (df['Home Location Type'] == 'City'), ['Sleep Group']]
         .groupby('Sleep Group').size())
-    sort_by_sleep_group = partial(sort_index_following_pattern, sorted_items_providing_pattern=sleep_groups_sorted)
+    sort_by_sleep_group = partial(sort_index_following_pattern, sorted_items_providing_pattern=sleep_groups_custom_sorted)
     denmark_city_sleep_group_freqs = s_denmark_city_by_sleep_group_freqs.sort_index(key=sort_by_sleep_group).tolist()
     denmark_city_sleep_group_freqs += [sum(denmark_city_sleep_group_freqs)]  ## include total column
     assert found_amount_sequence(vals2find=denmark_city_sleep_group_freqs)
     ## Freq and Pcts - Home Location Type vs Age Group > Handedness
     ## Freq
-    sort_by_handedness = partial(sort_index_following_pattern, sorted_items_providing_pattern=handedness_sorted)
+    sort_by_handedness = partial(sort_index_following_pattern, sorted_items_providing_pattern=handedness_custom_sorted)
     s_city_under_20_by_handedness_freqs = (
         df.loc[(df['Home Location Type'] == 'City') & (df['Age Group'] == '<20'), ['Handedness']]
         .groupby('Handedness').size())
@@ -94,7 +95,7 @@ def test_simple_freq_table():
     found_amount_sequence = partial(found_amount_sequence_in_html_table, text=table_html, debug=True)
     ## Frequencies Country > Handedness - Freq and Col%
     s_nz_by_handedness_freqs = df.loc[df['Country'] == 'NZ', ['Handedness']].groupby('Handedness').size()
-    sort_by_handedness = partial(sort_index_following_pattern, sorted_items_providing_pattern=handedness_sorted)
+    sort_by_handedness = partial(sort_index_following_pattern, sorted_items_providing_pattern=handedness_custom_sorted)
     nz_by_handedness_freqs = s_nz_by_handedness_freqs.sort_index(key=sort_by_handedness).tolist()
     col_total = sum(nz_by_handedness_freqs)
     freq_amounts = nz_by_handedness_freqs + [col_total, ]

@@ -12,10 +12,20 @@ education_csv_fpath = csvs_folder / 'education.csv'
 people_csv_fpath = csvs_folder / 'people.csv'
 sports_csv_file_path = csvs_folder / 'sports.csv'
 
-age_groups_sorted = ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+']
-age_groups_unsorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', '<20', ]
-countries_sorted = ['USA', 'NZ', 'South Korea', 'Denmark', ]
-handedness_sorted = ['Right', 'Left', 'Ambidextrous', ]
-home_location_types_sorted = ['City', 'Town', 'Rural']
-home_location_types_unsorted = ['City', 'Rural', 'Town']
-sleep_groups_sorted = ['Under 7 hours', '7 to <9 hours', '9+ hours']
+age_groups_value_sorted = ['20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', '<20', ]
+age_groups_custom_sorted = ['<20', '20 to <30', '30 to <40', '40 to <50', '50 to <60', '60 to <70', '70 to <80', '80+', ]
+
+countries_value_sorted = ['Denmark', 'NZ', 'South Korea', 'USA', ]
+countries_custom_sorted = ['USA', 'NZ', 'South Korea', 'Denmark', ]
+
+handedness_value_sorted = ['Ambidextrous', 'Left', 'Right', ]
+handedness_custom_sorted = ['Right', 'Left', 'Ambidextrous', ]
+
+home_location_types_value_sorted = ['City', 'Rural', 'Town', ]
+home_location_types_custom_sorted = ['City', 'Town', 'Rural', ]
+
+sleep_groups_value_sorted = ['7 to <9 hours', '9+ hours', 'Under 7 hours', ]
+sleep_groups_custom_sorted = ['Under 7 hours', '7 to <9 hours', '9+ hours', ]
+
+sports_value_sorted = ['Archery', 'Badminton', 'Basketball', ]
+sports_custom_sorted = ['Badminton', 'Archery', 'Basketball', ]
