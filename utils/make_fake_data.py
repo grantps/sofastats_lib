@@ -1,3 +1,9 @@
+"""
+Created in sofastats_examples and doc_utils pushed to examples.
+Manually we copy anything into tests/static_csvs as required.
+These are static in case any tests rely on specific expected values
+rather than working those out through dynamic calculation
+"""
 from enum import StrEnum
 from functools import partial
 from pathlib import Path
@@ -14,8 +20,8 @@ pd.set_option('display.min_rows', 30)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1_000)
 
-examples_folder = Path.cwd().parent / 'sofastats_examples'
-files_folder = examples_folder / 'files'
+sofastats_examples_folder = Path.cwd().parent / 'sofastats_examples'
+files_folder = sofastats_examples_folder / 'files'
 
 countries = ['USA', 'South Korea', 'NZ', 'Denmark']
 location_types = ['City', 'Town', 'Rural', ]
@@ -121,7 +127,7 @@ def change_int_usually_up(orig: int) -> int:
     val = constrain(raw_val, min_val=1, max_val=5)
     return val
 
-def make_education_paired_difference(con, *, debug=False):
+def make_education_paired_difference(con, *, refresh_missing_data_version_only=True, debug=False):
     """
     Reading scores and educational_satisfaction before and after intervention
     """
@@ -141,11 +147,18 @@ def make_education_paired_difference(con, *, debug=False):
     change_satisfaction_usually_up = partial(change_float_usually_up,
         scalar_centre=1.2, variation=0.12, min_val=1, max_val=5)
     df['School Satisfaction After Help'] = df['School Satisfaction Before Help'].apply(change_satisfaction_usually_up)
-    if debug: print(df)
-    df.to_csv(files_folder / 'education.csv', index=False)
-    df.to_sql('education', con=con, if_exists='replace', index=False)
+    if not refresh_missing_data_version_only:
+        if debug: print(df)
+        df.to_csv(files_folder / 'education.csv', index=False)
+        df.to_sql('education', con=con, if_exists='replace', index=False)
+    df_with_missing_categories = df.copy().loc[
+        (df['Country'] != 'South Korea') &
+        (df['Home Location Type'] != 'Rural')
+    ]
+    if debug: print(df_with_missing_categories)
+    df_with_missing_categories.to_csv(files_folder / 'education_with_missing_categories_for_testing.csv', index=False)
 
-def make_sport_independent_difference(con, *, debug=False):
+def make_sport_independent_difference(con, *, refresh_missing_data_version_only=True, debug=False):
     n_records = 2_000
     data = [(fake.name(), ) for _i in range(n_records)]
     df = pd.DataFrame(data, columns = ['name'])
@@ -157,9 +170,16 @@ def make_sport_independent_difference(con, *, debug=False):
     df.loc[df['Sport'] == 'Basketball', ['Height']] = df.loc[df['Sport'] == 'Basketball', ['Height']] * 1.125
     df['Height'] = df['Height'].apply(constrain, min_val=1.5, max_val=2.3)
     df['Height'] = df['Height'].apply(round2)
-    if debug: print(df)
-    df.to_csv(files_folder / 'sports.csv', index=False)
-    df.to_sql('sports', con=con, if_exists='replace', index=False)
+    if not refresh_missing_data_version_only:
+        if debug: print(df)
+        df.to_csv(files_folder / 'sports.csv', index=False)
+        df.to_sql('sports', con=con, if_exists='replace', index=False)
+    df_with_missing_categories = df.copy().loc[
+        (df['Sport'] != 'Basketball') &
+        (df['Country'] != 'South Korea')
+    ]
+    if debug: print(df_with_missing_categories)
+    df_with_missing_categories.to_csv(files_folder / 'sports_with_missing_categories_for_testing.csv', index=False)
 
 def get_book_type(age: int) -> str:
     if age < 20:
@@ -364,7 +384,14 @@ def sleep2group(sleep: float) -> str:
         sleep_group = '9+ hours'
     return sleep_group
 
-def make_varied_nestable_data(con, *, debug=False):
+def make_varied_nestable_people_data(con, *, refresh_missing_data_version_only=True, debug=False):
+    """
+    Include a variant with one of each category missing.
+    Useful for testing charts properly handle missing values.
+
+    Args:
+        refresh_missing_data_version_only: so we keep demo output stable by default
+    """
     n_records = 5_000
     data = [(fake.name(), ) for _i in range(n_records)]
     df = pd.DataFrame(data, columns = ['Name', ])
@@ -391,12 +418,24 @@ def make_varied_nestable_data(con, *, debug=False):
     change_weight_usually_up = partial(change_float_usually_up,
         scalar_centre=1.05, variation=0.07, min_val=30, max_val=150)
     df['Weight Time 2'] = df['Weight Time 1'].apply(change_weight_usually_up)
-    if debug: print(df)
-    df.to_csv(files_folder / 'people.csv', index=False)
-    df.to_sql('people', con=con, if_exists='replace', index=False)
+    if not refresh_missing_data_version_only:
+        if debug: print(df)
+        df.to_csv(files_folder / 'people.csv', index=False)
+        df.to_sql('people', con=con, if_exists='replace', index=False)
+    df_with_missing_categories = df.copy().loc[
+        (df['Age Group'] != '30 to <40') &
+        (df['Country'] != 'South Korea') &
+        (df['Handedness'] != 'Ambidextrous') &
+        (df['Home Location Type'] != 'Rural') &
+        (df['Sleep Group'] != '9+ hours') &
+        (df['Tertiary Qualifications'] != 'No Qualifications') &
+        (df['Car'] != 'Jaguar')
+    ]
+    if debug: print(df_with_missing_categories)
+    df_with_missing_categories.to_csv(files_folder / 'people_with_missing_categories_for_testing.csv', index=False)
 
 def refresh_db_from_csvs():
-    sqlite_demo_db_file_path = examples_folder / 'sofastats_demo.db'
+    sqlite_demo_db_file_path = sofastats_examples_folder / 'sofastats_demo.db'
     sqlite_demo_db_file_path.unlink(missing_ok=True)
     con = sqlite.connect(sqlite_demo_db_file_path)
 
@@ -407,22 +446,31 @@ def refresh_db_from_csvs():
 
     con.close()
 
-def run(*, debug=False):
-    pass
-    # refresh_db_from_csvs()
+def run(*, refresh_db=False, refresh_missing_data_version_only=True, debug=False):
+    """
+    Args:
+         refresh_missing_data_version_only: False the first time, True thereafter
+           (so we keep demo output stable by default)
+    """
+    if refresh_db:
+        refresh_db_from_csvs()
 
-    # sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
-    # sqlite_demo_db_file_path.unlink(missing_ok=True)
-    # con = sqlite.connect(sqlite_demo_db_file_path)
-    #
-    # make_education_paired_difference(con, debug=debug)
-    # make_sport_independent_difference(con, debug=debug)
-    # make_group_pattern_books(con, debug=debug)
-    # make_correlation_properties(con, debug=debug)
-    # make_varied_nestable_data(con, debug=debug)
-    #
-    # con.close()
+    sqlite_demo_db_file_path = files_folder / 'sofastats_demo.db'
+    sqlite_demo_db_file_path.unlink(missing_ok=True)
+    con = sqlite.connect(sqlite_demo_db_file_path)
+
+    make_education_paired_difference(con, refresh_missing_data_version_only=refresh_missing_data_version_only,
+        debug=debug)
+    make_sport_independent_difference(con, refresh_missing_data_version_only=refresh_missing_data_version_only,
+        debug=debug)
+    if not refresh_missing_data_version_only:  ## no missing data versions used in the tests (yet)
+        make_group_pattern_books(con, debug=debug)
+        make_correlation_properties(con, debug=debug)
+    make_varied_nestable_people_data(con, refresh_missing_data_version_only=refresh_missing_data_version_only,
+        debug=debug)
+
+    con.close()
 
 if __name__ == '__main__':
     pass
-    run(debug=True)
+    # run(refresh_db=False, refresh_missing_data_version_only=True, debug=True)
