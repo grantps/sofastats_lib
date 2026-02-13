@@ -184,15 +184,15 @@ class TTestIndepDesign(CommonStatsDesign):
     def to_result(self) -> TTestIndepResult:
         ## data
         ## build samples ready for ttest_indep function
-        grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
+        grouping_filter_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-            grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
+            grouping_filter=grouping_filter_a, measure_field_name=self.measure_field_name,
             table_filter_sql=self.table_filter_sql)
-        grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
+        grouping_filter_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-            grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
+            grouping_filter=grouping_filter_b, measure_field_name=self.measure_field_name,
             table_filter_sql=self.table_filter_sql)
         ## get result
         stats_result = ttest_indep_stats_calc(sample_a, sample_b)
@@ -203,15 +203,15 @@ class TTestIndepDesign(CommonStatsDesign):
         style_spec = get_style_spec(style_name=self.style_name)
         ## data
         ## build samples ready for ttest_indep function
-        grouping_filt_a = ValFilterSpec(variable_name=self.grouping_field_name,
+        grouping_filter_a = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_a_value, val_is_numeric=is_numeric(self.group_a_value))
         sample_a = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-            grouping_filt=grouping_filt_a, measure_field_name=self.measure_field_name,
+            grouping_filter=grouping_filter_a, measure_field_name=self.measure_field_name,
             table_filter_sql=self.table_filter_sql)
-        grouping_filt_b = ValFilterSpec(variable_name=self.grouping_field_name,
+        grouping_filter_b = ValFilterSpec(variable_name=self.grouping_field_name,
             value=self.group_b_value, val_is_numeric=is_numeric(self.group_b_value))
         sample_b = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-            grouping_filt=grouping_filt_b, measure_field_name=self.measure_field_name,
+            grouping_filter=grouping_filter_b, measure_field_name=self.measure_field_name,
             table_filter_sql=self.table_filter_sql)
         ## get result
         stats_result = ttest_indep_stats_calc(sample_a, sample_b)

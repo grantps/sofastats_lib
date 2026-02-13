@@ -9,7 +9,7 @@ from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.stats_calc.interfaces import BoxResult, BoxplotType
 from sofastats.stats_calc.utils import get_optimal_axis_bounds
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 
 @dataclass(frozen=False)
 class BoxplotCategoryItemValsSpec:
@@ -243,7 +243,7 @@ def get_by_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
     ## build result
     sorted_category_vals_specs = []
     category_vals = df['category_val'].unique()
-    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+    sorted_category_vals = sort_by_text(  ## inside series or chart so not by amount
         variable_name=category_field_name, values=category_vals, sort_orders=sort_orders, sort_order=category_sort_order)
     for category_val in sorted_category_vals:
         vals = df.loc[df['category_val'] == category_val, 'field_val'].tolist()
@@ -297,15 +297,15 @@ def get_by_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
     ## build result
     sorted_series_category_vals_specs_dict = defaultdict(list)
     overall_category_vals = df['category_val'].unique()
-    sorted_overall_category_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_overall_category_vals = sort_by_text(
         variable_name=category_field_name, values=overall_category_vals,
         sort_orders=sort_orders, sort_order=category_sort_order)
     series_vals = df['series_val'].unique()
-    sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_series_vals = sort_by_text(
         variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         category_vals = df.loc[df['series_val'] == series_val, 'category_val'].unique()
-        sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+        sorted_category_vals = sort_by_text(  ## inside series or chart so not by amount
             variable_name=category_field_name, values=category_vals, sort_orders=sort_orders,
             sort_order=category_sort_order)
         for category_val in sorted_category_vals:

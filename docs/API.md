@@ -23,7 +23,7 @@ See [`CommonDesign`][sofastats.output.interfaces.CommonDesign]
 ::: sofastats.conf.main.SortOrder
 
 ## Common Parameters
-The parameters in `CommonDesign` are common to all output design dataclasses: 
+The parameters in `CommonDesign` are common to all[^1] output design dataclasses:
 ::: sofastats.output.interfaces.CommonDesign
 
 ## Charts
@@ -261,3 +261,5 @@ for details of the `to_result()` method common to all stats output design datacl
 ::: sofastats.output.stats.wilcoxon_signed_ranks.WilcoxonSignedRanksDesign
     options:
         heading_level: 4
+
+[^1]: The exception is `sort_orders` and `sort_orders_yaml_file_path` which should not be set for Statistical Reports.

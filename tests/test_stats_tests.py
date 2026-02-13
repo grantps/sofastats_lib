@@ -6,40 +6,35 @@ Strategy - for each statistical test, compare the result against two trusted sou
 from functools import partial
 import tempfile
 
+import pandas as pd
+
 from sofastats.conf.main import SortOrder
 from sofastats.output.stats.anova import AnovaDesign
 from sofastats.output.stats.chi_square import ChiSquareDesign
-from tests.conf import age_groups_custom_sorted, countries_custom_sorted, people_csv_fpath, sort_orders_yaml_file_path
+from sofastats.output.stats.kruskal_wallis_h import KruskalWallisHDesign
+from tests.conf import people_csv_fpath, sort_orders_yaml_file_path
 from tests.reference_stats_library import anova as stats_anova, chisquare_df_corrected as stats_chi_square
-from tests.utils import sort_index_following_pattern
-# from tests.sofastatistics_core_stats import anova as ss_anova
-
-import pandas as pd
 
 round_to_11dp = partial(round, ndigits=11)
 
 def test_anova():
-    csv_file_path = people_csv_fpath
-    grouping_field_name = 'Country'
-    group_values = ['South Korea', 'NZ', 'USA']
-    measure_field_name = 'Age'
     design = AnovaDesign(
-        csv_file_path=csv_file_path,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        grouping_field_name=grouping_field_name,
-        grouping_field_sort_order=SortOrder.VALUE,
-        group_values=group_values,
-        measure_field_name=measure_field_name,
+        csv_file_path=people_csv_fpath,
+        grouping_field_name='Country',
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
+        measure_field_name='Age',
         high_precision_required=False,
     )
     # design.make_output()
     result = design.to_result()
     print(result)
-    df_raw = pd.read_csv(people_csv_fpath)
-    df = df_raw.loc[df_raw[grouping_field_name].isin(group_values), [grouping_field_name, measure_field_name]]
-    data_south_korea = df.loc[df[grouping_field_name] == 'South Korea', measure_field_name].tolist()
-    data_nz = df.loc[df[grouping_field_name] == 'NZ', measure_field_name].tolist()
-    data_usa = df.loc[df[grouping_field_name] == 'USA', measure_field_name].tolist()
+    df_raw = pd.read_csv(design.csv_file_path)
+    df = df_raw.loc[
+        df_raw[design.grouping_field_name].isin(design.grouping_field_values),
+        [design.grouping_field_name, design.measure_field_name]]
+    data_south_korea = df.loc[df[design.grouping_field_name] == 'South Korea', design.measure_field_name].tolist()
+    data_nz = df.loc[df[design.grouping_field_name] == 'NZ', design.measure_field_name].tolist()
+    data_usa = df.loc[df[design.grouping_field_name] == 'USA', design.measure_field_name].tolist()
     stats_f, stats_prob = stats_anova(data_south_korea, data_nz, data_usa)
     assert round_to_11dp(result.F) == round_to_11dp(stats_f)  ## 1.25871675527 88687 ~= 1.25871675527 92649
     assert round_to_11dp(result.p) == round_to_11dp(stats_prob)  ## 0.284123842228 97413 ~= 0.284123842228 84
@@ -52,13 +47,11 @@ def test_chi_square():
     temp = tempfile.NamedTemporaryFile()
     df.to_csv(temp.name, index=False)
     csv_file_path = temp.name
-    variable_a_name = 'Age Group'
-    variable_b_name = 'Country'
     design = ChiSquareDesign(
         csv_file_path=csv_file_path,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
-        variable_a_name=variable_a_name, variable_a_sort_order=SortOrder.CUSTOM,
-        variable_b_name=variable_b_name, variable_b_sort_order=SortOrder.CUSTOM,
+        variable_a_name='Age Group', variable_a_sort_order=SortOrder.CUSTOM,
+        variable_b_name='Country', variable_b_sort_order=SortOrder.CUSTOM,
     )
     # design.make_output()
     result = design.to_result()
@@ -103,7 +96,19 @@ def test_chi_square():
     assert round_to_11dp(result.p) == round_to_11dp(stats_p)
     assert round_to_11dp(result.chi_square) == round_to_11dp(stats_chisq)
 
+def test_kruskal_wallis_h():
+    design = KruskalWallisHDesign(
+        csv_file_path=people_csv_fpath,
+        grouping_field_name='Country',
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
+        measure_field_name='Age',
+    )
+    design.make_output()
+    result = design.to_result()
+    print(result)
+
 if __name__ == '__main__':
     pass
-    # test_anova()
-    test_chi_square()
+    test_anova()
+    # test_chi_square()
+    # test_kruskal_wallis_h()

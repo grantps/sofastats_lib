@@ -17,7 +17,7 @@ from sofastats.data_extraction.charts.interfaces.amounts import (
     ChartSeriesCategoryAmountSpec, ChartSeriesCategoryAmountSpecs,
     SeriesCategoryAmountSpec, SeriesCategoryAmountSpecs)
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 from sofastats.utils.misc import display_float_as_nice_str
 
 def validate_metric_and_field_name(metric: ChartMetric, field_name: str):
@@ -270,11 +270,11 @@ def get_by_series_category_charting_spec(cur: ExtendedCursor, source_table_name:
     df = pd.DataFrame(data, columns=cols)
 
     category_vals = df['category_val'].unique()
-    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+    sorted_category_vals = sort_by_text(  ## inside series or chart so not by amount
         variable_name=category_field_name, values=category_vals, sort_orders=sort_orders, sort_order=category_sort_order)
     sorted_series_category_amount_specs = []
     series_vals = df['series_val'].unique()
-    sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_series_vals = sort_by_text(
         variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         category_amount_specs = []
@@ -396,10 +396,10 @@ def get_by_chart_category_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpe
     df = pd.DataFrame(data, columns=cols)
     sorted_chart_category_amount_specs = []
     category_vals = df['category_val'].unique()
-    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+    sorted_category_vals = sort_by_text(  ## inside series or chart so not by amount
         variable_name=category_field_name, values=category_vals, sort_orders=sort_orders, sort_order=category_sort_order)
     chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_chart_vals = sort_by_text(
         variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         category_amount_specs = []
@@ -529,16 +529,16 @@ def get_by_chart_series_category_charting_spec(*, cur: ExtendedCursor, dbe_spec:
     df = pd.DataFrame(data, columns=cols)
     sorted_chart_series_category_amount_specs = []
     category_vals = df['category_val'].unique()
-    sorted_category_vals = sort_values_by_value_or_custom_if_possible(  ## inside series or chart so not by amount
+    sorted_category_vals = sort_by_text(  ## inside series or chart so not by amount
         variable_name=category_field_name, values=category_vals, sort_orders=sort_orders,
         sort_order=category_sort_order)
     chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_chart_vals = sort_by_text(
         variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         sorted_series_category_amount_specs = []
         series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+        sorted_series_vals = sort_by_text(
             variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
         for series_val in sorted_series_vals:
             category_amount_specs = []

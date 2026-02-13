@@ -25,7 +25,7 @@ from sofastats.stats_calc.interfaces import AnovaResult, NumericParametricSample
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
 from sofastats.utils.misc import todict
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 from sofastats.utils.stats import get_p_str
 
 def anova_from_df(df: pd.DataFrame, *,
@@ -207,7 +207,7 @@ class AnovaDesign(CommonStatsDesign):
         measure_field_name: the name of the field aggregated by group - the ANOVA compares the mean value of each group.
             For example, 'Age'
         grouping_field_name: the name of the field used to define the groups compared in the ANOVA e.g. 'Country'
-        group_values: the ANOVA will compare the means of the groups defined
+        grouping_field_values: the ANOVA will compare the means of the groups defined
             by the values of the grouping field listed here e.g. ['South Korea', 'NZ', 'USA']
         high_precision_required: if `True`, the calculation will be high precision
             and the algorithm used will not be vulnerable to certain edge cases.
@@ -224,26 +224,19 @@ class AnovaDesign(CommonStatsDesign):
     """
     measure_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     grouping_field_name: str = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
-    grouping_field_sort_order: SortOrder = SortOrder.VALUE
-    group_values: Collection[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
+    grouping_field_values: Sequence[Any] = DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY
     high_precision_required: bool = False
 
     def to_result(self) -> AnovaResult:
-        ## values (sorted)
-        if self.grouping_field_sort_order == SortOrder.CUSTOM:
-            grouping_field_values = sort_values_by_value_or_custom_if_possible(
-                variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
-        else:
-            grouping_field_values = self.group_values
         ## data
-        grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
+        grouping_val_is_numeric = all(is_numeric(x) for x in self.grouping_field_values)
         ## build sample results ready for anova function
         samples = []
-        for grouping_field_value in grouping_field_values:
+        for grouping_field_value in self.grouping_field_values:
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
+                grouping_filter=grouping_filter, measure_field_name=self.measure_field_name,
                 table_filter_sql=self.table_filter_sql)
             samples.append(sample)
         stats_result = anova_stats_calc(
@@ -253,21 +246,15 @@ class AnovaDesign(CommonStatsDesign):
     def to_html_design(self) -> HTMLItemSpec:
         ## style
         style_spec = get_style_spec(style_name=self.style_name)
-        ## values (sorted)
-        if self.grouping_field_sort_order == SortOrder.CUSTOM:
-            grouping_field_values = sort_values_by_value_or_custom_if_possible(
-                variable_name=self.grouping_field_name, values=list(self.group_values), sort_orders=self.sort_orders)
-        else:
-            grouping_field_values = self.group_values
         ## data
-        grouping_val_is_numeric = all(is_numeric(x) for x in self.group_values)
+        grouping_val_is_numeric = all(is_numeric(x) for x in self.grouping_field_values)
         ## build sample results ready for anova function
         samples = []
-        for grouping_field_value in grouping_field_values:
+        for grouping_field_value in self.grouping_field_values:
             grouping_filter = ValFilterSpec(variable_name=self.grouping_field_name, value=grouping_field_value,
                 val_is_numeric=grouping_val_is_numeric)
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-                grouping_filt=grouping_filter, measure_field_name=self.measure_field_name,
+                grouping_filter=grouping_filter, measure_field_name=self.measure_field_name,
                 table_filter_sql=self.table_filter_sql)
             samples.append(sample)
         ## calculations

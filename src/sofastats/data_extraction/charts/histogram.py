@@ -11,7 +11,7 @@ from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.db import ExtendedCursor
 from sofastats.stats_calc.engine import get_normal_ys
 from sofastats.stats_calc.histogram import get_bin_details_from_vals
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 
 @dataclass
 class HistoIndivChartSpec:
@@ -153,7 +153,7 @@ def get_by_chart_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source
     df = pd.DataFrame(data, columns=cols)
     sorted_chart_vals_specs = []
     chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_chart_vals = sort_by_text(
         variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         df_vals = df.loc[df['chart_val'] == chart_val, ['val']]

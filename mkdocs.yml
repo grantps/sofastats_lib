@@ -21,6 +21,7 @@ plugins:
             show_signature_annotations: true
 markdown_extensions:
   - admonition
+  - footnotes
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.superfences:

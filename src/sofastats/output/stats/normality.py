@@ -81,7 +81,7 @@ class NormalityDesign(CommonStatsDesign):
                 table_filter_sql=self.table_filter_sql)
         else:
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-                measure_field_name=self.variable_a_name, grouping_filt=None, table_filter_sql=self.table_filter_sql)
+                measure_field_name=self.variable_a_name, grouping_filter=None, table_filter_sql=self.table_filter_sql)
         n_vals = len(sample.vals)
         if n_vals < MIN_VALS_FOR_NORMALITY_TEST:
             raise Exception(f"We need at least {MIN_VALS_FOR_NORMALITY_TEST:,} values to test normality.")
@@ -103,7 +103,7 @@ class NormalityDesign(CommonStatsDesign):
         else:
             data_label = self.variable_a_name
             sample = get_sample(cur=self.cur, dbe_spec=self.dbe_spec, source_table_name=self.source_table_name,
-                measure_field_name=self.variable_a_name, grouping_filt=None, table_filter_sql=self.table_filter_sql)
+                measure_field_name=self.variable_a_name, grouping_filter=None, table_filter_sql=self.table_filter_sql)
         title = f"Normality Tests for {data_label}"
         ## message
         n_vals = len(sample.vals)

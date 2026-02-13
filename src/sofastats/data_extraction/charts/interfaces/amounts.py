@@ -26,7 +26,7 @@ from textwrap import dedent
 
 from sofastats.conf.main import ChartMetric, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.charts.interfaces.common import DataItem, DataSeriesSpec, IndivChartSpec
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 
 
 ## Amount Specs ********************************************************************************************************

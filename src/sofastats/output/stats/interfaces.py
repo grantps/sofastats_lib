@@ -17,6 +17,17 @@ class CommonStatsDesign(CommonDesign):
     Output dataclasses for statistical tests (e.g. MannWhitneyUDesign) inherit from CommonStatsDesign.
     """
 
+    def __post_init__(self):
+        """
+        There is no sorting for stats output so don't let the user set these attributes
+        assuming they will determine anything when they won't: sort_orders, sort_orders_yaml_file_path
+        """
+        super().__post_init__()
+        if self.sort_orders:
+            raise AttributeError("sort_orders should not be set for Statistical Tests")
+        if self.sort_orders_yaml_file_path:
+            raise AttributeError("sort_orders_yaml_file_path should not be set for Statistical Tests")
+
     @abstractmethod
     def to_result(self) -> Type[StatsResult]:
         """

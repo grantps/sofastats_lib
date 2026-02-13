@@ -70,7 +70,7 @@ def get_paired_diffs_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_ta
     return sample
 
 def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str,
-        measure_field_name: str, grouping_filt: ValFilterSpec | None = None,
+        measure_field_name: str, grouping_filter: ValFilterSpec | None = None,
         table_filter_sql: str | None = None) -> Sample:
     """
     Get list of non-missing values in numeric measure field for a group defined by another field
@@ -84,7 +84,7 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str
     Args:
         source_table_name: name of table containing the data
         measure_field_name: e.g. weight
-        grouping_filt: the grouping variable details
+        grouping_filter: the grouping variable details
         table_filter_sql: clause ready to put after AND in a WHERE filter.
             E.g. WHERE ... AND age > 10
             Sometimes there is a global filter active in SOFA for a table e.g. age > 10,
@@ -92,14 +92,14 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str
     """
     ## prepare items
     AND_table_filter_sql = f"AND {table_filter_sql}" if table_filter_sql else ''
-    if grouping_filt:
-        if grouping_filt.val_is_numeric:
-            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = {grouping_filt.value}"
+    if grouping_filter:
+        if grouping_filter.val_is_numeric:
+            grouping_filter_clause = f"{dbe_spec.entity_quoter(grouping_filter.variable_name)} = {grouping_filter.value}"
         else:
-            grouping_filt_clause = f"{dbe_spec.entity_quoter(grouping_filt.variable_name)} = '{grouping_filt.value}'"
-        and_grouping_filt_clause = f"AND {grouping_filt_clause}"
+            grouping_filter_clause = f"{dbe_spec.entity_quoter(grouping_filter.variable_name)} = '{grouping_filter.value}'"
+        and_grouping_filter_clause = f"AND {grouping_filter_clause}"
     else:
-        and_grouping_filt_clause = ''
+        and_grouping_filter_clause = ''
     source_table_name_quoted = dbe_spec.entity_quoter(source_table_name)
     measure_field_name_quoted = dbe_spec.entity_quoter(measure_field_name)
     ## assemble SQL
@@ -108,7 +108,7 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str
     FROM {source_table_name_quoted}
     WHERE {measure_field_name_quoted} IS NOT NULL
     {AND_table_filter_sql}
-    {and_grouping_filt_clause}
+    {and_grouping_filter_clause}
     """
     ## get data
     cur.exe(sql)
@@ -119,7 +119,7 @@ def get_sample(*, cur: ExtendedCursor, dbe_spec: DbeSpec, source_table_name: str
         sample_vals = [float(val) for val in sample_vals]
     if len(sample_vals) < 2:
         raise Exception(f"Too few {measure_field_name} values in sample for analysis "
-            f"when getting sample for {and_grouping_filt_clause}")
-    label = grouping_filt.value if grouping_filt else ''
+            f"when getting sample for {and_grouping_filter_clause}")
+    label = grouping_filter.value if grouping_filter else ''
     sample = Sample(label=label, vals=sample_vals)
     return sample

@@ -6,7 +6,7 @@ import pandas as pd
 from sofastats.conf.main import DbeSpec, SortOrder, SortOrderSpecs
 from sofastats.data_extraction.charts.scatter_plot import ScatterDataSeriesSpec, ScatterIndivChartSpec
 from sofastats.data_extraction.db import ExtendedCursor
-from sofastats.utils.item_sorting import sort_values_by_value_or_custom_if_possible
+from sofastats.utils.item_sorting import sort_by_text
 
 @dataclass(frozen=True)
 class SeriesXYSpec:
@@ -176,7 +176,7 @@ def get_by_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, so
     ## build result
     sorted_series_xy_specs = []
     series_vals = df['series_val'].unique()
-    sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_series_vals = sort_by_text(
         variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
     for series_val in sorted_series_vals:
         xys = df.loc[df['series_val'] == series_val, ['x', 'y']].to_records(index=False).tolist()
@@ -225,7 +225,7 @@ def get_by_chart_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSpec, sou
     ## build result
     sorted_charts_xy_specs = []
     chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_chart_vals = sort_by_text(
         variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         xys = df.loc[df['chart_val'] == chart_val, ['x', 'y']].to_records(index=False).tolist()
@@ -275,12 +275,12 @@ def get_by_chart_series_xy_charting_spec(*, cur: ExtendedCursor, dbe_spec: DbeSp
     ## build result
     sorted_chart_series_xy_specs = []
     chart_vals = df['chart_val'].unique()
-    sorted_chart_vals = sort_values_by_value_or_custom_if_possible(
+    sorted_chart_vals = sort_by_text(
         variable_name=chart_field_name, values=chart_vals, sort_orders=sort_orders, sort_order=chart_sort_order)
     for chart_val in sorted_chart_vals:
         sorted_series_xy_specs = []
         series_vals = df.loc[df['chart_val'] == chart_val, 'series_val'].unique()
-        sorted_series_vals = sort_values_by_value_or_custom_if_possible(
+        sorted_series_vals = sort_by_text(
             variable_name=series_field_name, values=series_vals, sort_orders=sort_orders, sort_order=series_sort_order)
         for series_val in sorted_series_vals:
             xys = df.loc[

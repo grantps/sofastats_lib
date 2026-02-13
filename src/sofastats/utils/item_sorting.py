@@ -1,5 +1,5 @@
 """
-Chart output by Charts and Series should only be sorted by the value label itself (e.g. '<20' is before '20 to <30'),
+Chart output by Charts and by Series should only be sorted by the value label itself (e.g. '<20' is before '20 to <30'),
 not by data associated with the label such as chart n_records.
 So only by SortOrder's: VALUE, CUSTOM but not INCREASING, or DECREASING.
 
@@ -10,14 +10,19 @@ from typing import Any
 
 from sofastats.conf.main import SortOrderSpecs, SortOrder
 
-def sort_values_by_value_or_custom_if_possible(
-        *, variable_name: str, values: list[Any], sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
+def sort_by_text(*, variable_name: str, values: list[Any],
+        sort_orders: SortOrderSpecs, sort_order: SortOrder) -> list[Any]:
     """
     Sort values by the content of the values themselves (if possible)
     i.e. not with reference to frequencies associated with those values.
 
     Not always possible because the setting might be CUSTOM yet no custom sort order supplied
     (in which case no change is made to the order)
+
+    Charting with categories which display amounts are sorted by to_sorted_category_amount_specs()
+    in data_extraction.charts.amounts
+
+    Table variable values are sorted by get_sorted_multi_index_list() in output.tables.utils.multi_index_sort
     """
     if sort_order == SortOrder.VALUE:
         sorted_values = sorted(values)
