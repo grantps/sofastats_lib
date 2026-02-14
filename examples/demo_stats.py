@@ -1,6 +1,7 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 
+from sofastats.conf.main import SortOrder
 from sofastats.output.stats.anova import AnovaDesign
 from sofastats.output.stats.chi_square import ChiSquareDesign
 from sofastats.output.stats.kruskal_wallis_h import KruskalWallisHDesign
@@ -8,45 +9,43 @@ from sofastats.output.stats.mann_whitney_u import MannWhitneyUDesign
 from sofastats.output.stats.normality import NormalityDesign
 from sofastats.output.stats.pearsons_r import PearsonsRDesign
 from sofastats.output.stats.spearmans_r import SpearmansRDesign
-from sofastats.output.stats.ttest_indep import TTestIndepDesign
-from sofastats.output.stats.ttest_paired import TTestPairedDesign
+from sofastats.output.stats.independent_t_test import IndependentTTestDesign
+from sofastats.output.stats.paired_t_test import PairedTTestDesign
 from sofastats.output.stats.wilcoxon_signed_ranks import WilcoxonSignedRanksDesign
 
-from sofastats_examples.scripts.conf import output_folder, sort_orders_yaml_file_path
+from sofastats_examples.scripts.conf import (output_folder, people_csv_file_path, sort_orders_yaml_file_path)
 
-def run_anova_black_pastel_style(csv_file_path):
+def anova_black_pastel_style(csv_file_path):
     design = AnovaDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_anova_age_by_country_black_pastel_style.html',
         output_title='ANOVA - Black Pastel Style',
         show_in_web_browser=True,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='black_pastel',
         grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
         high_precision_required=False,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def run_anova_red_spirals_style(csv_file_path):
+def anova_red_spirals_style(csv_file_path):
     design = AnovaDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_anova_age_by_country_red_spirals_style.html',
         output_title='ANOVA - Red Spirals Design',
         show_in_web_browser=True,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='red_spirals',
         grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
         high_precision_required=False,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def run_chi_square(csv_file_path):
+def chi_square(csv_file_path):
     design = ChiSquareDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_chi_square_stats.html',
@@ -55,29 +54,30 @@ def run_chi_square(csv_file_path):
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
         variable_a_name='Age Group',
+        variable_a_sort_order=SortOrder.CUSTOM,
         variable_b_name='Country',
+        variable_b_sort_order=SortOrder.CUSTOM,
         decimal_points=3,
         show_workings=True,
     )
-    design.make_output()
+    return design
 
-def run_kruskal_wallis_h(csv_file_path):
+def kruskal_wallis_h(csv_file_path):
     design = KruskalWallisHDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_kruskal_wallis_h.html',
         output_title='Kruskal-Wallis H Test',
         show_in_web_browser=True,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
         grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
         decimal_points=3,
         show_workings=True,
     )
-    design.make_output()
+    return design
 
-def run_mann_whitney_u(csv_file_path):
+def mann_whitney_u(csv_file_path):
     design = MannWhitneyUDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_mann_whitney_u_age_by_country.html',
@@ -91,9 +91,9 @@ def run_mann_whitney_u(csv_file_path):
         decimal_points=3,
         show_workings=True,
     )
-    design.make_output()
+    return design
 
-def run_normality(csv_file_path):
+def normality(csv_file_path):
     design = NormalityDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_normality_age_vs_weight.html',
@@ -103,9 +103,9 @@ def run_normality(csv_file_path):
         variable_a_name='Age',
         variable_b_name='Weight Time 2',
     )
-    design.make_output()
+    return design
 
-def run_pearsons_r(csv_file_path):
+def pearsons_r(csv_file_path):
     design = PearsonsRDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_pearsons_r.html',
@@ -116,9 +116,9 @@ def run_pearsons_r(csv_file_path):
         variable_b_name='Weight Time 1',
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def run_spearmans_r(csv_file_path):
+def spearmans_r(csv_file_path):
     design = SpearmansRDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_spearmans_r.html',
@@ -129,10 +129,10 @@ def run_spearmans_r(csv_file_path):
         variable_b_name='Weight Time 1',
         show_workings=True,
     )
-    design.make_output()
+    return design
 
-def run_ttest_indep(csv_file_path):
-    design = TTestIndepDesign(
+def independent_t_test(csv_file_path):
+    design = IndependentTTestDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_ttest_indep_age_by_country_from_item.html',
         output_title="Independent T-Test",
@@ -143,10 +143,10 @@ def run_ttest_indep(csv_file_path):
         group_b_value='USA',
         measure_field_name='Age',
     )
-    design.make_output()
+    return design
 
-def run_t_test_paired(csv_file_path):
-    design = TTestPairedDesign(
+def paired_t_test(csv_file_path):
+    design = PairedTTestDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_t_test_paired.html',
         output_title="Paired T-Test",
@@ -155,9 +155,9 @@ def run_t_test_paired(csv_file_path):
         variable_a_name='Weight Time 1',
         variable_b_name='Weight Time 2',
     )
-    design.make_output()
+    return design
 
-def run_wilcoxon_signed_ranks(csv_file_path):
+def wilcoxon_signed_ranks(csv_file_path):
     design = WilcoxonSignedRanksDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_wilcoxon_signed_ranks.html',
@@ -168,4 +168,5 @@ def run_wilcoxon_signed_ranks(csv_file_path):
         variable_b_name='Weight Time 2',
         show_workings=True,
     )
-    design.make_output()
+    return design
+

@@ -1,20 +1,23 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 
+import sqlite3 as sqlite
+
 from sofastats.conf.main import DbeName, SortOrder
 from sofastats.output.tables.cross_tab import CrossTabDesign
 from sofastats.output.tables.freq import FrequencyTableDesign
 from sofastats.output.tables.interfaces import Column, Metric, Row
 
-from sofastats_examples.scripts.conf import output_folder, sort_orders_yaml_file_path
+from sofastats_examples.scripts.conf import (
+    output_folder, people_csv_file_path, sort_orders_yaml_file_path, sqlite_demo_db_file_path)
 
-def run_cross_tab_from_sqlite_db_filtered(sqlite_cur):
+def cross_tab_from_sqlite_db_filtered(sqlite_cur):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
     """
-    row_variables_design_1 = Row(variable_name='Country', has_total=True,
-        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, sort_order=SortOrder.CUSTOM,
+        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.VALUE))
     row_variables_design_2 = Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM)
     row_variables_design_3 = Row(variable_name='Car')
 
@@ -37,15 +40,15 @@ def run_cross_tab_from_sqlite_db_filtered(sqlite_cur):
         style_name='default',
         decimal_points=2,
     )
-    design.make_output()
+    return design
 
-def run_cross_tab_from_sqlite_db(sqlite_cur):
+def cross_tab_from_sqlite_db(sqlite_cur):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
     """
-    row_variables_design_1 = Row(variable_name='Country', has_total=True,
-        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, sort_order=SortOrder.CUSTOM,
+        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.VALUE))
     row_variables_design_2 = Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM)
     row_variables_design_3 = Row(variable_name='Car')
 
@@ -67,15 +70,15 @@ def run_cross_tab_from_sqlite_db(sqlite_cur):
         style_name='default',
         decimal_points=2,
     )
-    design.make_output()
+    return design
 
 def cross_tab(csv_file_path):
     """
     Top-level row variables (design settings and any nested variables)
     Top-level column variables (design settings and any nested variables)
     """
-    row_variables_design_1 = Row(variable_name='Country', has_total=True,
-        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, sort_order=SortOrder.CUSTOM,
+        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.VALUE))
     row_variables_design_2 = Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM)
     row_variables_design_3 = Row(variable_name='Car')
 
@@ -95,14 +98,14 @@ def cross_tab(csv_file_path):
         style_name='red_spirals',
         decimal_points=2,
     )
-    design.make_output()
+    return design
 
-def run_repeat_level_two_row_var_cross_tab(csv_file_path):
+def repeat_level_two_row_var_cross_tab(csv_file_path):
     """
     Repeated row level 2 was no issue BUT a bug in the col ordering
     """
-    row_variables_design_1 = Row(variable_name='Country', has_total=True,
-        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, sort_order=SortOrder.CUSTOM,
+        child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.VALUE))
     row_variables_design_2 = Row(variable_name='Age Group', has_total=True, sort_order=SortOrder.CUSTOM,
         child=Row(variable_name='Home Location Type', has_total=True, sort_order=SortOrder.CUSTOM))
 
@@ -122,10 +125,11 @@ def run_repeat_level_two_row_var_cross_tab(csv_file_path):
         debug=False,
         verbose=False,
     )
-    design.make_output()
+    return design
 
-def run_simple_freq_tbl(csv_file_path):
-    row_variables_design_1 = Row(variable_name='Country', has_total=True, child=Row(variable_name='Handedness', has_total=True, sort_order=SortOrder.CUSTOM))
+def simple_freq_tbl(csv_file_path):
+    row_variables_design_1 = Row(variable_name='Country', has_total=True, sort_order=SortOrder.CUSTOM,
+        child=Row(variable_name='Handedness', has_total=True, sort_order=SortOrder.CUSTOM))
     row_variables_design_2 = Row(variable_name='Age Group', has_total=True, sort_order=SortOrder.CUSTOM)
 
     design = FrequencyTableDesign(
@@ -138,4 +142,5 @@ def run_simple_freq_tbl(csv_file_path):
         include_column_percent=True,
         decimal_points=3,
     )
-    design.make_output()
+    return design
+

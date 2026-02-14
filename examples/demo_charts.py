@@ -1,6 +1,8 @@
 ## To run the demo examples, install the sofastats_examples package
 ## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 
+import sqlite3 as sqlite
+
 from sofastats.conf.main import ChartMetric, SortOrder
 # noinspection PyUnresolvedReferences
 from sofastats.output.charts import area, bar, box_plot, histogram, line, pie, scatter_plot  ## needed so singledispatch registration can occur
@@ -16,7 +18,8 @@ from sofastats.output.charts.scatter_plot import (BySeriesScatterChartDesign,
     MultiChartBySeriesScatterChartDesign, MultiChartScatterChartDesign, SimpleScatterChartDesign)
 from sofastats.stats_calc.interfaces import BoxplotType
 
-from sofastats_examples.scripts.conf import output_folder, sort_orders_yaml_file_path
+from sofastats_examples.scripts.conf import (education_csv_file_path, output_folder, people_csv_file_path,
+    sort_orders_yaml_file_path, sports_csv_file_path, sqlite_demo_db_file_path)
 
 def simple_bar_chart_from_sqlite_db(sqlite_cur):
     design = SimpleBarChartDesign(
@@ -36,7 +39,7 @@ def simple_bar_chart_from_sqlite_db(sqlite_cur):
         x_axis_font_size=12,
         y_axis_title='Count',  ## defaults to Frequency if metric is FREQ (the default)
     )
-    design.make_output()
+    return design
 
 def simple_bar_chart_from_csv(csv_file_path):
     design = SimpleBarChartDesign(
@@ -53,7 +56,7 @@ def simple_bar_chart_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def simple_bar_chart_percents_from_csv(csv_file_path):
     design = SimpleBarChartDesign(
@@ -71,7 +74,7 @@ def simple_bar_chart_percents_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def simple_bar_chart_averages_from_csv(csv_file_path):
     design = SimpleBarChartDesign(
@@ -90,7 +93,7 @@ def simple_bar_chart_averages_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def simple_bar_chart_sums_from_csv(csv_file_path):
     design = SimpleBarChartDesign(
@@ -109,7 +112,7 @@ def simple_bar_chart_sums_from_csv(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def simple_bar_chart_lots_of_x_vals(csv_file_path):
     design = SimpleBarChartDesign(
@@ -126,7 +129,7 @@ def simple_bar_chart_lots_of_x_vals(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_bar_chart(csv_file_path):
     design = MultiChartBarChartDesign(
@@ -145,7 +148,7 @@ def multi_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def clustered_bar_chart(csv_file_path):
     design = ClusteredBarChartDesign(
@@ -164,7 +167,7 @@ def clustered_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_clustered_bar_chart(csv_file_path):
     design = MultiChartClusteredBarChartDesign(
@@ -185,7 +188,7 @@ def multi_chart_clustered_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_clustered_percents_bar_chart(csv_file_path):
     design = MultiChartClusteredBarChartDesign(
@@ -207,7 +210,7 @@ def multi_chart_clustered_percents_bar_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def line_chart(csv_file_path):
     design = LineChartDesign(
@@ -228,7 +231,7 @@ def line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def line_chart_time_series(csv_file_path):
     design = LineChartDesign(
@@ -249,7 +252,7 @@ def line_chart_time_series(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def line_chart_time_series_rotated_labels(csv_file_path):
     design = LineChartDesign(
@@ -270,7 +273,7 @@ def line_chart_time_series_rotated_labels(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_line_chart(csv_file_path):
     design = MultiLineChartDesign(
@@ -293,7 +296,7 @@ def multi_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_line_chart(csv_file_path):
     design = MultiChartLineChartDesign(
@@ -316,7 +319,7 @@ def multi_chart_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_multi_line_chart(csv_file_path):
     design = MultiChartMultiLineChartDesign(
@@ -341,7 +344,7 @@ def multi_chart_multi_line_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_multi_line_chart_time_series(csv_file_path):
     design = MultiChartMultiLineChartDesign(
@@ -366,7 +369,7 @@ def multi_chart_multi_line_chart_time_series(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def area_chart(csv_file_path):
     design = AreaChartDesign(
@@ -385,7 +388,7 @@ def area_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def multi_chart_area_chart(csv_file_path):
     design = MultiChartAreaChartDesign(
@@ -406,7 +409,7 @@ def multi_chart_area_chart(csv_file_path):
         show_n_records=True,
         x_axis_font_size=12,
     )
-    design.make_output()
+    return design
 
 def pie_chart(csv_file_path):
     design = PieChartDesign(
@@ -420,23 +423,23 @@ def pie_chart(csv_file_path):
         category_sort_order=SortOrder.CUSTOM,
         show_n_records=True,
     )
-    design.make_output()
+    return design
 
 def multi_chart_pie_chart(csv_file_path):
     design = MultiChartPieChartDesign(
         csv_file_path=csv_file_path,
-        output_file_path=output_folder / 'demo_pie_chart.html',
+        output_file_path=output_folder / 'demo_multi_pie_chart.html',
         output_title="Multi-Chart Pie Chart",
         show_in_web_browser=True,
         sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
-        chart_field_name='Country',
-        chart_sort_order=SortOrder.CUSTOM,
         category_field_name='Sport',
         category_sort_order=SortOrder.CUSTOM,
+        chart_field_name='Country',
+        chart_sort_order=SortOrder.CUSTOM,
         show_n_records=True,
     )
-    design.make_output()
+    return design
 
 def simple_scatter_plot(csv_file_path):
     design = SimpleScatterChartDesign(
@@ -453,7 +456,7 @@ def simple_scatter_plot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    design.make_output()
+    return design
 
 def by_series_scatter_plot(csv_file_path):
     design = BySeriesScatterChartDesign(
@@ -472,7 +475,7 @@ def by_series_scatter_plot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    design.make_output()
+    return design
 
 def multi_chart_scatter_plot(csv_file_path):
     design = MultiChartScatterChartDesign(
@@ -491,7 +494,7 @@ def multi_chart_scatter_plot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    design.make_output()
+    return design
 
 def multi_chart_by_series_scatter_plot(csv_file_path):
     design = MultiChartBySeriesScatterChartDesign(
@@ -512,7 +515,7 @@ def multi_chart_by_series_scatter_plot(csv_file_path):
         show_regression_line=True,
         x_axis_font_size=10,
     )
-    design.make_output()
+    return design
 
 def histogram_chart(csv_file_path):
     design = HistogramChartDesign(
@@ -529,7 +532,7 @@ def histogram_chart(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
 def multi_chart_histogram(csv_file_path):
     design = MultiChartHistogramChartDesign(
@@ -548,9 +551,9 @@ def multi_chart_histogram(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def box_plot_chart(csv_file_path):
+def simple_box_plot(csv_file_path):
     design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot.html',
@@ -566,9 +569,9 @@ def box_plot_chart(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def box_plot_chart_narrow_labels(csv_file_path):
+def box_plot_narrow_labels(csv_file_path):
     design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot_narrow_labels.html',
@@ -584,9 +587,9 @@ def box_plot_chart_narrow_labels(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
-def box_plot_chart_very_wide(csv_file_path):
+def box_plot_very_wide(csv_file_path):
     design = BoxplotChartDesign(
         csv_file_path=csv_file_path,
         output_file_path=output_folder / 'demo_box_plot_very_wide.html',
@@ -602,7 +605,7 @@ def box_plot_chart_very_wide(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
 def clustered_box_plot_default_style(csv_file_path):
     design = ClusteredBoxplotChartDesign(
@@ -622,7 +625,7 @@ def clustered_box_plot_default_style(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
 
 def clustered_box_plot_black_pastel_style(csv_file_path):
     design = ClusteredBoxplotChartDesign(
@@ -642,4 +645,5 @@ def clustered_box_plot_black_pastel_style(csv_file_path):
         x_axis_font_size=12,
         decimal_points=3,
     )
-    design.make_output()
+    return design
+

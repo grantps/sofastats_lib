@@ -9,7 +9,7 @@ from sofastats.output.stats.common import get_optimal_min_max
 from sofastats.output.charts.mpl_pngs import get_scatterplot_fig
 from sofastats.output.charts.scatter_plot import ScatterplotConf, ScatterplotSeries
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.interfaces import Coord, CorrelationResult
 from sofastats.output.stats.msgs import TWO_TAILED_EXPLANATION
 from sofastats.output.styles.interfaces import StyleSpec
@@ -223,7 +223,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class SpearmansRDesign(CommonStatsDesign):
+class SpearmansRDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         variable_a_name: the first variable in each pair we are checking for correlation

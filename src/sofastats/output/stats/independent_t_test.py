@@ -8,7 +8,7 @@ from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.common import get_embedded_histogram_html
 from sofastats.output.stats.msgs import (
     CI_EXPLAIN, KURTOSIS_EXPLAIN,
@@ -165,7 +165,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class TTestIndepDesign(CommonStatsDesign):
+class IndependentTTestDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         measure_field_name: the name of the field aggregated by group - the analysis compares the mean value of each group.

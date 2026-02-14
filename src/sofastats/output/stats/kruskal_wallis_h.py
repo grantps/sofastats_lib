@@ -8,7 +8,7 @@ import pandas as pd
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.msgs import (
     ONE_TAIL_EXPLAIN, ONE_TAILED_EXPLANATION, P_EXPLAIN_MULTIPLE_GROUPS, P_EXPLANATION_WHEN_MULTIPLE_GROUPS)
 from sofastats.output.styles.interfaces import StyleSpec
@@ -19,7 +19,6 @@ from sofastats.stats_calc.interfaces import KruskalWallisHResult, NumericNonPara
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
 from sofastats.utils.misc import todict
-from sofastats.utils.item_sorting import sort_by_text
 from sofastats.utils.stats import get_p_str
 
 def kruskal_wallis_h_from_df(df: pd.DataFrame) -> KruskalWallisHResult:
@@ -127,7 +126,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class KruskalWallisHDesign(CommonStatsDesign):
+class KruskalWallisHDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         measure_field_name: the name of the field aggregated by group - the analysis compares the mean value of each group.

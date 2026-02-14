@@ -8,7 +8,7 @@ import pandas as pd
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.msgs import P_EXPLAIN_TWO_GROUPS
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
@@ -232,7 +232,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class MannWhitneyUDesign(CommonStatsDesign):
+class MannWhitneyUDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         measure_field_name: the name of the field aggregated by group - the analysis compares the mean value of each group.

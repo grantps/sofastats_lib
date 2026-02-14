@@ -10,6 +10,9 @@ Tasks:
 * Empty examples folder and transfer each script across
   (having added message to the top and removed execution code from the bottom)
 """
+
+## TODO: 🐔 Bump version of sofastats_examples and update in git and PyPI manually as required 🐔
+
 from pathlib import Path
 from shutil import copy, copytree
 from textwrap import dedent
@@ -47,8 +50,8 @@ def update_examples_folder():
             dest_file_path = dest_examples_folder / file_path.name
             copy(src=file_path, dst=dest_file_path)
             orig = dest_file_path.read_text()
-            making_output = orig.replace("return design", "design.make_output()")
-            new_text = f"{message}\n\n{making_output}"
+            text_before_run = orig[:orig.index('def run():')]
+            new_text = f"{message}\n\n{text_before_run}"
             dest_file_path.write_text(new_text)
 
 if __name__ == '__main__':

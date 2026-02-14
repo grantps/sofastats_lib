@@ -13,7 +13,11 @@ from sofastats.output.stats.anova import AnovaDesign
 from sofastats.output.stats.chi_square import ChiSquareDesign
 from sofastats.output.stats.kruskal_wallis_h import KruskalWallisHDesign
 from tests.conf import people_csv_fpath, sort_orders_yaml_file_path
-from tests.reference_stats_library import anova as stats_anova, chisquare_df_corrected as stats_chi_square
+from tests.reference_stats_library import (
+    anova as stats_anova,
+    chisquare_df_corrected as stats_chi_square,
+    lkruskalwallish,
+)
 
 round_to_11dp = partial(round, ndigits=11)
 
@@ -53,7 +57,7 @@ def test_chi_square():
         variable_a_name='Age Group', variable_a_sort_order=SortOrder.CUSTOM,
         variable_b_name='Country', variable_b_sort_order=SortOrder.CUSTOM,
     )
-    # design.make_output()
+    design.make_output()
     result = design.to_result()
     print(result)
 
@@ -89,11 +93,11 @@ def test_chi_square():
     n_variable_a_vals = len(df['Age Group'].unique())
     n_variable_b_vals = len(df['Country'].unique())
     degrees_of_freedom = (n_variable_a_vals - 1) * (n_variable_b_vals - 1)
-    stats_chisq, stats_p = stats_chi_square(
+    stats_chisq, stats_prob = stats_chi_square(
         f_obs=observed_freqs_by_country_within_age_group, f_exp=expected_freqs_by_country_within_age_group,
         df=degrees_of_freedom)
 
-    assert round_to_11dp(result.p) == round_to_11dp(stats_p)
+    assert round_to_11dp(result.p) == round_to_11dp(stats_prob)
     assert round_to_11dp(result.chi_square) == round_to_11dp(stats_chisq)
 
 def test_kruskal_wallis_h():
@@ -103,12 +107,24 @@ def test_kruskal_wallis_h():
         grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
     )
-    design.make_output()
+    # design.make_output()
     result = design.to_result()
     print(result)
 
+    df_raw = pd.read_csv(design.csv_file_path)
+    df = df_raw.loc[
+        df_raw[design.grouping_field_name].isin(design.grouping_field_values),
+        [design.grouping_field_name, design.measure_field_name]]
+    data_south_korea = df.loc[df[design.grouping_field_name] == 'South Korea', design.measure_field_name].tolist()
+    data_nz = df.loc[df[design.grouping_field_name] == 'NZ', design.measure_field_name].tolist()
+    data_usa = df.loc[df[design.grouping_field_name] == 'USA', design.measure_field_name].tolist()
+    h, stats_prob = lkruskalwallish(data_south_korea, data_nz, data_usa)
+
+    assert round_to_11dp(result.p) == round_to_11dp(stats_prob)
+    assert round_to_11dp(result.h) == round_to_11dp(h)
+
 if __name__ == '__main__':
     pass
-    test_anova()
-    # test_chi_square()
+    # test_anova()
+    test_chi_square()
     # test_kruskal_wallis_h()

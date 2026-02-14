@@ -149,10 +149,9 @@ def run_anova(csv_file_path):
         output_file_path=output_folder / 'demo_anova_age_by_country.html',
         output_title='ANOVA',
         show_in_web_browser=True,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='default',
         grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
         high_precision_required=False,
         decimal_points=3,
@@ -165,10 +164,9 @@ def run_anova_black_pastel_style(csv_file_path):
         output_file_path=output_folder / 'demo_anova_age_by_country_black_pastel_style.html',
         output_title='ANOVA',
         show_in_web_browser=True,
-        sort_orders_yaml_file_path=sort_orders_yaml_file_path,
         style_name='black_pastel',
         grouping_field_name='Country',
-        group_values=['South Korea', 'NZ', 'USA'],
+        grouping_field_values=['South Korea', 'NZ', 'USA'],
         measure_field_name='Age',
         high_precision_required=False,
         decimal_points=3,
@@ -346,28 +344,3 @@ def cross_tab_2(csv_file_path):
     )
     design.make_output()
 
-def run():
-    pass
-    # simple_bar_chart_from_csv(people_csv_file_path)
-
-    # multi_chart_clustered_bar_chart_1(people_csv_file_path)
-    # multi_chart_clustered_bar_chart_2(people_csv_file_path)
-
-    # multi_chart_pie_chart_1(sports_csv_file_path)
-    # multi_chart_pie_chart_2(sports_csv_file_path)
-    # multi_chart_pie_chart_3(sports_csv_file_path)
-    # multi_chart_pie_chart_4(sports_csv_file_path)
-
-    # run_anova(people_csv_file_path)
-    # run_anova_black_pastel_style(people_csv_file_path)
-    # multi_chart_by_series_scatterplot(education_csv_file_path)
-    # multi_chart_histogram(people_csv_file_path)
-    # box_plot_chart_narrow_labels(people_csv_file_path)
-    # clustered_box_plot(people_csv_file_path)
-    # clustered_box_plot_2(people_csv_file_path)
-    # run_simple_freq_tbl(people_csv_file_path)
-    # cross_tab_1(people_csv_file_path)
-    # cross_tab_2(people_csv_file_path)
-
-if __name__ == '__main__':
-    run()

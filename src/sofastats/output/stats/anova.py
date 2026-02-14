@@ -5,13 +5,12 @@ from typing import Any
 import jinja2
 import pandas as pd
 
-from sofastats.conf.main import SortOrder
 from sofastats.data_extraction.interfaces import ValFilterSpec
 from sofastats.data_extraction.utils import get_sample
 from sofastats.output.charts import mpl_pngs
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
 from sofastats.output.stats.common import get_embedded_histogram_html
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.msgs import (
     CI_EXPLAIN, KURTOSIS_EXPLAIN,
     NORMALITY_MEASURE_EXPLAIN, OBRIEN_EXPLAIN, ONE_TAIL_EXPLAIN,
@@ -25,7 +24,6 @@ from sofastats.stats_calc.interfaces import AnovaResult, NumericParametricSample
 from sofastats.stats_calc.utils import get_samples_from_df
 from sofastats.utils.maths import format_num, is_numeric
 from sofastats.utils.misc import todict
-from sofastats.utils.item_sorting import sort_by_text
 from sofastats.utils.stats import get_p_str
 
 def anova_from_df(df: pd.DataFrame, *,
@@ -201,7 +199,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class AnovaDesign(CommonStatsDesign):
+class AnovaDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         measure_field_name: the name of the field aggregated by group - the ANOVA compares the mean value of each group.

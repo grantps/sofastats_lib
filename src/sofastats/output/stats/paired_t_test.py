@@ -5,7 +5,7 @@ import pandas as pd
 
 from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.common import get_embedded_histogram_html
 from sofastats.output.stats.msgs import CI_EXPLAIN, STD_DEV_EXPLAIN
 from sofastats.output.styles.interfaces import StyleSpec
@@ -141,7 +141,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class TTestPairedDesign(CommonStatsDesign):
+class PairedTTestDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         variable_a_name: the first variable in each pair we are checking for a difference

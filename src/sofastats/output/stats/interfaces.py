@@ -6,21 +6,30 @@ from typing import Type
 from sofastats.output.interfaces import CommonDesign
 from sofastats.stats_calc.interfaces import CorrelationCalcResult, RegressionResult, SpearmansResult, StatsResult
 
-class Sausage:
-    """
-    Sausage!!!
-    """
-    pass
 
 class CommonStatsDesign(CommonDesign):
     """
     Output dataclasses for statistical tests (e.g. MannWhitneyUDesign) inherit from CommonStatsDesign.
     """
 
+    @abstractmethod
+    def to_result(self) -> Type[StatsResult]:
+        """
+        Return a dataclass with results as attributes
+        """
+        pass
+
+
+class CommonStatsDesignWithoutSortAttributes(CommonStatsDesign):
+    """
+    Output dataclasses for statistical tests (e.g. MannWhitneyUDesign) inherit from CommonStatsDesign.
+    """
+
     def __post_init__(self):
         """
-        There is no sorting for stats output so don't let the user set these attributes
-        assuming they will determine anything when they won't: sort_orders, sort_orders_yaml_file_path
+        There is no sorting for stats output other than Chi Square Observed vs Expected Tables.
+        We should prevent the user from setting these attributes to stop them making the false assumption that these
+        sort settings will alter anything when they won't. Affected attributes: sort_orders, sort_orders_yaml_file_path
         """
         super().__post_init__()
         if self.sort_orders:
@@ -34,6 +43,7 @@ class CommonStatsDesign(CommonDesign):
         Return a dataclass with results as attributes
         """
         pass
+
 
 @dataclass(frozen=True)
 class Coord:

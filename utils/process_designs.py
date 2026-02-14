@@ -62,9 +62,9 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
         chart_designs.append(charts.histogram_chart(people_csv_file_path))
         chart_designs.append(charts.multi_chart_histogram(people_csv_file_path))
 
-        chart_designs.append(charts.box_plot_chart(people_csv_file_path))
-        chart_designs.append(charts.box_plot_chart_narrow_labels(people_csv_file_path))
-        chart_designs.append(charts.box_plot_chart_very_wide(people_csv_file_path))
+        chart_designs.append(charts.simple_box_plot(people_csv_file_path))
+        chart_designs.append(charts.box_plot_narrow_labels(people_csv_file_path))
+        chart_designs.append(charts.box_plot_very_wide(people_csv_file_path))
         chart_designs.append(charts.clustered_box_plot_default_style(people_csv_file_path))
         chart_designs.append(charts.clustered_box_plot_black_pastel_style(people_csv_file_path))
 
@@ -73,28 +73,27 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
     if do_tables:
         table_designs = []
 
-        table_designs.append(tables.run_cross_tab_from_sqlite_db_filtered(cur))
-        table_designs.append(tables.run_cross_tab_from_sqlite_db(cur))
+        table_designs.append(tables.cross_tab_from_sqlite_db_filtered(cur))
+        table_designs.append(tables.cross_tab_from_sqlite_db(cur))
         table_designs.append(tables.cross_tab(people_csv_file_path))
-        table_designs.append(tables.run_repeat_level_two_row_var_cross_tab(people_csv_file_path))
-        table_designs.append(tables.run_simple_freq_tbl(people_csv_file_path))
+        table_designs.append(tables.repeat_level_two_row_var_cross_tab(people_csv_file_path))
+        table_designs.append(tables.simple_freq_tbl(people_csv_file_path))
 
         report_designs_specs.append(ReportDesignsSpec(title="Report Tables", designs=table_designs))
-
     if do_stats:
         stats_designs = []
 
-        stats_designs.append(stats.run_anova_black_pastel_style(people_csv_file_path))
-        stats_designs.append(stats.run_anova_red_spirals_style(people_csv_file_path))
-        stats_designs.append(stats.run_chi_square(people_csv_file_path))
-        stats_designs.append(stats.run_kruskal_wallis_h(people_csv_file_path))
-        stats_designs.append(stats.run_mann_whitney_u(people_csv_file_path))
-        stats_designs.append(stats.run_normality(people_csv_file_path))
-        stats_designs.append(stats.run_pearsons_r(people_csv_file_path))
-        stats_designs.append(stats.run_spearmans_r(people_csv_file_path))
-        stats_designs.append(stats.run_ttest_indep(people_csv_file_path))
-        stats_designs.append(stats.run_t_test_paired(people_csv_file_path))
-        stats_designs.append(stats.run_wilcoxon_signed_ranks(people_csv_file_path))
+        stats_designs.append(stats.anova_black_pastel_style(people_csv_file_path))
+        stats_designs.append(stats.anova_red_spirals_style(people_csv_file_path))
+        stats_designs.append(stats.chi_square(people_csv_file_path))
+        stats_designs.append(stats.kruskal_wallis_h(people_csv_file_path))
+        stats_designs.append(stats.mann_whitney_u(people_csv_file_path))
+        stats_designs.append(stats.normality(people_csv_file_path))
+        stats_designs.append(stats.pearsons_r(people_csv_file_path))
+        stats_designs.append(stats.spearmans_r(people_csv_file_path))
+        stats_designs.append(stats.independent_t_test(people_csv_file_path))
+        stats_designs.append(stats.paired_t_test(people_csv_file_path))
+        stats_designs.append(stats.wilcoxon_signed_ranks(people_csv_file_path))
 
         if show_stats_results:
             for stats_design in stats_designs:
@@ -120,4 +119,5 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
     con.close()
 
 if __name__ == '__main__':
-    run(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=False)
+    pass
+    # run(do_charts=True, do_stats=True, do_tables=True, make_separate_output=True, make_combined_output=False)

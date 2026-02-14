@@ -6,7 +6,7 @@ import pandas as pd
 
 from sofastats.data_extraction.utils import get_paired_data
 from sofastats.output.interfaces import DEFAULT_SUPPLIED_BUT_MANDATORY_ANYWAY, HTMLItemSpec, OutputItemType
-from sofastats.output.stats.interfaces import CommonStatsDesign
+from sofastats.output.stats.interfaces import CommonStatsDesignWithoutSortAttributes
 from sofastats.output.stats.msgs import WILCOXON_VARIANCE_BY_APP_EXPLAIN
 from sofastats.output.styles.interfaces import StyleSpec
 from sofastats.output.styles.utils import get_generic_unstyled_css, get_style_spec, get_styled_stats_tbl_css
@@ -218,7 +218,7 @@ def get_html(result: Result, style_spec: StyleSpec) -> str:
 
 
 @dataclass(frozen=False)
-class WilcoxonSignedRanksDesign(CommonStatsDesign):
+class WilcoxonSignedRanksDesign(CommonStatsDesignWithoutSortAttributes):
     """
     Args:
         variable_a_name: the first variable in each pair we are checking for a difference
