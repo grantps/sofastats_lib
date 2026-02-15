@@ -1,22 +1,38 @@
 """
-Grant Paton-Simpson: Changes as at 2 Jan 2010:
-completely unchanged apart from
+Code from https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/python-statlib/statlib-1.1.tar.gz
+
+It was the core statistical engine used by SOFA Statistics. The results were checked with SPSS
+and validated by very widespread global use (over 350,000 downloads).
+Grant Paton-Simpson: Changes as at 2 Jan 2010
+=============================================
+
+Logic unchanged but had to make the following changes to enable the code to even run:
+
     zprob = Dispatch ( (lzprob, (IntType, FloatType)),
                        (azprob, (N.ndarray, )) )
 was changed to:
     zprob = Dispatch ( (lzprob, (IntType, FloatType)),
                        (azprob, (N.ndarray, N.float64)) )
 
-so that askewtests could even run.  It was being sent a numpy.float64
-which had no effect except to prevent the dispatch from responding correctly.
+so that askewtests could even run. It was being sent a numpy.float64 which had no effect except to
+prevent the dispatch from responding correctly.
 
-Plus changed import location for pstat to tests.reference_pstat_library as pstat
+N.float_ -> N.float64 because `np.float_` was removed in the NumPy 2.0 release. Use `np.float64` instead.
 
+Changed import location for pstat to tests.reference_pstat_library as pstat
 
-Py2->Py3
-Changed exceptions so compliant. Plus print statements -> print functions
-<> -> !=
-apply() _. unpacking
+Added a few doc strings.
+
+Python 2 -> Python 3 changes
+----------------------------
+
+1) Changed exceptions so compliant. Plus print statements -> print functions
+2) <> -> !=
+3) apply() _. unpacking
+In Python, the apply() function was used to call a function with a list of arguments,
+but it has been deprecated since version 2.3.
+Instead, you can use the asterisk (*) notation to unpack arguments when calling a function.
+4) Using f-strings rather than concatenation
 """
 
 """
@@ -275,14 +291,7 @@ For further references see the U{python-statlib homepage
 ##              changed name of skewness and askewness to skew and askew
 ##              fixed (a)histogram (which sometimes counted points <lowerlimit)
 
-
-
-import argparse
-
-
-
 import tests.reference_pstat_library as pstat
-# import sofastats.tests.pstat as pstat
 import copy
 import math
 
@@ -294,31 +303,6 @@ FloatType = type(1.0)
 __version__ = 0.6
 
 ############# DISPATCH CODE ##############
-
-
-class DispatchOrig:
-    """
-    The Dispatch class, care of David Ascher, allows different functions to
-    be called depending on the argument types.  This way, there can be one
-    function name regardless of the argument type.  To access function doc
-    in stats.py module, prefix the function with an 'l' or 'a' for list or
-    array arguments, respectively.  That is, print stats.lmean.__doc__ or
-    print stats.amean.__doc__ or whatever.
-    """
-
-    def __init__(self, *tuples):
-        self._dispatch = {}
-        for func, types in tuples:
-            for t in types:
-                if t in self._dispatch.keys():
-                    raise ValueError("can't have two dispatches on "+str(t))
-                self._dispatch[t] = func
-        self._types = self._dispatch.keys()
-
-    def __call__(self, arg1, *args, **kw):
-        if type(arg1) not in self._types:
-            raise TypeError("don't know how to dispatch %s arguments" %  type(arg1))
-        return self._dispatch[type(arg1)]((arg1,) + args, kw)
 
 class Dispatch:
     """
@@ -2181,7 +2165,7 @@ def ageometricmean (inarray,dimension=None,keepdims=0):
     Usage:   ageometricmean(inarray,dimension=None,keepdims=0)
     Returns: geometric mean computed over dim(s) listed in dimension
     """
-    inarray = N.array(inarray,N.float_)
+    inarray = N.array(inarray,N.float64)
     if dimension == None:
         inarray = N.ravel(inarray)
         size = len(inarray)
@@ -2656,12 +2640,6 @@ def askewtest(a,dimension=None):
     alpha = N.sqrt(2/(W2-1))
     y = N.where(y==0,1,y)
     Z = delta*N.log(y/alpha + N.sqrt((y/alpha)**2+1))
-
-    # added by Grant
-#     print a
-#     print type(Z).__name__
-#     print Z
-
     return Z, (1.0-zprob(Z))*2
 
 
@@ -2680,14 +2658,12 @@ def akurtosistest(a,dimension=None):
         dimension = 0
     n = float(a.shape[dimension])
     if n<20:
-        print(
-            f"akurtosistest only valid for n>=20 ... continuing anyway, n={n}")
+        print(f"akurtosistest only valid for n>=20 ... continuing anyway, n={n}")
     b2 = akurtosis(a,dimension)
     E = 3.0*(n-1) /(n+1)
     varb2 = 24.0*n*(n-2)*(n-3) / ((n+1)*(n+1)*(n+3)*(n+5))
     x = (b2-E)/N.sqrt(varb2)
-    sqrtbeta1 = 6.0*(n*n-5*n+2)/((n+7)*(n+9)) * N.sqrt((6.0*(n+3)*(n+5))/
-                                                       (n*(n-2)*(n-3)))
+    sqrtbeta1 = 6.0*(n*n-5*n+2)/((n+7)*(n+9)) * N.sqrt((6.0*(n+3)*(n+5))/ (n*(n-2)*(n-3)))
     A = 6.0 + 8.0/sqrtbeta1 *(2.0/sqrtbeta1 + N.sqrt(1+4.0/(sqrtbeta1**2)))
     term1 = 1 -2/(9.0*A)
     denom = 1 +x*N.sqrt(2/(A-4.0))
@@ -2695,12 +2671,6 @@ def akurtosistest(a,dimension=None):
     term2 = N.where(N.equal(denom,0), term1, N.power((1-2.0/A)/denom,1/3.0))
     Z = ( term1 - term2 ) / N.sqrt(2/(9.0*A))
     Z = N.where(N.equal(denom,99), 0, Z)
-
-    # added by Grant
-#     print a
-#     print type(Z).__name__
-#     print Z
-
     return Z, (1.0-zprob(Z))*2
 
 
@@ -2858,12 +2828,12 @@ def aobrientransform(*args):
     """
     TINY = 1e-10
     k = len(args)
-    n = N.zeros(k,N.float_)
-    v = N.zeros(k,N.float_)
-    m = N.zeros(k,N.float_)
+    n = N.zeros(k,N.float64)
+    v = N.zeros(k,N.float64)
+    m = N.zeros(k,N.float64)
     nargs = []
     for i in range(k):
-        nargs.append(args[i].astype(N.float_))
+        nargs.append(args[i].astype(N.float64))
         n[i] = float(len(nargs[i]))
         v[i] = var(nargs[i])
         m[i] = mean(nargs[i])
@@ -3454,8 +3424,8 @@ def amasslinregress(*args):
     else:
         x = args[0]
         y = args[1]
-    x = x.astype(N.float_)
-    y = y.astype(N.float_)
+    x = x.astype(N.float64)
+    y = y.astype(N.float64)
     n = len(x)
     xmean = amean(x)
     ymean = amean(y,0)
@@ -3578,8 +3548,8 @@ def ap2t(pval,df):
     pval = N.array(pval)
     signs = N.sign(pval)
     pval = abs(pval)
-    t = N.ones(pval.shape,N.float_)*50
-    step = N.ones(pval.shape,N.float_)*25
+    t = N.ones(pval.shape,N.float64)*50
+    step = N.ones(pval.shape,N.float64)*25
     print("Initial ap2t() prob calc")
     prob = abetai(0.5*df,0.5,float(df)/(df+t*t))
     print('ap2t() iter:\n')
@@ -3656,8 +3626,8 @@ def achisquare(f_obs,f_exp=None):
 
     k = len(f_obs)
     if f_exp == None:
-        f_exp = N.array([sum(f_obs)/float(k)] * len(f_obs),N.float_)
-    f_exp = f_exp.astype(N.float_)
+        f_exp = N.array([sum(f_obs)/float(k)] * len(f_obs),N.float64)
+    f_exp = f_exp.astype(N.float64)
     chisq = N.add.reduce((f_obs-f_exp)**2 / f_exp)
     return chisq, achisqprob(chisq, k-1)
 
@@ -3673,13 +3643,13 @@ def aks_2samp (data1,data2):
     """
     j1 = 0    # N.zeros(data1.shape[1:]) TRIED TO MAKE THIS UFUNC-LIKE
     j2 = 0    # N.zeros(data2.shape[1:])
-    fn1 = 0.0 # N.zeros(data1.shape[1:],N.float_)
-    fn2 = 0.0 # N.zeros(data2.shape[1:],N.float_)
+    fn1 = 0.0 # N.zeros(data1.shape[1:],N.float64)
+    fn2 = 0.0 # N.zeros(data2.shape[1:],N.float64)
     n1 = data1.shape[0]
     n2 = data2.shape[0]
     en1 = n1*1
     en2 = n2*1
-    d = N.zeros(data1.shape[1:],N.float_)
+    d = N.zeros(data1.shape[1:],N.float64)
     data1 = N.sort(data1,0)
     data2 = N.sort(data2,0)
     while j1 < n1 and j2 < n2:
@@ -3861,7 +3831,7 @@ def afriedmanchisquare(*args):
         raise ValueError('\nLess than 3 levels.  Friedman test not appropriate.\n')
     n = len(args[0])
     data = pstat.aabut(*args)
-    data = data.astype(N.float_)
+    data = data.astype(N.float64)
     for i in range(len(data)):
         data[i] = arankdata(data[i])
     ssbn = asum(asum(args,1)**2)
@@ -3893,7 +3863,7 @@ def achisqprob(chisq,df):
         chisq = N.array([chisq])
     if df < 1:
         return N.ones(chisq.shape,N.float)
-    probs = N.zeros(chisq.shape,N.float_)
+    probs = N.zeros(chisq.shape,N.float64)
     probs = N.where(N.less_equal(chisq,0),1.0,probs)  # set prob=1 for chisq<0
     a = 0.5 * chisq
     if df > 1:
@@ -3909,17 +3879,17 @@ def achisqprob(chisq,df):
     if (df > 2):
         chisq = 0.5 * (df - 1.0)
         if even:
-            z = N.ones(probs.shape,N.float_)
+            z = N.ones(probs.shape,N.float64)
         else:
-            z = 0.5 *N.ones(probs.shape,N.float_)
+            z = 0.5 *N.ones(probs.shape,N.float64)
         if even:
-            e = N.zeros(probs.shape,N.float_)
+            e = N.zeros(probs.shape,N.float64)
         else:
-            e = N.log(N.sqrt(N.pi)) *N.ones(probs.shape,N.float_)
+            e = N.log(N.sqrt(N.pi)) *N.ones(probs.shape,N.float64)
         c = N.log(a)
         mask = N.zeros(probs.shape)
         a_big = N.greater(a,BIG)
-        a_big_frozen = -1 *N.ones(probs.shape,N.float_)
+        a_big_frozen = -1 *N.ones(probs.shape,N.float64)
         totalelements = N.multiply.reduce(N.array(probs.shape))
         while asum(mask)!=totalelements:
             e = N.log(z) + e
@@ -3930,16 +3900,16 @@ def achisqprob(chisq,df):
             a_big_frozen = N.where(newmask*N.equal(mask,0)*a_big, s, a_big_frozen)
             mask = N.clip(newmask+mask,0,1)
         if even:
-            z = N.ones(probs.shape,N.float_)
-            e = N.ones(probs.shape,N.float_)
+            z = N.ones(probs.shape,N.float64)
+            e = N.ones(probs.shape,N.float64)
         else:
-            z = 0.5 *N.ones(probs.shape,N.float_)
-            e = 1.0 / N.sqrt(N.pi) / N.sqrt(a) * N.ones(probs.shape,N.float_)
+            z = 0.5 *N.ones(probs.shape,N.float64)
+            e = 1.0 / N.sqrt(N.pi) / N.sqrt(a) * N.ones(probs.shape,N.float64)
         c = 0.0
         mask = N.zeros(probs.shape)
-        a_notbig_frozen = -1 *N.ones(probs.shape,N.float_)
+        a_notbig_frozen = -1 *N.ones(probs.shape,N.float64)
         while asum(mask)!=totalelements:
-            e = e * (a/z.astype(N.float_))
+            e = e * (a/z.astype(N.float64))
             c = c + e
             z = z + 1.0
     #            print '#2', z, e, c, s, c*y+s2
@@ -3999,7 +3969,7 @@ def azprob(z):
         return x
 
     Z_MAX = 6.0    # maximum meaningful z-value
-    x = N.zeros(z.shape,N.float_) # initialize
+    x = N.zeros(z.shape,N.float64) # initialize
     y = 0.5 * N.fabs(z)
     x = N.where(N.less(y,1.0),wfunc(y*y),yfunc(y-2.0)) # get x's
     x = N.where(N.greater(y,Z_MAX*0.5),1.0,x)          # kill those with big Z
@@ -4023,9 +3993,9 @@ def aksprob(alam):
         alam = N.array(alam,N.float64)
         arrayflag = 1
     mask = N.zeros(alam.shape)
-    fac = 2.0 *N.ones(alam.shape,N.float_)
-    sum = N.zeros(alam.shape,N.float_)
-    termbf = N.zeros(alam.shape,N.float_)
+    fac = 2.0 *N.ones(alam.shape,N.float64)
+    sum = N.zeros(alam.shape,N.float64)
+    termbf = N.zeros(alam.shape,N.float64)
     a2 = N.array(-2.0*alam*alam,N.float64)
     totalelements = N.multiply.reduce(N.array(mask.shape))
     for j in range(1,201):
@@ -4076,7 +4046,7 @@ def abetacf(a,b,x,verbose=1):
 
     arrayflag = 1
     if type(x) == N.ndarray:
-        frozen = N.ones(x.shape,N.float_) *-1  #start out w/ -1s, should replace all
+        frozen = N.ones(x.shape,N.float64) *-1  #start out w/ -1s, should replace all
     else:
         arrayflag = 0
         frozen = N.array([-1])
@@ -4322,7 +4292,7 @@ def asum (a, dimension=None,keepdims=0):
    Returns: array summed along 'dimension'(s), same _number_ of dims if keepdims=1
    """
     if type(a) == N.ndarray and a.dtype in [N.int_, N.short, N.ubyte]:
-        a = a.astype(N.float_)
+        a = a.astype(N.float64)
     if dimension == None:
         s = N.sum(N.ravel(a))
     elif isinstance(dimension, (int, float)):
@@ -4420,7 +4390,7 @@ def asquare_of_sums(inarray, dimension=None, keepdims=0):
         dimension = 0
     s = asum(inarray,dimension,keepdims)
     if type(s) == N.ndarray:
-        return s.astype(N.float_)*s
+        return s.astype(N.float64)*s
     else:
         return float(s)*s
 
@@ -4480,7 +4450,7 @@ def arankdata(inarray):
     svec, ivec = ashellsort(inarray)
     sumranks = 0
     dupcount = 0
-    newarray = N.zeros(n,N.float_)
+    newarray = N.zeros(n,N.float64)
     for i in range(n):
         sumranks = sumranks + i
         dupcount = dupcount + 1
@@ -4694,123 +4664,3 @@ try:
 except ImportError as exc:
     #print exc
     pass
-
-#print stdev([-10.5, 0, 100])
-
-
-def main():
-    import numpy as np
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--floats-1', nargs='+', type=float)  ## https://stackoverflow.com/questions/15753701/argparse-option-for-passing-a-list-as-option
-    parser.add_argument('--floats-2', nargs='+', type=float)
-    parser.add_argument('--floats-3', nargs='+', type=float)
-    parser.add_argument('--floats-4', nargs='+', type=float)
-    parser.add_argument('--floats-5', nargs='+', type=float)
-    parser.add_argument('--floats-6', nargs='+', type=float)
-    parser.add_argument('--floats-7', nargs='+', type=float)
-    parser.add_argument('--floats-8', nargs='+', type=float)
-    parser.add_argument('--floats-9', nargs='+', type=float)
-    parser.add_argument('--floats-10', nargs='+', type=float)
-    parser.add_argument('--ints-1', nargs='+', type=int)
-    parser.add_argument('--ints-2', nargs='+', type=int)
-    parser.add_argument('--str-1', type=str)
-    parser.add_argument('--str-2', type=str)
-    parser.add_argument('--int-1', type=int)
-    parser.add_argument('--int-2', type=int)
-    parser.add_argument('--float-1', type=float)
-    parser.add_argument('--float-2', type=float)
-    parser.add_argument('--float-3', type=float)
-
-    parser.add_argument('--obrien-transform', action='store_true')
-    parser.add_argument('--f-oneway', action='store_true')
-    parser.add_argument('--kurtosis', action='store_true')
-    parser.add_argument('--skew', action='store_true')
-    parser.add_argument('--kurtosis-test', action='store_true')
-    parser.add_argument('--skew-test', action='store_true')
-    parser.add_argument('--normal-test', action='store_true')
-    parser.add_argument('--ttest-ind', action='store_true')
-    parser.add_argument('--ttest-rel', action='store_true')
-    parser.add_argument('--wilcoxon', action='store_true')
-    parser.add_argument('--pearsonr', action='store_true')
-    parser.add_argument('--spearmanr', action='store_true')
-    parser.add_argument('--mann-whitney', action='store_true')
-    parser.add_argument('--kruskal-wallis', action='store_true')
-    parser.add_argument('--anova', action='store_true')
-    parser.add_argument('--fprob', action='store_true')
-    parser.add_argument('--betai', action='store_true')
-    parser.add_argument('--gammln', action='store_true')
-    parser.add_argument('--betacf', action='store_true')
-    parser.add_argument('--chisquare', action='store_true')
-
-    args = parser.parse_args()
-
-    if args.obrien_transform:
-        res = obrientransform(args.floats_1, args.floats_2)
-    elif args.f_oneway:
-        res = F_oneway(args.floats_1, args.floats_2)
-    elif args.kurtosis:
-        res = lkurtosis(args.floats_1)
-    elif args.skew:
-        res = lskew(args.floats_1)
-    elif args.kurtosis_test:
-        res_1, res_2 = kurtosistest(np.array(args.floats_1))
-        res = (res_1.tolist(), res_2)  ## have to clean up so receiving code can handle it easily
-    elif args.skew_test:
-        res_1, res_2 = skewtest(np.array(args.floats_1))
-        res = (res_1.tolist(), res_2)  ## have to clean up so receiving code can handle it easily
-    elif args.normal_test:
-        res_1, res_2 = normaltest(np.array(args.floats_1))
-        res = (float(res_1), res_2.tolist()[0])
-    elif args.ttest_ind:
-        res = lttest_ind(args.floats_1, args.floats_2,
-            args.int_1, args.str_1, args.str_2)
-    elif args.ttest_rel:
-        res = lttest_rel(args.floats_1, args.floats_2,
-            args.int_1, args.str_1, args.str_2)
-    elif args.wilcoxon:
-        res = lwilcoxont(args.floats_1, args.floats_2)
-    elif args.pearsonr:
-        res = lpearsonr(args.floats_1, args.floats_2)
-    elif args.spearmanr:
-        res = spearmanr(args.floats_1, args.floats_2)
-    elif args.mann_whitney:
-        res = mannwhitneyu(args.floats_1, args.floats_2)
-    elif args.kruskal_wallis:
-        args_dict = vars(args)
-        samples = []
-        for n in range(1, 11):
-            sample_key = 'floats_' + str(n)
-            sample = args_dict[sample_key]
-            if sample:
-                samples.append(sample)
-            else:
-                break
-        res = lkruskalwallish(*samples)
-    elif args.anova:
-        args_dict = vars(args)
-        samples = []
-        for n in range(1, 11):
-            sample_key = 'floats_' + str(n)
-            sample = args_dict[sample_key]
-            if sample:
-                samples.append(sample)
-            else:
-                break
-        res = anova(*samples)
-    elif args.fprob:
-        res = fprob(args.int_1, args.int_2, args.float_1)
-    elif args.betai:
-        res = betai(args.float_1, args.float_2, args.float_3)
-    elif args.gammln:
-        res = gammln(args.float_1)
-    elif args.betacf:
-        res = betacf(args.float_1, args.float_2, args.float_3)
-    elif args.chisquare:
-        res = chisquare(args.ints_1, args.ints_2)
-
-    print(res)  ## so can be picked up from stdout! ;-)
-
-if __name__ == '__main__':
-    main()

@@ -1771,8 +1771,7 @@ def kurtosis(a, dimension=None):
     if type(denom) == np.ndarray and asum(zero) != 0:
         logger.info(f'Number of zeros in akurtosis: {asum(zero)}')
     denom = denom + zero  ## prevent divide-by-zero
-    return (np.where(zero, 0, moment(a, 4, dimension) / denom)
-            - FISHER_KURTOSIS_ADJUSTMENT)
+    return (np.where(zero, 0, moment(a, 4, dimension) / denom) - FISHER_KURTOSIS_ADJUSTMENT)
 
 def achisqprob(chisq, df) -> float:
     """
@@ -1793,7 +1792,7 @@ def achisqprob(chisq, df) -> float:
         chisq = np.array([chisq])
     if df < 1:
         return np.ones(chisq.shape, np.float)
-    probs = np.zeros(chisq.shape, np.float_)
+    probs = np.zeros(chisq.shape, np.float64)
     probs = np.where(np.less_equal(chisq, 0), 1.0, probs)  ##set prob=1 for chisq<0
     a = 0.5 * chisq
     y = None
@@ -1896,11 +1895,11 @@ def skewtest(a, dimension=None):
     rooted_var4 = (y / alpha) ** 2 + 1
     if rooted_var4 >= 0:
         Z = delta * np.log(y / alpha + np.sqrt(rooted_var4))
-        c = (1.0 - azprob(Z)) * 2
+        two_tail_z_prob = (1.0 - azprob(Z)) * 2
     else:
         Z = None
-        c = None
-    return Z, c, float(b2)
+        two_tail_z_prob = None
+    return Z, two_tail_z_prob, float(b2)
 
 def kurtosistest(a, dimension=None):
     """
@@ -1940,7 +1939,8 @@ def kurtosistest(a, dimension=None):
     term2 = np.where(np.equal(denom, 0), term1, np.power((1 - 2.0 / A) / denom, 1 / 3.0))
     Z = (term1 - term2) / np.sqrt(2 / (9.0 * A))
     Z = np.where(np.equal(denom, 99), 0, Z)
-    return Z, (1.0 - azprob(Z)) * 2, kurt  ## I want to return the Fischer Adjusted kurtosis, not b2
+    two_tail_z_prob = (1.0 - azprob(Z)) * 2
+    return Z, two_tail_z_prob, kurt  ## I want to return the Fischer Adjusted kurtosis, not b2
 
 # noinspection PyBroadException
 def normal_test(a, dimension=None) -> NormalTestResult:
@@ -1980,10 +1980,13 @@ def normal_test(a, dimension=None) -> NormalTestResult:
     except Exception:
         z_kurtosis = None
         c_kurtosis = None
+    else:
+        z_kurtosis = float(z_kurtosis)
     try:
         k2 = np.power(z_skew, 2) + np.power(z_kurtosis, 2)
         p = achisqprob(k2, 2)
-    except Exception:
+    except Exception as e:
+        # print(e)
         k2 = None
         p = None
     return NormalTestResult(k2, p, c_skew, z_skew, c_kurtosis, z_kurtosis)
