@@ -1,0 +1,378 @@
+Name,Age,Age Group,Country,Handedness,Home Location Type,Sleep,Sleep Group,Tertiary Qualifications,Car,Registration Date,Weight Time 1,Weight Time 2
+Jeffrey Holt,99,80+,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2031-10-01,93.21,95.8962702166509
+Kevin Sharp,57,50 to <60,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2032-09-01,95.46,103.090090220321
+Matthew Rush,22,20 to <30,NZ,Right,Town,7.5,7 to <9 hours,Undergraduate,Volkswagen,2032-04-01,95.24,97.8958040496698
+Melissa Price,44,40 to <50,USA,Right,Town,3.5,Under 7 hours,Undergraduate,Mazda,2031-06-01,94.84,104.759055519475
+Michael Baker,55,50 to <60,Denmark,Right,Town,5.0,Under 7 hours,Undergraduate,Tesla,2032-08-01,96.9,98.1398386083678
+Richard Estes,76,70 to <80,Denmark,Right,City,5.0,Under 7 hours,Undergraduate,Nissan,2032-11-01,96.06,99.4812476776503
+Dennis Lewis,54,50 to <60,Denmark,Right,Town,5.5,Under 7 hours,Undergraduate,Toyota,2030-04-01,93.4,93.8546442075006
+Anthony Morrow,44,40 to <50,USA,Right,City,6.0,Under 7 hours,Undergraduate,Kia,2032-05-01,98.67,106.467207819936
+Danielle Anderson,93,80+,Denmark,Right,Town,5.5,Under 7 hours,Undergraduate,Nissan,2032-12-01,97.34,109.845893945585
+Brian Henderson III,53,50 to <60,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Mitsubishi,2032-08-01,94.78,104.555431348799
+David Flynn,27,20 to <30,USA,Left,City,6.5,Under 7 hours,Undergraduate,Nissan,2030-01-01,88.6,100.123752894527
+Rachel Medina,28,20 to <30,USA,Left,City,8.0,7 to <9 hours,Undergraduate,Citroën,2032-12-01,99.32,114.390574979148
+Bill Torres,79,70 to <80,NZ,Left,City,6.0,Under 7 hours,Undergraduate,Toyota,2031-09-01,99.06,115.309300156597
+Leslie Johnson,79,70 to <80,USA,Right,Town,8.0,7 to <9 hours,Postgraduate,Hyundai,2032-05-01,96.42,104.422668989121
+Cynthia King,82,80+,USA,Left,Town,8.5,7 to <9 hours,Postgraduate,Mercedes,2032-11-01,96.16,98.1787720667074
+Hunter Morgan,44,40 to <50,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Peugeot,2031-11-01,94.06,102.707592109551
+Jesus Howell,82,80+,NZ,Right,Town,6.5,Under 7 hours,Undergraduate,Kia,2032-05-01,93.74,97.5455920487117
+Charles Roberts,22,20 to <30,USA,Right,City,7.5,7 to <9 hours,Postgraduate,Tesla,2030-01-01,90.67,108.893361757137
+Mary Reid,29,20 to <30,Denmark,Right,City,7.5,7 to <9 hours,Undergraduate,Lamborghini,2032-07-01,89.16,95.5997914246128
+Jason Sullivan,92,80+,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Toyota,2032-05-01,95.04,93.946242236026
+Karen Day,86,80+,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Hyundai,2031-09-01,97.53,92.0703311543095
+Patricia Brown,78,70 to <80,USA,Right,City,5.0,Under 7 hours,Postgraduate,BMW,2031-04-01,95.95,100.608254323727
+Sarah Johnson,78,70 to <80,USA,Left,City,6.5,Under 7 hours,Undergraduate,Hyundai,2032-12-01,94.92,87.4055567102862
+David Harper,66,60 to <70,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Renault,2031-03-01,95.25,86.63449759098
+Paul Jordan,28,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Postgraduate,Nissan,2030-10-01,96.85,98.1419916161149
+Jermaine Banks,87,80+,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2030-10-01,96.29,108.211834349407
+Jason Brown,96,80+,NZ,Right,Town,7.0,7 to <9 hours,Postgraduate,Volkswagen,2032-10-01,97.7,103.339010511482
+Rhonda Hood,72,70 to <80,NZ,Right,Town,7.0,7 to <9 hours,Undergraduate,Mini,2032-08-01,98.63,109.591333803983
+Shannon Waters,77,70 to <80,Denmark,Right,Town,7.5,7 to <9 hours,Undergraduate,Kia,2032-11-01,93.21,95.2510573029263
+Austin Hess,56,50 to <60,USA,Right,Town,4.5,Under 7 hours,Postgraduate,Tesla,2032-02-01,94.88,99.4012365532412
+Charles Wyatt,22,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Postgraduate,Volkswagen,2032-09-01,88.18,96.9765262845588
+Gene Glenn,28,20 to <30,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Mitsubishi,2031-03-01,94.21,101.904409855693
+Kimberly Bell,69,60 to <70,USA,Right,City,6.5,Under 7 hours,Undergraduate,Toyota,2032-08-01,95.42,89.4680387127998
+John Schaefer,74,70 to <80,NZ,Right,City,7.0,7 to <9 hours,Postgraduate,Peugeot,2030-03-01,94.52,99.4329332831231
+Kristin Cain,63,60 to <70,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Mitsubishi,2032-08-01,97.43,105.078149775108
+Paul Nash,67,60 to <70,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Tesla,2032-01-01,93.21,95.034844615227
+Jacob Franklin,27,20 to <30,Denmark,Right,City,4.5,Under 7 hours,Undergraduate,Hyundai,2031-08-01,92.16,105.645097881112
+Amy Freeman,74,70 to <80,NZ,Right,Town,5.5,Under 7 hours,Undergraduate,Mitsubishi,2032-12-01,98.74,111.880360141408
+Robert Marks,77,70 to <80,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Mazda,2030-04-01,100.39,100.725562800984
+Melissa Webb DDS,27,20 to <30,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-06-01,91.38,90.3228139658275
+Luis Burns,46,40 to <50,USA,Left,City,8.5,7 to <9 hours,Postgraduate,Renault,2030-10-01,92.5,86.744328379385
+Rebecca Green,53,50 to <60,USA,Right,City,6.5,Under 7 hours,Postgraduate,Citroën,2032-03-01,93.74,105.48020157098
+Sue Sherman,83,80+,USA,Right,City,6.0,Under 7 hours,Undergraduate,Citroën,2032-10-01,94.16,99.4103336126949
+Stanley Neal,44,40 to <50,USA,Right,Town,8.0,7 to <9 hours,Postgraduate,Hyundai,2032-07-01,90.0,107.00488634015
+Jonathan White,79,70 to <80,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Fiat,2031-02-01,94.09,98.0979797834484
+Matthew Lynch,66,60 to <70,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Kia,2031-08-01,99.56,116.078497601265
+Trevor Foster,40,40 to <50,USA,Right,City,6.0,Under 7 hours,Undergraduate,Nissan,2030-09-01,97.17,106.295090626776
+Christine Hawkins,57,50 to <60,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Tesla,2032-08-01,96.25,114.504030251354
+Alisha Ruiz,20,20 to <30,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Toyota,2032-06-01,89.48,101.979543003879
+Krista Hubbard,27,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Postgraduate,Hyundai,2032-10-01,93.56,90.1677501417129
+Briana Espinoza,53,50 to <60,USA,Right,City,4.0,Under 7 hours,Postgraduate,Mazda,2031-01-01,95.42,103.549515705785
+Candace Molina,44,40 to <50,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-05-01,95.1,100.663737049156
+Rachel Romero,56,50 to <60,USA,Right,City,5.0,Under 7 hours,Undergraduate,Hyundai,2030-04-01,93.97,103.160320193649
+Rebecca Butler,87,80+,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Mini,2031-01-01,101.08,107.440440536942
+Kristen Forbes,70,70 to <80,USA,Right,City,8.0,7 to <9 hours,Postgraduate,Fiat,2030-04-01,95.3,96.6530443320089
+Mary Kirk,27,20 to <30,Denmark,Left,City,6.0,Under 7 hours,Undergraduate,Mini,2030-11-01,92.19,103.803686658799
+Jessica Brown,54,50 to <60,NZ,Left,City,4.5,Under 7 hours,Postgraduate,Honda,2032-02-01,96.67,105.181033091774
+Miranda James,49,40 to <50,USA,Left,Town,6.5,Under 7 hours,Undergraduate,Fiat,2031-08-01,96.15,98.7008149887204
+Aaron Kemp,71,70 to <80,USA,Right,Town,5.0,Under 7 hours,Undergraduate,Suzuki,2032-04-01,95.52,112.255322789117
+Gilbert Fischer,52,50 to <60,NZ,Right,City,6.5,Under 7 hours,Undergraduate,Tesla,2032-01-01,93.98,92.0638176946004
+Michael Reynolds,29,20 to <30,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Tesla,2032-07-01,94.08,99.8243165063414
+Charles Bailey,92,80+,USA,Left,City,7.0,7 to <9 hours,Undergraduate,Renault,2030-02-01,96.62,101.154083606497
+Kristie Brooks,50,50 to <60,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Mini,2031-10-01,92.64,88.8505696482301
+Tina Chambers,20,20 to <30,NZ,Right,City,7.5,7 to <9 hours,Undergraduate,Citroën,2031-08-01,96.74,102.6193402522
+Robert Fields,93,80+,Denmark,Left,City,5.5,Under 7 hours,Undergraduate,Honda,2031-11-01,97.09,101.162356857739
+Jeremiah Jones,76,70 to <80,USA,Right,City,5.0,Under 7 hours,Undergraduate,Tesla,2031-07-01,96.8,89.8232945476483
+Antonio Williams,24,20 to <30,Denmark,Right,Town,5.0,Under 7 hours,Postgraduate,Porsche,2031-06-01,91.93,95.9402614039411
+Anthony Curry,48,40 to <50,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Tesla,2032-06-01,98.79,104.939873409447
+Michael Edwards,29,20 to <30,USA,Right,City,5.5,Under 7 hours,Undergraduate,Tesla,2031-05-01,94.86,84.5103889642216
+Spencer Flores,44,40 to <50,Denmark,Right,Town,4.5,Under 7 hours,Undergraduate,Mercedes,2031-02-01,93.72,98.2764614011968
+David Ward,43,40 to <50,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Tesla,2032-04-01,90.99,94.662373035108
+Lauren Johnson,86,80+,Denmark,Right,City,7.5,7 to <9 hours,Undergraduate,Porsche,2032-07-01,99.46,110.931972333105
+Wayne Parks,68,60 to <70,Denmark,Right,City,5.5,Under 7 hours,Undergraduate,Kia,2030-10-01,97.9,99.1697195147484
+Yolanda Solomon,49,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Hyundai,2032-05-01,95.1,96.9868722846238
+Lauren Stout,42,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Mitsubishi,2032-02-01,93.61,94.3756734316064
+Drew Jennings,23,20 to <30,USA,Right,City,6.5,Under 7 hours,Undergraduate,Honda,2030-01-01,97.6,101.884342564186
+Tracy Robinson,66,60 to <70,USA,Right,Town,4.5,Under 7 hours,Undergraduate,Suzuki,2031-05-01,96.55,98.0716281867894
+Linda Jennings,56,50 to <60,USA,Right,City,5.0,Under 7 hours,Postgraduate,Tesla,2031-01-01,96.39,101.399118664516
+Erica Campbell,98,80+,USA,Right,City,8.5,7 to <9 hours,Undergraduate,Renault,2030-02-01,94.24,94.2642401222121
+Monique Lawrence,67,60 to <70,NZ,Right,Town,6.5,Under 7 hours,Postgraduate,Toyota,2031-10-01,96.29,99.4457371938789
+Karen Hughes,56,50 to <60,Denmark,Right,City,5.0,Under 7 hours,Undergraduate,Peugeot,2032-01-01,95.11,98.1232589951849
+Michael Campbell,56,50 to <60,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Fiat,2032-03-01,98.14,94.5425577542771
+John Williams,46,40 to <50,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Porsche,2030-04-01,92.99,104.322256022752
+Melissa Rodriguez,89,80+,USA,Right,City,7.5,7 to <9 hours,Postgraduate,Peugeot,2032-05-01,91.69,97.0993259224593
+Kimberly Reeves,67,60 to <70,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Hyundai,2032-10-01,100.17,98.1880376899994
+Mary Murray DVM,42,40 to <50,USA,Right,Town,8.5,7 to <9 hours,Postgraduate,Citroën,2031-09-01,97.11,102.372934204909
+Anna Hall,42,40 to <50,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Renault,2031-03-01,91.7,80.0279684155291
+Amanda Caldwell,23,20 to <30,NZ,Right,City,6.0,Under 7 hours,Undergraduate,BMW,2030-01-01,93.34,97.7867223374716
+Laurie Ayers,41,40 to <50,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Peugeot,2032-12-01,94.3,98.7753852311645
+Roy Garcia,43,40 to <50,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Mercedes,2032-06-01,94.45,97.0933388210061
+Robert Kelly,48,40 to <50,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Mini,2031-09-01,97.98,103.355400012193
+Sara Turner DVM,27,20 to <30,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2031-06-01,90.62,86.0139041971203
+Amanda Moore,41,40 to <50,Denmark,Right,City,7.5,7 to <9 hours,Undergraduate,Mazda,2031-12-01,94.55,98.1341328069379
+John Gallegos,71,70 to <80,NZ,Right,Town,8.5,7 to <9 hours,Undergraduate,Tesla,2031-06-01,96.96,102.478028134706
+Ricardo Ross,29,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Mini,2032-11-01,91.71,97.847591629712
+Zachary Robertson,24,20 to <30,USA,Left,City,8.0,7 to <9 hours,Undergraduate,Kia,2030-04-01,91.92,95.45972612265
+Michelle Alvarado,68,60 to <70,NZ,Right,Town,7.0,7 to <9 hours,Postgraduate,Mitsubishi,2031-08-01,95.67,101.307150381498
+Robert Henry,48,40 to <50,NZ,Left,City,5.5,Under 7 hours,Undergraduate,Citroën,2032-07-01,95.91,94.4157092816478
+Christine Barry,65,60 to <70,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Peugeot,2032-03-01,97.82,87.7416139728351
+Michael Mcgee,68,60 to <70,Denmark,Right,City,5.0,Under 7 hours,Postgraduate,Peugeot,2031-03-01,100.01,105.149310146872
+Jacob Gallagher,54,50 to <60,USA,Right,City,5.0,Under 7 hours,Undergraduate,Tesla,2032-08-01,96.48,113.464169812214
+Erin Lopez,24,20 to <30,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Citroën,2032-06-01,89.5,93.1720427491056
+Isabella Hill,68,60 to <70,USA,Right,Town,5.0,Under 7 hours,Undergraduate,Tesla,2032-10-01,96.75,95.6177423391345
+Jacob White,55,50 to <60,NZ,Right,City,7.5,7 to <9 hours,Postgraduate,Suzuki,2030-01-01,99.79,99.7717068947152
+Charles Carroll,49,40 to <50,USA,Right,City,8.5,7 to <9 hours,Postgraduate,Honda,2030-09-01,97.37,106.821853576501
+Andrew Daniels,68,60 to <70,USA,Right,City,7.5,7 to <9 hours,Postgraduate,Tesla,2031-02-01,98.73,93.2210999771048
+Natalie Smith,55,50 to <60,USA,Right,City,6.0,Under 7 hours,Undergraduate,BMW,2030-03-01,96.3,92.0684712973971
+Paula Wilson,27,20 to <30,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Tesla,2031-01-01,95.11,92.3047885390251
+Sheila Noble,47,40 to <50,USA,Right,City,6.5,Under 7 hours,Postgraduate,Peugeot,2032-08-01,95.51,97.2792470565709
+Anna Phillips,79,70 to <80,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Peugeot,2031-03-01,91.38,95.8653071447622
+Steven Cooper,58,50 to <60,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Hyundai,2031-11-01,97.68,102.731608105079
+Charles Stark,89,80+,Denmark,Right,City,5.5,Under 7 hours,Undergraduate,Toyota,2032-04-01,100.26,106.403287319651
+Peter Russell,24,20 to <30,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-05-01,98.06,107.606932510469
+Kyle Dillon,68,60 to <70,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Porsche,2032-11-01,97.71,107.202200684896
+Timothy Sutton,41,40 to <50,NZ,Right,Town,5.5,Under 7 hours,Postgraduate,Rolls Royce,2031-09-01,92.41,85.8657852437821
+Katherine Peterson,54,50 to <60,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Kia,2032-02-01,92.88,87.2111450245426
+Joseph Parker,88,80+,USA,Left,City,7.5,7 to <9 hours,Undergraduate,Renault,2031-09-01,100.13,95.4510582997088
+Dr. Jennifer Cooper,50,50 to <60,Denmark,Right,Town,4.5,Under 7 hours,Undergraduate,Mini,2032-04-01,93.7,103.477079474681
+Cody Franklin,94,80+,USA,Right,City,8.0,7 to <9 hours,Postgraduate,Nissan,2030-09-01,90.86,95.1916859671316
+Shawn Vargas,49,40 to <50,Denmark,Right,Town,7.5,7 to <9 hours,Undergraduate,Renault,2032-05-01,92.93,91.5375508797511
+Jeanette Villanueva,77,70 to <80,NZ,Left,Town,8.0,7 to <9 hours,Undergraduate,Renault,2032-02-01,97.54,106.60079244021
+Rachael Taylor,68,60 to <70,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Hyundai,2031-02-01,96.7,100.059878112339
+Stephanie Miller,51,50 to <60,NZ,Left,Town,6.5,Under 7 hours,Undergraduate,Mini,2032-07-01,92.67,89.9834616997667
+Alexander Scott,81,80+,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Toyota,2032-09-01,94.47,96.4397668668757
+Larry Barnes,54,50 to <60,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Mitsubishi,2030-11-01,95.8,93.5879784045128
+Patrick Jones,77,70 to <80,USA,Left,Town,6.0,Under 7 hours,Undergraduate,Mini,2032-08-01,97.29,105.7081069741
+Brady Mitchell,43,40 to <50,USA,Right,City,6.0,Under 7 hours,Postgraduate,Honda,2032-06-01,96.72,109.021753493992
+Roger Welch,41,40 to <50,Denmark,Right,City,8.0,7 to <9 hours,Postgraduate,Peugeot,2030-09-01,91.08,97.012331992109
+Deborah Colon,25,20 to <30,Denmark,Left,City,8.0,7 to <9 hours,Undergraduate,Porsche,2031-11-01,88.32,94.2838580644904
+Jessica Juarez,51,50 to <60,USA,Right,City,6.5,Under 7 hours,Postgraduate,Tesla,2030-02-01,98.52,107.674310825459
+Patrick Garcia,20,20 to <30,USA,Left,Town,8.0,7 to <9 hours,Undergraduate,Citroën,2032-12-01,90.08,97.7646734783008
+Paul Stuart,48,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Hyundai,2032-06-01,89.47,96.7295642206885
+Christopher Cunningham,43,40 to <50,USA,Left,City,7.5,7 to <9 hours,Undergraduate,Fiat,2031-09-01,92.01,109.928057141663
+Victoria Davenport,43,40 to <50,Denmark,Left,Town,7.0,7 to <9 hours,Undergraduate,Audi,2032-08-01,97.15,107.417872809454
+Cindy Brown,27,20 to <30,USA,Right,Town,4.5,Under 7 hours,Undergraduate,Mini,2032-01-01,95.67,109.694725310973
+Anne Martin,42,40 to <50,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Toyota,2030-02-01,93.93,96.8570501104803
+Mallory Johnson,26,20 to <30,USA,Left,Town,6.0,Under 7 hours,Undergraduate,Porsche,2031-05-01,94.79,98.3067309614665
+Cassidy Miller,76,70 to <80,Denmark,Right,City,6.5,Under 7 hours,Postgraduate,Mini,2032-02-01,98.76,99.6324379403489
+Daniel Wells,28,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Postgraduate,Mitsubishi,2030-11-01,96.73,97.9095650827842
+Rachel Garrison,65,60 to <70,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Kia,2032-08-01,96.16,111.881398757574
+Dawn Cochran,29,20 to <30,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Tesla,2032-05-01,88.9,101.980013001108
+Peggy Kirk,60,60 to <70,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Hyundai,2031-03-01,93.8,95.6237049346801
+Brenda Williams,73,70 to <80,NZ,Right,Town,4.5,Under 7 hours,Undergraduate,Toyota,2031-12-01,97.56,99.6613486103723
+Vincent Hoffman,59,50 to <60,USA,Right,City,5.5,Under 7 hours,Undergraduate,Nissan,2031-05-01,95.74,107.542502879433
+Darren Lane,65,60 to <70,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Hyundai,2032-07-01,94.75,100.850551108491
+Kimberly Lee,74,70 to <80,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Toyota,2031-07-01,96.9,104.627214606796
+Melissa Cooke,95,80+,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Volkswagen,2032-10-01,96.48,120.767907369783
+Ashley Marshall,68,60 to <70,USA,Left,Town,6.5,Under 7 hours,Undergraduate,Suzuki,2032-02-01,94.41,100.656452159803
+Julie Lara,66,60 to <70,NZ,Left,City,8.5,7 to <9 hours,Undergraduate,Kia,2030-10-01,95.49,104.46771929979
+Anthony Larson,82,80+,NZ,Right,City,6.0,Under 7 hours,Postgraduate,Fiat,2032-06-01,97.26,96.2110074289312
+Jose Parker,83,80+,USA,Right,City,8.5,7 to <9 hours,Postgraduate,Mini,2032-12-01,93.97,100.282976608323
+Robert Lewis,52,50 to <60,USA,Left,Town,7.5,7 to <9 hours,Undergraduate,Suzuki,2030-03-01,97.49,105.894463560287
+Angela Lee,27,20 to <30,USA,Left,City,8.5,7 to <9 hours,Undergraduate,Mini,2032-12-01,92.2,85.8705893309282
+James Rice,26,20 to <30,Denmark,Right,Town,5.5,Under 7 hours,Postgraduate,Mazda,2030-04-01,89.03,100.996250560809
+James Stokes MD,28,20 to <30,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Tesla,2031-01-01,90.92,98.2135177485711
+Jennifer Young,52,50 to <60,Denmark,Left,Town,8.5,7 to <9 hours,Undergraduate,Kia,2032-04-01,95.13,100.69651563299
+Gary Larson,79,70 to <80,NZ,Right,City,5.5,Under 7 hours,Undergraduate,Peugeot,2032-02-01,97.36,100.878988773008
+Lindsey Anderson,51,50 to <60,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Suzuki,2032-02-01,94.39,107.574034570182
+Richard Bush,59,50 to <60,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-01-01,93.92,93.1247977421549
+Logan Morales,74,70 to <80,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Hyundai,2031-11-01,98.7,102.435951015537
+Vanessa Reilly,25,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Tesla,2031-01-01,95.38,96.0867187983216
+Andrew Acevedo,58,50 to <60,NZ,Right,Town,8.0,7 to <9 hours,Undergraduate,Audi,2032-09-01,94.78,102.394310806121
+Sheri Smith,73,70 to <80,USA,Left,City,6.5,Under 7 hours,Undergraduate,Toyota,2031-05-01,98.66,101.034142211527
+James Mendez,58,50 to <60,Denmark,Left,City,8.5,7 to <9 hours,Undergraduate,Mini,2030-03-01,99.29,107.916996656236
+Penny Roberts,20,20 to <30,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Toyota,2031-05-01,94.15,106.266396390424
+Marvin Lee,47,40 to <50,Denmark,Right,City,6.5,Under 7 hours,Undergraduate,Toyota,2031-02-01,97.12,97.2129575297699
+Brandon Copeland,58,50 to <60,USA,Right,City,6.5,Under 7 hours,Undergraduate,Renault,2031-02-01,94.7,97.0544376697669
+Justin Chapman,49,40 to <50,USA,Right,Town,4.5,Under 7 hours,Undergraduate,Toyota,2032-12-01,96.41,109.046018428079
+Olivia Frazier,49,40 to <50,USA,Right,City,4.0,Under 7 hours,Undergraduate,Porsche,2031-10-01,90.9,104.137924937162
+Rhonda Shelton,27,20 to <30,Denmark,Right,Town,8.0,7 to <9 hours,Undergraduate,Tesla,2031-09-01,92.33,99.2876270110454
+Brad Baker,47,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Audi,2030-01-01,100.55,113.485254569541
+Jennifer Rodriguez,54,50 to <60,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2032-07-01,98.99,109.179220190118
+Elizabeth Bartlett,52,50 to <60,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Tesla,2030-09-01,99.92,115.160138901271
+Keith Delgado,47,40 to <50,USA,Right,Town,5.0,Under 7 hours,Postgraduate,Toyota,2031-09-01,96.65,107.718385463393
+Patrick Herrera,74,70 to <80,USA,Right,Town,5.0,Under 7 hours,Undergraduate,Nissan,2030-09-01,93.45,93.9266234918296
+Karen Patterson,41,40 to <50,Denmark,Right,City,7.0,7 to <9 hours,Postgraduate,Kia,2032-06-01,94.63,92.1002181388769
+Emma Morales,96,80+,NZ,Right,City,3.0,Under 7 hours,Undergraduate,Tesla,2032-05-01,96.54,96.7951687919071
+Erika Singh,49,40 to <50,Denmark,Right,Town,7.0,7 to <9 hours,Undergraduate,Nissan,2031-02-01,94.07,91.5532431080439
+Fred Greene,21,20 to <30,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Kia,2032-09-01,94.53,98.7990434152687
+Daniel Ashley,80,80+,Denmark,Right,Town,7.0,7 to <9 hours,Undergraduate,Peugeot,2030-10-01,89.74,85.7170017831944
+Maria Shaw,56,50 to <60,USA,Left,City,7.0,7 to <9 hours,Undergraduate,Citroën,2030-03-01,95.54,96.971949937208
+Morgan Phelps,97,80+,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Kia,2031-03-01,95.73,102.252855973121
+Nathan Howard,50,50 to <60,Denmark,Right,City,6.5,Under 7 hours,Postgraduate,Fiat,2032-03-01,91.86,101.330356498303
+Hunter Stevens,81,80+,USA,Right,City,2.5,Under 7 hours,Undergraduate,Toyota,2030-02-01,100.69,101.270383326907
+Valerie Cruz,78,70 to <80,USA,Right,Town,8.0,7 to <9 hours,Postgraduate,Citroën,2031-12-01,98.67,102.219021476159
+David Wright,87,80+,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Hyundai,2030-01-01,96.21,103.683491446396
+Jacqueline Ortiz,26,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Postgraduate,Kia,2030-10-01,92.42,97.2297211886379
+Connor Potter,66,60 to <70,USA,Left,Town,8.0,7 to <9 hours,Postgraduate,Mazda,2031-08-01,91.48,87.9660231070082
+Ricardo Berry,96,80+,NZ,Right,Town,5.5,Under 7 hours,Postgraduate,Mini,2030-09-01,94.6,84.0240337222516
+Tristan Miller,52,50 to <60,NZ,Right,City,7.0,7 to <9 hours,Postgraduate,Suzuki,2030-03-01,94.44,103.96581605064
+Cory Powell,70,70 to <80,USA,Right,City,5.5,Under 7 hours,Undergraduate,Tesla,2031-05-01,96.68,98.2443665818576
+Kimberly Mcneil,74,70 to <80,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Volkswagen,2031-05-01,95.79,109.157797308748
+Lisa Kelly,26,20 to <30,USA,Right,City,6.5,Under 7 hours,Undergraduate,Tesla,2031-03-01,87.3,90.0818495949359
+Hannah Dixon,87,80+,USA,Right,City,5.5,Under 7 hours,Postgraduate,Tesla,2030-02-01,97.57,88.7445038040288
+Joshua Mcdonald,40,40 to <50,USA,Right,Town,5.5,Under 7 hours,Postgraduate,Peugeot,2030-02-01,92.77,94.8795500453228
+Jared Vang,42,40 to <50,NZ,Right,City,6.5,Under 7 hours,Postgraduate,Porsche,2030-02-01,94.21,87.8257011588386
+Thomas Jacobs,24,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Citroën,2030-10-01,91.25,104.167535100407
+Anne Hendricks,54,50 to <60,USA,Right,City,5.5,Under 7 hours,Postgraduate,Citroën,2031-05-01,95.23,91.3434507187054
+Mary Jenkins,49,40 to <50,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Audi,2031-02-01,96.18,116.022155112574
+James Tucker,79,70 to <80,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Suzuki,2030-01-01,99.15,95.7084711212235
+Tracey Roberts,67,60 to <70,Denmark,Right,Town,6.0,Under 7 hours,Undergraduate,Toyota,2030-10-01,92.92,93.4998953614254
+Brianna Jackson,92,80+,NZ,Right,Town,3.0,Under 7 hours,Undergraduate,Toyota,2030-02-01,95.67,95.3291561638723
+Tammy Cohen,50,50 to <60,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Tesla,2032-03-01,93.25,108.561507848596
+Stanley Tran,21,20 to <30,Denmark,Left,Town,6.0,Under 7 hours,Undergraduate,Volkswagen,2031-11-01,89.44,99.1712329588127
+Nathaniel Brown,70,70 to <80,NZ,Right,Town,7.0,7 to <9 hours,Undergraduate,Rolls Royce,2032-03-01,93.92,101.596073761968
+John Macdonald,40,40 to <50,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Mazda,2031-11-01,91.9,100.930774769781
+Andrew Williams,51,50 to <60,USA,Right,City,7.5,7 to <9 hours,Postgraduate,Tesla,2030-11-01,94.15,103.41783336043
+Shawn Williams,87,80+,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Renault,2030-11-01,91.8,107.616187992999
+Kimberly Anderson,42,40 to <50,NZ,Right,City,6.0,Under 7 hours,Postgraduate,Mazda,2032-03-01,92.65,95.2503994700582
+Chelsea Floyd,72,70 to <80,USA,Left,City,8.0,7 to <9 hours,Undergraduate,Toyota,2031-05-01,97.54,97.3844220083136
+Jeremy Farley,80,80+,USA,Right,City,6.5,Under 7 hours,Undergraduate,Fiat,2032-08-01,97.86,111.499231623869
+Martha Keller,85,80+,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-09-01,97.58,101.097833840813
+Angela Franco,46,40 to <50,USA,Right,City,7.5,7 to <9 hours,Postgraduate,Toyota,2032-12-01,93.95,108.105577201846
+Kelli Hart,73,70 to <80,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Toyota,2032-01-01,93.98,94.1366080166641
+Christina Davis,70,70 to <80,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Suzuki,2030-09-01,99.07,100.921758330551
+James Boone,94,80+,NZ,Right,Town,6.0,Under 7 hours,Undergraduate,Kia,2032-04-01,95.89,91.4944277684392
+Paul Mullen,81,80+,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-07-01,96.07,98.475760451838
+Kristina Welch,61,60 to <70,Denmark,Left,Town,5.5,Under 7 hours,Undergraduate,Mazda,2032-04-01,91.44,104.918727489605
+Ashley Gibbs,54,50 to <60,Denmark,Right,City,6.5,Under 7 hours,Undergraduate,Mazda,2032-12-01,95.51,93.0371475914399
+Wendy Pollard,79,70 to <80,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Mazda,2031-01-01,92.65,108.343561191447
+Joseph Martinez,65,60 to <70,Denmark,Left,Town,5.5,Under 7 hours,Postgraduate,Citroën,2030-09-01,99.15,105.833724125606
+Shane Neal,75,70 to <80,Denmark,Right,City,6.5,Under 7 hours,Undergraduate,Mini,2031-10-01,95.05,102.37108600384
+Brenda Wood,25,20 to <30,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Toyota,2030-11-01,90.83,83.459593858126
+Miguel Munoz,51,50 to <60,NZ,Left,Town,6.5,Under 7 hours,Undergraduate,Suzuki,2030-11-01,91.68,103.496822954624
+Deanna Allen,84,80+,NZ,Left,City,7.0,7 to <9 hours,Postgraduate,Mazda,2031-07-01,98.04,103.145103270985
+Jordan Martin DDS,25,20 to <30,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Kia,2030-03-01,87.2,106.900593421661
+David Smith,64,60 to <70,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Nissan,2031-09-01,98.81,105.670803156615
+Vanessa Strickland,89,80+,USA,Right,City,5.0,Under 7 hours,Undergraduate,Maserati,2032-04-01,94.21,92.2118937646886
+Amber Campbell,48,40 to <50,NZ,Left,City,4.5,Under 7 hours,Undergraduate,Honda,2032-02-01,97.04,100.916307195549
+Martha Brown,85,80+,USA,Left,Town,5.0,Under 7 hours,Postgraduate,Toyota,2030-11-01,96.97,103.082135316471
+Jessica Griffin,26,20 to <30,NZ,Right,Town,8.0,7 to <9 hours,Postgraduate,Toyota,2031-11-01,92.09,95.8762220599302
+Nicole Huffman,41,40 to <50,USA,Left,City,8.5,7 to <9 hours,Postgraduate,Mazda,2031-12-01,98.13,106.820876602795
+Justin Gonzalez,45,40 to <50,USA,Right,City,6.5,Under 7 hours,Postgraduate,Renault,2032-06-01,95.56,101.22028288565
+Jessica Carpenter,41,40 to <50,NZ,Right,City,7.0,7 to <9 hours,Postgraduate,Hyundai,2032-06-01,92.95,99.9615902868329
+Kendra Cruz,55,50 to <60,NZ,Right,City,6.0,Under 7 hours,Undergraduate,Toyota,2032-05-01,93.58,92.9890113851298
+Judy Bridges,79,70 to <80,USA,Left,Town,6.5,Under 7 hours,Postgraduate,Toyota,2032-06-01,96.69,102.007940171891
+Kyle Schwartz,22,20 to <30,NZ,Left,Town,6.0,Under 7 hours,Undergraduate,Toyota,2032-12-01,91.01,97.5225060252517
+Christopher Simmons,41,40 to <50,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Mazda,2032-12-01,89.76,108.293912877372
+Ethan Hodge,47,40 to <50,Denmark,Right,City,8.0,7 to <9 hours,Postgraduate,Tesla,2031-12-01,96.61,102.72680451121
+Meghan Nelson,41,40 to <50,USA,Left,Town,5.0,Under 7 hours,Undergraduate,Renault,2032-07-01,94.74,85.1577640660351
+Jacob Boyd,62,60 to <70,USA,Left,City,7.5,7 to <9 hours,Undergraduate,Porsche,2032-04-01,93.51,100.452543747243
+Rhonda Mason,74,70 to <80,NZ,Right,City,7.0,7 to <9 hours,Postgraduate,Renault,2030-03-01,94.94,89.2298811962533
+Janet Pierce,23,20 to <30,Denmark,Left,City,7.0,7 to <9 hours,Postgraduate,Audi,2031-07-01,91.4,83.9975387778636
+John Barrera,26,20 to <30,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Kia,2031-10-01,93.15,95.0595617923339
+Laura Shaw,74,70 to <80,USA,Right,City,8.5,7 to <9 hours,Undergraduate,Citroën,2031-03-01,95.7,91.719546070216
+Austin Cabrera,20,20 to <30,NZ,Right,City,8.5,7 to <9 hours,Undergraduate,Peugeot,2032-08-01,91.66,90.415482284031
+Catherine Carpenter,55,50 to <60,USA,Right,City,6.0,Under 7 hours,Postgraduate,Toyota,2031-06-01,95.89,95.6588418019623
+James Perez,57,50 to <60,Denmark,Right,City,8.5,7 to <9 hours,Undergraduate,Volkswagen,2032-10-01,96.66,96.4296663896904
+Timothy Gutierrez,24,20 to <30,USA,Left,City,8.5,7 to <9 hours,Undergraduate,Toyota,2031-08-01,93.32,101.196602886919
+Brian Henderson,41,40 to <50,USA,Left,City,4.0,Under 7 hours,Postgraduate,Mazda,2031-07-01,95.92,103.524052830974
+Wesley Dalton,80,80+,Denmark,Left,City,4.5,Under 7 hours,Postgraduate,Tesla,2032-12-01,97.56,96.9382649792586
+Michael Ponce,96,80+,USA,Right,City,5.0,Under 7 hours,Undergraduate,Hyundai,2032-09-01,95.87,95.646563853251
+Jennifer Graves MD,43,40 to <50,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Mini,2031-10-01,92.0,113.586313611045
+Nicholas Caldwell,21,20 to <30,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Nissan,2031-06-01,92.36,94.8696768667799
+Cindy Day,50,50 to <60,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Mazda,2031-07-01,93.27,114.572968819397
+Shawn Anderson,63,60 to <70,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Volkswagen,2031-10-01,92.58,92.55894520432
+Kim Pruitt,75,70 to <80,USA,Left,Town,5.5,Under 7 hours,Undergraduate,Renault,2032-01-01,95.66,94.1196458397183
+Tyler Palmer,27,20 to <30,NZ,Right,Town,7.0,7 to <9 hours,Undergraduate,Toyota,2032-03-01,95.12,88.5638621724314
+Joshua Cannon,24,20 to <30,Denmark,Right,Town,8.0,7 to <9 hours,Undergraduate,Fiat,2032-07-01,95.28,100.709525892364
+Nancy Green,85,80+,Denmark,Right,City,8.5,7 to <9 hours,Undergraduate,Toyota,2030-11-01,97.62,90.0031108867066
+Ian Hamilton Jr.,57,50 to <60,USA,Left,City,6.5,Under 7 hours,Undergraduate,Honda,2032-04-01,91.98,95.1118597592928
+Billy Campbell,56,50 to <60,NZ,Left,Town,5.5,Under 7 hours,Undergraduate,Mitsubishi,2031-08-01,95.49,91.9487630975169
+Stephanie Reese,64,60 to <70,USA,Right,City,6.0,Under 7 hours,Undergraduate,Kia,2032-11-01,94.28,91.7818557235406
+Sean Sparks,48,40 to <50,USA,Right,City,5.0,Under 7 hours,Postgraduate,Fiat,2032-07-01,91.49,86.1061219934827
+Michael Stanton,28,20 to <30,USA,Left,Town,8.0,7 to <9 hours,Postgraduate,Tesla,2031-06-01,91.26,96.86372867031
+Cody Weber,97,80+,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Fiat,2031-08-01,92.54,98.5151376045148
+Morgan Warren,59,50 to <60,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Tesla,2032-02-01,98.01,102.613266915539
+Terry Park,24,20 to <30,NZ,Right,City,7.5,7 to <9 hours,Undergraduate,Fiat,2030-11-01,87.97,93.1309999833652
+Ryan French,48,40 to <50,Denmark,Right,City,5.0,Under 7 hours,Undergraduate,Toyota,2030-09-01,91.86,105.587375547239
+Kara Rodriguez,57,50 to <60,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Renault,2030-02-01,94.21,98.2996063799821
+Amanda Thompson,22,20 to <30,USA,Right,City,5.0,Under 7 hours,Postgraduate,Mini,2030-03-01,89.01,96.1028782007883
+Jennifer Lopez,60,60 to <70,NZ,Right,City,6.5,Under 7 hours,Undergraduate,Honda,2031-10-01,95.47,99.3210245898888
+Daisy Richmond,23,20 to <30,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Kia,2032-06-01,93.77,94.5180001577422
+Richard Gonzalez,60,60 to <70,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Volkswagen,2030-02-01,94.82,109.481921690921
+Connie King,70,70 to <80,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Toyota,2032-08-01,94.25,91.6491334375214
+Michael Wyatt,51,50 to <60,USA,Right,City,6.0,Under 7 hours,Undergraduate,Volkswagen,2031-04-01,94.38,95.7290883568397
+Michelle Wu,53,50 to <60,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Mitsubishi,2031-07-01,95.33,108.920821327767
+Lauren Lawson,53,50 to <60,USA,Left,City,7.0,7 to <9 hours,Undergraduate,Hyundai,2032-10-01,98.18,92.7572670921372
+Taylor Holmes,50,50 to <60,NZ,Right,Town,6.5,Under 7 hours,Undergraduate,Tesla,2030-10-01,97.56,110.920503892845
+Angel Newman,59,50 to <60,Denmark,Right,Town,8.0,7 to <9 hours,Undergraduate,Toyota,2031-08-01,101.63,114.153277262888
+Andrea Robertson,52,50 to <60,Denmark,Right,City,6.0,Under 7 hours,Undergraduate,Peugeot,2032-11-01,93.99,93.1348552987648
+Jordan Cox,59,50 to <60,USA,Left,Town,5.5,Under 7 hours,Undergraduate,Renault,2032-02-01,97.44,88.430154844983
+Kimberly Butler,63,60 to <70,USA,Left,City,3.5,Under 7 hours,Undergraduate,Toyota,2030-04-01,96.79,100.296632045654
+Elizabeth White,43,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Nissan,2031-04-01,97.12,98.0576675355446
+Bailey Pham,45,40 to <50,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Tesla,2031-09-01,95.27,93.4287841912633
+Terry Bean,59,50 to <60,USA,Right,City,8.0,7 to <9 hours,Postgraduate,Toyota,2032-08-01,98.23,100.827205298718
+Steven Wilcox,45,40 to <50,USA,Right,City,8.5,7 to <9 hours,Undergraduate,Lamborghini,2031-08-01,90.04,97.041855422958
+Brett Turner,27,20 to <30,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Toyota,2032-11-01,90.5,95.9459957020045
+Kerry Lopez,82,80+,USA,Right,Town,5.5,Under 7 hours,Undergraduate,Toyota,2032-12-01,97.03,107.077339258906
+John Kennedy,46,40 to <50,Denmark,Right,City,5.0,Under 7 hours,Undergraduate,Citroën,2032-09-01,95.49,104.502113463658
+Jaime Campos,27,20 to <30,Denmark,Right,Town,7.5,7 to <9 hours,Undergraduate,Mini,2032-07-01,95.28,97.5914527185092
+Samuel Henderson,46,40 to <50,USA,Left,City,7.0,7 to <9 hours,Undergraduate,Volkswagen,2030-01-01,91.87,100.960093232606
+Clifford Roberts,55,50 to <60,NZ,Right,City,7.0,7 to <9 hours,Postgraduate,Audi,2030-03-01,95.65,109.957493681455
+Breanna Washington,22,20 to <30,Denmark,Right,City,8.5,7 to <9 hours,Postgraduate,Mitsubishi,2030-01-01,89.08,92.936694400542
+Monica Bonilla,52,50 to <60,Denmark,Right,Town,6.5,Under 7 hours,Undergraduate,Mitsubishi,2030-10-01,96.57,88.8975913811649
+Corey King,47,40 to <50,Denmark,Right,City,6.5,Under 7 hours,Undergraduate,Hyundai,2032-03-01,97.57,110.703727293992
+James Anderson,82,80+,Denmark,Right,City,8.5,7 to <9 hours,Undergraduate,Renault,2030-01-01,96.03,100.47888520633
+Danielle Wells,50,50 to <60,USA,Right,City,6.0,Under 7 hours,Undergraduate,Suzuki,2032-10-01,95.04,100.519057164051
+Jenna Saunders,44,40 to <50,USA,Right,City,8.5,7 to <9 hours,Undergraduate,Mini,2031-09-01,93.24,110.969857246366
+Lisa Reyes,44,40 to <50,Denmark,Right,City,7.0,7 to <9 hours,Undergraduate,Toyota,2031-01-01,96.37,100.508839228503
+Diana Scott,54,50 to <60,USA,Left,City,8.5,7 to <9 hours,Undergraduate,Tesla,2032-02-01,95.7,103.435415725028
+Barbara Le,55,50 to <60,NZ,Right,Town,7.5,7 to <9 hours,Postgraduate,Kia,2032-08-01,94.82,86.5770652077104
+John Simpson,27,20 to <30,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Toyota,2031-03-01,97.44,100.609137975254
+Kayla Clark,28,20 to <30,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Peugeot,2031-02-01,89.59,84.7217472465707
+Natalie Smith,51,50 to <60,USA,Left,Town,7.0,7 to <9 hours,Undergraduate,Toyota,2031-09-01,95.22,93.5251115210569
+Anthony Lawrence,62,60 to <70,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Tesla,2031-07-01,101.22,111.671007565778
+Mr. Michael Copeland,54,50 to <60,USA,Right,City,8.0,7 to <9 hours,Undergraduate,Toyota,2030-04-01,95.36,103.953217636516
+David Schroeder,56,50 to <60,USA,Right,Town,5.0,Under 7 hours,Undergraduate,Fiat,2031-12-01,92.1,99.6966355943517
+Richard Duke,95,80+,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Kia,2032-02-01,94.73,103.837795054497
+David Mckenzie,20,20 to <30,Denmark,Right,City,6.5,Under 7 hours,Undergraduate,Hyundai,2032-02-01,96.33,97.5895808180126
+Jesse Sanchez,65,60 to <70,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Mazda,2032-10-01,95.92,102.193572845539
+Tonya Beard,40,40 to <50,Denmark,Left,City,6.5,Under 7 hours,Postgraduate,BMW,2031-01-01,94.84,97.5113802800907
+Matthew Walker,25,20 to <30,USA,Right,City,6.5,Under 7 hours,Undergraduate,Volkswagen,2032-04-01,87.44,98.5715543075361
+James Hughes,43,40 to <50,USA,Right,Town,4.0,Under 7 hours,Undergraduate,Tesla,2032-01-01,92.17,86.260361180313
+Adrienne Hayden,41,40 to <50,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Hyundai,2031-12-01,95.33,97.5429626049923
+Kathy Phillips,58,50 to <60,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,BMW,2031-09-01,95.71,108.918510083522
+Kaitlyn Johnson,59,50 to <60,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Citroën,2032-12-01,93.81,87.8503639808977
+Caleb White,76,70 to <80,Denmark,Right,City,6.0,Under 7 hours,Undergraduate,Suzuki,2031-01-01,95.18,96.8565874409441
+Carmen Harvey,49,40 to <50,USA,Right,City,6.5,Under 7 hours,Undergraduate,Mazda,2032-06-01,94.34,100.618557212199
+Daniel Ford,57,50 to <60,NZ,Right,City,5.5,Under 7 hours,Undergraduate,Nissan,2032-11-01,92.7,99.79423931997
+Maria Rhodes,58,50 to <60,Denmark,Right,Town,8.5,7 to <9 hours,Postgraduate,Kia,2030-03-01,98.28,113.394942534222
+Jeremy Trujillo,59,50 to <60,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Peugeot,2030-10-01,97.33,89.1348527983273
+Carrie Pennington,76,70 to <80,Denmark,Right,Town,7.0,7 to <9 hours,Postgraduate,Renault,2032-09-01,97.59,98.9931299961008
+Nancy Smith,83,80+,USA,Right,City,7.0,7 to <9 hours,Postgraduate,Mitsubishi,2031-11-01,97.33,108.830710336599
+Christopher Andrade,40,40 to <50,USA,Left,Town,8.0,7 to <9 hours,Postgraduate,Toyota,2032-02-01,96.38,93.6971529302325
+David Wise,59,50 to <60,Denmark,Right,City,5.5,Under 7 hours,Postgraduate,Volkswagen,2032-01-01,97.03,108.02177337587
+Keith Chapman,43,40 to <50,NZ,Right,City,8.5,7 to <9 hours,Undergraduate,Tesla,2031-06-01,95.93,107.03754257381
+Sarah Baker,24,20 to <30,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Kia,2031-03-01,95.58,114.815032667326
+Catherine Montgomery,62,60 to <70,Denmark,Right,City,7.5,7 to <9 hours,Undergraduate,Nissan,2032-09-01,98.13,94.9205284453607
+Miss Ashley Anderson MD,65,60 to <70,USA,Left,City,5.0,Under 7 hours,Postgraduate,Toyota,2032-07-01,96.15,108.644602431683
+Lindsey Knight,50,50 to <60,NZ,Right,City,6.5,Under 7 hours,Undergraduate,Nissan,2031-05-01,96.36,98.6919544235785
+Thomas Davidson,78,70 to <80,USA,Right,City,8.5,7 to <9 hours,Undergraduate,Fiat,2031-01-01,97.12,96.6959384262509
+Ashley Dunn,76,70 to <80,NZ,Right,City,8.0,7 to <9 hours,Undergraduate,Toyota,2031-08-01,99.17,105.145141295157
+Daryl Frey,59,50 to <60,NZ,Left,Town,6.0,Under 7 hours,Undergraduate,Nissan,2030-09-01,95.4,104.740716043486
+David Morgan,47,40 to <50,USA,Right,City,5.5,Under 7 hours,Postgraduate,Renault,2030-11-01,100.74,111.913547074188
+Colleen Glenn,54,50 to <60,USA,Right,Town,6.5,Under 7 hours,Undergraduate,Toyota,2032-08-01,96.79,100.37242084393
+Susan Lewis,81,80+,USA,Right,Town,8.5,7 to <9 hours,Undergraduate,Mini,2030-09-01,96.75,90.3527756366118
+Jerry Gibson,40,40 to <50,USA,Right,City,5.5,Under 7 hours,Undergraduate,Honda,2031-12-01,96.18,102.117707841316
+Matthew Anderson,20,20 to <30,Denmark,Right,Town,8.0,7 to <9 hours,Undergraduate,Volkswagen,2031-06-01,95.04,86.016072908883
+Patrick Avila,24,20 to <30,Denmark,Right,City,4.5,Under 7 hours,Undergraduate,Tesla,2032-02-01,95.75,92.3139760190404
+Daniel Mason,74,70 to <80,USA,Right,Town,8.0,7 to <9 hours,Undergraduate,Citroën,2030-01-01,95.22,97.8790875142444
+Ryan Carroll,60,60 to <70,NZ,Right,Town,4.0,Under 7 hours,Postgraduate,Hyundai,2032-08-01,92.88,87.8520810639112
+Jeffery Jones,87,80+,Denmark,Right,City,8.0,7 to <9 hours,Undergraduate,Nissan,2031-05-01,97.26,110.74700107222
+Mary Hunt,63,60 to <70,Denmark,Left,City,6.0,Under 7 hours,Postgraduate,Tesla,2031-05-01,97.84,94.9407557150127
+Melvin Villanueva,74,70 to <80,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Renault,2032-04-01,97.59,99.1192173043618
+Melissa Stein,48,40 to <50,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2031-10-01,96.87,104.092802295463
+Colleen Mccann,27,20 to <30,USA,Right,City,8.5,7 to <9 hours,Undergraduate,BMW,2032-10-01,96.95,99.3344426287817
+Isaiah Curtis,52,50 to <60,USA,Left,City,6.5,Under 7 hours,Undergraduate,Nissan,2032-07-01,93.79,108.421458299931
+Justin Torres,29,20 to <30,NZ,Right,City,6.5,Under 7 hours,Undergraduate,Nissan,2031-06-01,94.25,94.2245376911116
+Carrie Parker,95,80+,USA,Right,City,6.5,Under 7 hours,Undergraduate,Mazda,2030-02-01,93.64,102.085221761932
+Charles Johnson,62,60 to <70,USA,Right,City,5.5,Under 7 hours,Undergraduate,Toyota,2030-11-01,93.43,106.930863110738
+Tiffany Thomas,26,20 to <30,USA,Right,City,3.5,Under 7 hours,Undergraduate,Kia,2030-03-01,92.88,113.156420291827
+Evelyn Shelton,29,20 to <30,Denmark,Right,City,8.0,7 to <9 hours,Undergraduate,Mazda,2031-10-01,92.62,107.302009579638
+Steven Flores,29,20 to <30,NZ,Right,Town,7.5,7 to <9 hours,Undergraduate,Peugeot,2031-02-01,95.09,91.3462597334308
+Olivia Richardson,97,80+,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2030-03-01,93.97,95.0099262842586
+Jason Moore,21,20 to <30,USA,Left,City,7.0,7 to <9 hours,Undergraduate,Tesla,2031-05-01,89.15,90.5595686745578
+Gavin Walker,80,80+,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Toyota,2031-04-01,90.98,102.81012384853
+Jackson Martinez,83,80+,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Renault,2032-10-01,94.4,102.510876090076
+Sarah Robinson,87,80+,Denmark,Right,City,7.0,7 to <9 hours,Postgraduate,BMW,2031-11-01,88.86,80.1546890853354
+Kristie Moody,87,80+,USA,Left,Town,7.0,7 to <9 hours,Undergraduate,Toyota,2030-10-01,97.04,90.4842179080695
+Tyler Rosales,24,20 to <30,NZ,Right,City,7.5,7 to <9 hours,Undergraduate,Suzuki,2032-04-01,92.23,86.0401338863525
+Daniel Griffith,78,70 to <80,USA,Left,Town,7.5,7 to <9 hours,Undergraduate,Mitsubishi,2030-09-01,97.12,99.0420275769818
+Barbara Norris,63,60 to <70,USA,Right,City,8.0,7 to <9 hours,Postgraduate,Kia,2032-09-01,102.17,101.373922241405
+Elizabeth Fuentes,44,40 to <50,USA,Left,Town,8.0,7 to <9 hours,Undergraduate,Nissan,2030-01-01,92.04,90.5079237032225
+Kevin Friedman,29,20 to <30,USA,Right,City,6.5,Under 7 hours,Undergraduate,Mazda,2032-08-01,92.77,84.840857583906
+Michelle Coleman,75,70 to <80,USA,Left,City,7.5,7 to <9 hours,Undergraduate,Toyota,2031-04-01,92.07,95.3761978593919
+Michael Williams,41,40 to <50,Denmark,Right,Town,6.0,Under 7 hours,Postgraduate,Toyota,2030-02-01,91.57,104.832343766345
+Nicole Hoffman,67,60 to <70,USA,Right,Town,6.0,Under 7 hours,Undergraduate,Honda,2030-02-01,94.62,101.554053224612
+Jennifer Marks,42,40 to <50,USA,Right,City,6.0,Under 7 hours,Undergraduate,Toyota,2030-04-01,93.46,105.182809166891
+Rebekah Lyons,67,60 to <70,USA,Right,Town,7.5,7 to <9 hours,Undergraduate,Toyota,2031-11-01,94.32,94.5958273515422
+Dan Hahn,87,80+,USA,Right,City,7.0,7 to <9 hours,Undergraduate,Tesla,2031-05-01,92.58,91.3868230806275
+Erin Richards,58,50 to <60,NZ,Right,City,7.5,7 to <9 hours,Postgraduate,Mercedes,2031-12-01,96.91,96.7436643307289
+Philip Deleon,86,80+,NZ,Right,City,6.0,Under 7 hours,Undergraduate,Toyota,2032-12-01,95.93,95.5694195954681
+Christopher Burton,60,60 to <70,USA,Left,Town,6.0,Under 7 hours,Undergraduate,Tesla,2031-08-01,101.86,103.179692967643
+Joshua Smith,23,20 to <30,USA,Right,City,6.5,Under 7 hours,Undergraduate,Renault,2030-09-01,92.2,91.3293128295286
+Samuel Williams,73,70 to <80,USA,Right,Town,7.0,7 to <9 hours,Undergraduate,Mitsubishi,2030-10-01,96.49,101.34574153931
+Keith Mccoy,52,50 to <60,USA,Right,City,7.5,7 to <9 hours,Undergraduate,Mini,2031-05-01,101.57,103.938290107614

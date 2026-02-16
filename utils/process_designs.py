@@ -1,5 +1,3 @@
-## To run the demo examples, install the sofastats_examples package
-## and run the functions inside e.g. simple_bar_chart_from_sqlite_db() in demo_charts.py
 from itertools import chain
 import sqlite3 as sqlite
 

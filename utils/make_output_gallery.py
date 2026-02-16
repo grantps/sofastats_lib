@@ -7,4 +7,5 @@ def run():
         is_gallery=True)
 
 if __name__ == '__main__':
+    pass
     run()

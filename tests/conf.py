@@ -2,23 +2,23 @@ from pathlib import Path
 
 from sofastats.conf import main as main_conf
 
-tests_folder = Path(main_conf.__file__).parent.parent.parent.parent / 'tests'
-print(f"{tests_folder=}")
-csvs_folder = tests_folder / 'static_csvs'
-sort_orders_yaml_file_path = tests_folder / 'sort_orders.yaml'
+examples_folder = Path(main_conf.__file__).parent.parent.parent.parent / 'examples'
+print(f"{examples_folder=}")
+files_folder = examples_folder / 'files'
+sort_orders_yaml_file_path = files_folder / 'sort_orders.yaml'
 
 ## CSVs
 
-books_csv_fpath = csvs_folder / 'books.csv'
+books_csv_fpath = files_folder / 'books.csv'
 
-education_csv_fpath = csvs_folder / 'education.csv'
-education_with_missing_categories_csv_fpath = csvs_folder / 'education_with_missing_categories_for_testing.csv'
+education_csv_fpath = files_folder / 'education.csv'
+education_with_missing_categories_csv_fpath = files_folder / 'education_with_missing_categories_for_testing.csv'
 
-people_csv_fpath = csvs_folder / 'people.csv'
-people_with_missing_categories_csv_fpath = csvs_folder / 'people_with_missing_categories_for_testing.csv'
+people_csv_fpath = files_folder / 'people.csv'
+people_with_missing_categories_csv_fpath = files_folder / 'people_with_missing_categories_for_testing.csv'
 
-sports_csv_file_path = csvs_folder / 'sports.csv'
-sports_with_missing_categories_csv_file_path = csvs_folder / 'sports_with_missing_categories_for_testing.csv'
+sports_csv_file_path = files_folder / 'sports.csv'
+sports_with_missing_categories_csv_file_path = files_folder / 'sports_with_missing_categories_for_testing.csv'
 
 ## categories
 
