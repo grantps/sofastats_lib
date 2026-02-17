@@ -524,7 +524,10 @@ Where it makes sense, there is also the option of worked example explanations of
 <li>Wilcoxon Signed Ranks Test</li>
 </ul>
 <h1 id="examples">Examples</h1>
-<p>See https://github.com/sofastats/sofastats_lib/tree/main/src/sofastats_examples/scripts</p>
+<p>Full examples, including all required imports and data sources,
+can be found at: https://github.com/sofastats/sofastats_lib/tree/main/src/sofastats_examples/scripts</p>
+<p>Below are examples of the actual configuration required to make output.
+The goal of interface design was to minimise boilerplate and standardise across charting, report tables, and statistical tests.</p>
 <div class="highlight"><pre><span></span><code><span class="n">design</span> <span class="o">=</span> <span class="n">ClusteredBoxplotChartDesign</span><span class="p">(</span>
     <span class="n">csv_file_path</span><span class="o">=</span><span class="n">csv_file_path</span><span class="p">,</span>
     <span class="n">output_file_path</span><span class="o">=</span><span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;demo_multi_series_box_plot_black_pastel.html&#39;</span><span class="p">,</span>
@@ -542,7 +545,7 @@ Where it makes sense, there is also the option of worked example explanations of
     <span class="n">x_axis_font_size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
     <span class="n">decimal_points</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">design</span>
+<span class="n">design</span><span class="o">.</span><span class="n">make_output</span><span class="p">()</span>
 </code></pre></div>
 <p><img alt="Clustered Box Plot Example" src="https://sofastats.github.io/sofastats_lib/images/clustered_box_plot_black_pastel_style.png" width="700" /></p>
 <div class="highlight"><pre><span></span><code><span class="n">row_variables_design_1</span> <span class="o">=</span> <span class="n">Row</span><span class="p">(</span><span class="n">variable_name</span><span class="o">=</span><span class="s1">&#39;Country&#39;</span><span class="p">,</span> <span class="n">has_total</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sort_order</span><span class="o">=</span><span class="n">SortOrder</span><span class="o">.</span><span class="n">CUSTOM</span><span class="p">,</span>
@@ -571,6 +574,8 @@ Where it makes sense, there is also the option of worked example explanations of
 <span class="p">)</span>
 <span class="n">design</span><span class="o">.</span><span class="n">make_output</span><span class="p">()</span>
 </code></pre></div>
+<p><img alt="Cross Tab Example - Close-Up" src="https://sofastats.github.io/sofastats_lib/images/cross_tab_red_spirals_style_truncated.png" width="700" /></p>
+<p><img alt="Cross Tab Example" src="https://sofastats.github.io/sofastats_lib/images/cross_tab_red_spirals_style.png" width="700" /></p>
 <div class="highlight"><pre><span></span><code><span class="n">design</span> <span class="o">=</span> <span class="n">AnovaDesign</span><span class="p">(</span>
     <span class="n">csv_file_path</span><span class="o">=</span><span class="n">csv_file_path</span><span class="p">,</span>
     <span class="n">output_file_path</span><span class="o">=</span><span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;demo_anova_age_by_country_black_pastel_style.html&#39;</span><span class="p">,</span>
