@@ -78,6 +78,7 @@ def run(*, do_charts=False, do_stats=False, show_stats_results=False, do_tables=
         table_designs.append(tables.simple_freq_tbl(people_csv_file_path))
 
         report_designs_specs.append(ReportDesignsSpec(title="Report Tables", designs=table_designs))
+
     if do_stats:
         stats_designs = []
 

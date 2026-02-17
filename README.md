@@ -7,9 +7,9 @@
 Statistics Open For All the Python Library.
 
 `sofastats_lib` is a Python library for statistical analysis and reporting
-based on the design of the SOFA Statistics package.
+based on the design of the SOFA Statistics desktop application.
 
-The goal was keep all the tried-and-true elements of the original package
+The goal was keep all the tried-and-true elements of the original application
 but without any of the original design mistakes.
 
 We also wanted to make SOFA more friendly for beginners.

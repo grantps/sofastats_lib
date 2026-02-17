@@ -63,9 +63,7 @@ configuring individual bar chart designs.
 ::: sofastats.output.charts.bar.MultiChartClusteredBarChartDesign
     options:
         heading_level: 4
-::: sofastats.output.charts.bar.MultiChartClusteredBarChartDesign
-    options:
-        heading_level: 4
+
 
 ### Box Plots
 See [`CommonDesign`][sofastats.output.interfaces.CommonDesign]
@@ -199,6 +197,15 @@ for details of the `to_result()` method common to all stats output design datacl
     options:
         heading_level: 4
 
+### Independent Samples T-Test
+
+See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
+for details of the `to_result()` method common to all stats output design dataclasses in sofastats.
+
+::: sofastats.output.stats.independent_t_test.IndependentTTestDesign
+    options:
+        heading_level: 4
+
 ### Kruskal-Wallis H
 
 See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
@@ -226,6 +233,15 @@ for details of the `to_result()` method common to all stats output design datacl
     options:
         heading_level: 4
 
+### Paired Samples T-Test
+
+See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
+for details of the `to_result()` method common to all stats output design dataclasses in sofastats.
+
+::: sofastats.output.stats.paired_t_test.PairedTTestDesign
+    options:
+        heading_level: 4
+
 ### Pearson's R Correlation
 
 See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
@@ -241,15 +257,6 @@ See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
 for details of the `to_result()` method common to all stats output design dataclasses in sofastats.
 
 ::: sofastats.output.stats.spearmans_r.SpearmansRDesign
-    options:
-        heading_level: 4
-
-### Independent Samples T-Test
-
-See [`CommonStatsDesign`][sofastats.output.stats.interfaces.CommonStatsDesign]
-for details of the `to_result()` method common to all stats output design dataclasses in sofastats.
-
-::: sofastats.output.stats.ttest_indep.TTestIndepDesign
     options:
         heading_level: 4
 
