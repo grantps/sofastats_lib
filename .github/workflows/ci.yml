@@ -1,0 +1,68 @@
+name: CI
+permissions: {}
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+  schedule:
+    # Suitable for maintainers in NZT
+    - cron: "20 14 * * *"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    name: ${{ format('Test Python {0} {1}', matrix.python_version, ((matrix.dependencies == 'min' || matrix.dependencies == 'max') && format('{0} dependencies', matrix.dependencies)) || (matrix.os || 'ubuntu-latest')) }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+        with:
+          version: ${{ matrix.uv_version || 'latest' }}
+          enable-cache: true
+          python-version: ${{ matrix.python_version }}
+
+      - name: Setup dependencies
+        run: |
+          uv sync $CI_UV_UPGRADE_ARG
+        env:
+          CI_UV_UPGRADE_ARG: ${{ matrix.dependencies == 'max' && '--upgrade' || '' }}
+          UV_RESOLUTION: ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
+
+      - name: Run pytest
+        uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        with:
+          emoji: false
+          custom-pytest: uv run --frozen pytest
+          custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+
+    strategy:
+      matrix:
+        python_version: ["3.11", "3.14"]
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        dependencies: ["lockfile"]
+
+        include:
+          - python_version: "3.12"
+            os: "ubuntu-latest"
+          - python_version: "3.13"
+            os: "ubuntu-latest"
+          - dependencies: "min"
+            python_version: "3.10"
+            uv_version: "0.8.18"
+          - dependencies: "max"
+            python_version: "3.14"
