@@ -1662,7 +1662,7 @@ requires-dist = [
     { name = "mkdocs-include-markdown-plugin", specifier = ">=7.2.1" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "pandas", specifier = ">=2.3,<3.0.0" },
-    { name = "pyparsing", specifier = "<3.3.0" },
+    { name = "pyparsing", specifier = ">=3.0.8,<3.3.0" },
     { name = "ruamel-yaml", specifier = ">=0.18.10" },
 ]
 
