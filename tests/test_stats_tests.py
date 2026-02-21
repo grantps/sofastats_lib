@@ -79,7 +79,7 @@ def test_chi_square():
     # design.make_output()
     result = design.to_result()
 
-    Path(csv_file_path).unlink()
+    # Path(csv_file_path).unlink()
 
     print(result)
 
